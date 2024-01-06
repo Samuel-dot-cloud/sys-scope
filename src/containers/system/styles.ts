@@ -5,14 +5,14 @@ export const AppContainer = styled.div`
     height: 100vh;
     width: 100vw;
     flex-grow: 1;
-    background: #000;
+    background: transparent;
 `;
 
 export const Sidebar = styled.div`
     width: 200px;
-    background: #000;
-    color: #ffffff;
-    padding: 20px;
+    background: transparent;
+    //color: #ffffff;
+    padding: 40px 20px 20px;
 `;
 
 export const SidebarItem = styled.div`
@@ -30,7 +30,7 @@ export const SidebarItem = styled.div`
 
 export const Content = styled.div`
     flex-grow: 1;
-    background: #1e1e1e;
+    background: transparent;
     padding: 20px;
     overflow-y: auto;
 `;

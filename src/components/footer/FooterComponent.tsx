@@ -1,4 +1,4 @@
-import {AppIcon, AppName, AppNameContainer, FooterContainer, SettingsIcon} from "./styles.ts";
+import {AppIcon, AppleIcon, AppName, AppNameContainer, FooterContainer} from "./styles.ts";
 import React from "react";
 
 const FooterComponent: React.FC = () => {
@@ -8,7 +8,10 @@ const FooterComponent: React.FC = () => {
                 <AppIcon size="1.5em"/>
                 <AppName>System Scope</AppName>
             </AppNameContainer>
-            <SettingsIcon size="1.5em" onClick={() => console.log('Settings clicked')}/>
+            <AppNameContainer>
+                <AppName>aarch64 ARM</AppName>
+                <AppleIcon size="1.5em"/>
+            </AppNameContainer>
         </FooterContainer>
     );
 }

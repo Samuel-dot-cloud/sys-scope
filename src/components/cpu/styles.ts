@@ -1,13 +1,13 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-    color: #ffffff;
-    background-color: #1e1e1e;
+    //color: #ffffff;
+    background-color: transparent;
     border-radius: 10px;
     padding: 20px;
 `;
 export const Section = styled.div`
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 `;
 
 export const SectionTitle = styled.h2`
@@ -26,7 +26,7 @@ export const StatList = styled.ul`
 export const StatItem = styled.li`
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 `;
 
 export const Label = styled.span`

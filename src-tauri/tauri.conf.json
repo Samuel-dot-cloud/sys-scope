@@ -52,9 +52,13 @@
     "updater": {
       "active": false
     },
+    "macOSPrivateApi": true,
     "windows": [
       {
         "fullscreen": false,
+        "transparent": true,
+        "titleBarStyle": "visible",
+        "hiddenTitle": true,
         "height": 600,
         "resizable": true,
         "title": "System Scope",
