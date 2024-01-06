@@ -1,88 +1,124 @@
 import React, {useState} from "react";
-import Section from "../../components/section/SectionComponent.tsx";
-import {AppWindow, ContentContainer, Tab, TabContainer} from "./styles.ts";
+import CpuComponent from "../../components/cpu/CpuComponent.tsx";
+import {AppContainer, AppWindow, Content, Sidebar, SidebarItem} from "./styles.ts";
+import MemoryComponent from "../../components/memory/MemoryComponent.tsx";
+import BatteryComponent from "../../components/battery/BatteryComponent.tsx";
+import NetworkComponent from "../../components/network/NetworkComponent.tsx";
+import FooterComponent from "../../components/footer/FooterComponent.tsx";
 
-
-
-interface SectionDetails {
-    label: string;
-    value: string | number;
-}
-
-interface Section {
-    title: string;
-    details: SectionDetails[];
-    usage?: string; // Optional if you have a usage property
-}
-
-type Sections = {
-    [key: string]: Section;
-};
+type SidebarItemType = 'cpu' | 'memory' | 'battery' | 'network';
 
 const SystemMonitor: React.FC = () => {
-    // const [selectedItem, setSelectedItem] = useState<string | null>(null);
+    const [activeItem, setActiveItem] = useState<SidebarItemType>('cpu');
 
-    const cpuDetails = [
-        { label: 'Average Load', value: '2.45' },
-        { label: 'Uptime', value: '13 hours ago' }
-        // Add more details as needed
+    const cpuUsage = '8%';
+
+    const cpuAverageLoad = [
+        {label: '1 min', value: '1.40'},
+        {label: '5 min', value: '1.58'},
+        {label: '15 min', value: '2.23'},
+    ];
+
+    const cpuProcesses = [
+        {label: 'Notion Helper (Renderer)', value: '9.1%'},
+        {label: 'Raycast', value: '7.8%'},
+        // ... more processes
+    ];
+
+    const uptime = '44 minutes ago';
+
+    const networkSpeeds = {
+        downloadSpeed: '0 B/s',
+        uploadSpeed: '286 B/s'
+    };
+
+    const networkProcesses = [
+        {name: 'systemstats', download: '0 B/s', upload: '0 B/s'},
+        {name: 'configd', download: '0 B/s', upload: '0 B/s'},
+        // ...more processes
     ];
 
     const memoryDetails = [
-        { label: 'Memory Used', value: '30% (~10 GB)' },
-        { label: 'Memory Used1', value: '30% 11(~10 GB)' },
-        { label: 'Memory Used2', value: '30% (~10332 GB)' },
-        { label: 'Memory Used', value: '30% (~10 GB)' },
-        // Add more details as needed
+        {label: 'Total Disk Space', value: '17.41 GB'},
+        {label: 'Free Disk Space', value: '489.3 MB'},
+        {label: 'Total RAM', value: '32 GB'},
+        {label: 'Free RAM', value: '15 GB'},
+        {label: 'Free RAM %', value: '47%'},
+    ];
+
+    const processes = [
+        {name: 'rustrover', ram: '3465 MB'},
+        {name: 'node', ram: '472 MB'},
+        // ... more processes
     ];
 
     const powerDetails = [
-        { label: 'Battery Level', value: '98%' },
-        { label: 'Charging', value: 'Yes' }
-        // Add more details as needed
+        {label: 'Battery Level', value: '98%'},
+        {label: 'Charging', value: 'No'},
+        {label: 'Cycle Count', value: '64'},
+        {label: 'Condition', value: 'Normal'},
+        {label: 'Maximum Battery Capacity', value: '100%'},
+        {label: 'Time to discharge', value: '14:54'},
+        {label: 'Time on battery', value: '12:36:11'},
     ];
 
-    const networkDetails = [
-        { label: 'Download', value: '2.17 KB/s' },
-        { label: 'Upload', value: '0 B/s' }
-        // Add more details as needed
-    ];
-
-    const [activeSection, setActiveSection] = useState<string>('cpu');
-
-    const sections: Sections  = {
-        cpu: { title: 'CPU', details: cpuDetails },
-        memory: { title: 'Memory', details: memoryDetails },
-        power: { title: 'Power', details: powerDetails },
-        network: { title: 'Network', details: networkDetails },
+    const renderActiveComponent = () => {
+        switch (activeItem) {
+            case "cpu":
+                return <CpuComponent
+                    usage={cpuUsage}
+                    averageLoad={cpuAverageLoad}
+                    uptime={uptime}
+                    processes={cpuProcesses}
+                />;
+            case "memory":
+                return <MemoryComponent
+                    memoryDetails={memoryDetails}
+                    processes={processes}
+                />;
+            case "battery":
+                return <BatteryComponent details={powerDetails}/>;
+            case "network":
+                return <NetworkComponent
+                    downloadSpeed={networkSpeeds.downloadSpeed}
+                    uploadSpeed={networkSpeeds.uploadSpeed}
+                    processes={networkProcesses}
+                />
+            default:
+                return null;
+        }
     };
 
     return (
         <AppWindow>
-            {/* Sidebar */}
-            <TabContainer>
-                {Object.keys(sections).map((key) => {
-                    const sectionKey: string = key;
-                    return (
-                        <Tab
-                            key={sectionKey}
-                            className={activeSection === sectionKey ? 'active' : ''}
-                            onClick={() => setActiveSection(sectionKey)}
-                        >
-                            {sections[sectionKey].title}
-                        </Tab>
-                    );
-                })}
-            </TabContainer>
-
-            {/* Main Content */}
-            <ContentContainer>
-                <Section
-                    title={sections[activeSection].title}
-                    usage={sections[activeSection].usage || 'N/A'} // Provide a default value
-                    details={sections[activeSection].details}
-                />
-            </ContentContainer>
+            <AppContainer>
+                <Sidebar>
+                    <SidebarItem
+                        className={activeItem == 'cpu' ? 'active' : ''}
+                        onClick={() => setActiveItem('cpu')}
+                    >CPU
+                    </SidebarItem>
+                    <SidebarItem
+                        className={activeItem == 'memory' ? 'active' : ''}
+                        onClick={() => setActiveItem('memory')}
+                    >Memory
+                    </SidebarItem>
+                    <SidebarItem
+                        className={activeItem == 'battery' ? 'active' : ''}
+                        onClick={() => setActiveItem('battery')}
+                    >Battery
+                    </SidebarItem>
+                    <SidebarItem
+                        className={activeItem == 'network' ? 'active' : ''}
+                        onClick={() => setActiveItem('network')}
+                    >Network
+                    </SidebarItem>
+                </Sidebar>
+                <Content>
+                    {renderActiveComponent()}
+                </Content>
+            </AppContainer>
+            <FooterComponent/>
         </AppWindow>
     );
 }

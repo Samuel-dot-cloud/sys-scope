@@ -14,7 +14,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1",
-    "styled-components": "^6.1.6"
+    "styled-components": "^6.1.6",
+    "styled-icons": "^10.47.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.9",
