@@ -57,8 +57,9 @@
       {
         "fullscreen": false,
         "transparent": true,
-        "titleBarStyle": "visible",
         "hiddenTitle": true,
+        "decorations": true,
+        "titleBarStyle": "Visible",
         "height": 600,
         "resizable": true,
         "title": "System Scope",

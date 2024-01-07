@@ -4,13 +4,13 @@ export const AppContainer = styled.div`
     display: flex;
     height: 100vh;
     width: 100vw;
-    flex-grow: 1;
     background: transparent;
 `;
 
 export const Sidebar = styled.div`
     width: 200px;
     background: transparent;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
     //color: #ffffff;
     padding: 40px 20px 20px;
 `;

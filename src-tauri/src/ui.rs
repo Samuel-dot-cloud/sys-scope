@@ -1,6 +1,9 @@
 use tauri::Manager;
 use window_shadows::set_shadow;
-use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
+
+#[allow(unused_imports)]
+use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
+use window_vibrancy::NSVisualEffectState;
 
 pub fn show() {
     tauri::Builder::default()
@@ -8,7 +11,12 @@ pub fn show() {
             let win = app.get_window("main").unwrap();
 
             #[cfg(target_os = "macos")]
-            apply_vibrancy(&win, NSVisualEffectMaterial::HudWindow, None, None)
+            apply_vibrancy(
+                &win,
+                NSVisualEffectMaterial::Popover,
+                Some(NSVisualEffectState::FollowsWindowActiveState),
+                Some(8.0),
+            )
                 .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 
             #[cfg(target_os = "windows")]

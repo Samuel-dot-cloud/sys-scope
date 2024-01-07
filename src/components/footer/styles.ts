@@ -9,6 +9,7 @@ export const FooterContainer = styled.div`
     align-items: center;
     padding: 5px 20px;
     background: transparent;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     //color: #ffffff;
 `;
 
