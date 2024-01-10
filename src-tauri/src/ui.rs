@@ -1,14 +1,17 @@
+use std::time::Duration;
 use tauri::Manager;
 use window_shadows::set_shadow;
 
 #[allow(unused_imports)]
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 use window_vibrancy::NSVisualEffectState;
+use crate::app::AppState;
 
-pub fn show() {
+pub fn show(app: AppState) {
     tauri::Builder::default()
         .setup(|app| {
             let win = app.get_window("main").unwrap();
+            let state = AppState::new();
 
             #[cfg(target_os = "macos")]
             apply_vibrancy(
@@ -26,8 +29,24 @@ pub fn show() {
             #[cfg(any(windows, target_os = "macos"))]
             set_shadow(&win, true).unwrap();
 
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    state.emit_sysinfo(&win);
+                    state.emit_global_cpu(&win);
+                    state.emit_cpus(&win);
+                    state.emit_memory(&win);
+                    state.emit_swap(&win);
+                    state.emit_networks(&win);
+                    state.emit_disks(&win);
+                    state.emit_processes(&win);
+                    state.emit_batteries(&win);
+                    std::thread::sleep(Duration::from_secs(1));
+                }
+            });
+
             Ok(())
         })
+        .manage(app)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

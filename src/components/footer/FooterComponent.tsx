@@ -1,7 +1,9 @@
 import {AppIcon, AppleIcon, AppName, AppNameContainer, FooterContainer} from "./styles.ts";
 import React from "react";
+import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 
 const FooterComponent: React.FC = () => {
+    const { sysInfo } = useServerEventsContext();
     return (
         <FooterContainer>
             <AppNameContainer>
@@ -9,7 +11,7 @@ const FooterComponent: React.FC = () => {
                 <AppName>System Scope</AppName>
             </AppNameContainer>
             <AppNameContainer>
-                <AppName>aarch64 ARM</AppName>
+                <AppName>{sysInfo?.osVersion}</AppName>
                 <AppleIcon size="1.5em"/>
             </AppNameContainer>
         </FooterContainer>

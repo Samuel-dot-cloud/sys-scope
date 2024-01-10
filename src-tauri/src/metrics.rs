@@ -1,9 +1,8 @@
-use starship_battery::{Batteries, Battery, Manager};
+use starship_battery::Manager;
 use starship_battery::units::power::watt;
 use starship_battery::units::ratio::percent;
-use starship_battery::units::time::Units::second;
+use starship_battery::units::time::second;
 use sysinfo::{Disks, Networks, System};
-use window_vibrancy::NSVisualEffectMaterial::Popover;
 use crate::models::{BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait};
 use crate::utils::{current_time, get_percentage, round};
 
@@ -235,9 +234,9 @@ impl BatteryTrait for Metrics {
             for battery in batteries {
                 if let Ok(battery_info) = battery {
                     let secs_until_full = battery_info.time_to_full()
-                        .map(|time| f64::from(time.get::<second>()) as i64);
+                        .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
                     let secs_until_empty = battery_info.time_to_empty()
-                        .map(|time| f64::from(time.get::<second()>()) as i64);
+                        .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
                     let charge_percent = f64::from(battery_info.state_of_charge().get::<percent>());
                     let power_consumption_rate_watts = f64::from(battery_info.energy_rate().get::<watt>());
                     let health_percent = f64::from(battery_info.state_of_health().get::<percent>());

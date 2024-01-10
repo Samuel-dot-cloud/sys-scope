@@ -1,10 +1,13 @@
 import SystemMonitor from "./containers/system/SystemMonitor.tsx";
+import AppProvider from "./providers";
 
 function App() {
 
-  return (
-    <SystemMonitor/>
-  )
+    return (
+        <AppProvider>
+            <SystemMonitor/>
+        </AppProvider>
+    )
 }
 
 export default App
