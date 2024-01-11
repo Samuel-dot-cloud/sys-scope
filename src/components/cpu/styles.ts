@@ -10,6 +10,14 @@ export const Section = styled.div`
     margin-bottom: 10px;
 `;
 
+export const HorizontalSection = styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #333;
+`;
+
 export const SectionTitle = styled.h2`
     color: #aaa;
     margin: 0;

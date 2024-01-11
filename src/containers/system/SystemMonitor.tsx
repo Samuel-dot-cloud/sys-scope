@@ -5,27 +5,13 @@ import MemoryComponent from "../../components/memory/MemoryComponent.tsx";
 import BatteryComponent from "../../components/battery/BatteryComponent.tsx";
 import NetworkComponent from "../../components/network/NetworkComponent.tsx";
 import FooterComponent from "../../components/footer/FooterComponent.tsx";
+import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 
 type SidebarItemType = 'cpu' | 'memory' | 'battery' | 'network';
 
 const SystemMonitor: React.FC = () => {
     const [activeItem, setActiveItem] = useState<SidebarItemType>('cpu');
-
-    const cpuUsage = '8%';
-
-    const cpuAverageLoad = [
-        {label: '1 min', value: '1.40'},
-        {label: '5 min', value: '1.58'},
-        {label: '15 min', value: '2.23'},
-    ];
-
-    const cpuProcesses = [
-        {label: 'Notion Helper (Renderer)', value: '9.1%'},
-        {label: 'Raycast', value: '7.8%'},
-        // ... more processes
-    ];
-
-    const uptime = '44 minutes ago';
+    const { batteries } = useServerEventsContext();
 
     const networkSpeeds = {
         downloadSpeed: '0 B/s',
@@ -52,25 +38,26 @@ const SystemMonitor: React.FC = () => {
         // ... more processes
     ];
 
+    // TODO: Move this logic into the BatteryComponent
     const powerDetails = [
-        {label: 'Battery Level', value: '98%'},
-        {label: 'Charging', value: 'No'},
-        {label: 'Cycle Count', value: '64'},
-        {label: 'Condition', value: 'Normal'},
-        {label: 'Maximum Battery Capacity', value: '100%'},
-        {label: 'Time to discharge', value: '14:54'},
-        {label: 'Time on battery', value: '12:36:11'},
+        {label: 'Vendor', value: batteries.at(-1)?.vendor},
+        {label: 'Battery Level', value: `${batteries.at(-1)?.chargePercent}%`},
+        {label: 'Charging state', value: batteries.at(-1)?.state},
+        {label: 'Cycle Count', value: batteries.at(-1)?.cycleCount},
+        {label: 'Technology', value: batteries.at(-1)?.technology},
+        {label: 'Maximum Battery Capacity', value: `${batteries.at(-1)?.healthPercent.toFixed(0)}%`},
+        {label: 'Time to full battery', value: batteries.at(-1)?.hoursUntilFull},
+        {label: 'Time to empty battery', value: batteries.at(-1)?.hoursUntilEmpty},
+        {label: 'Temperature', value: `${batteries.at(-1)?.temperature.toFixed(1)} °C`},
+        {label: 'Charge', value: `${batteries.at(-1)?.energy.toFixed(3)} MJ / ${batteries.at(-1)?.energyFull.toFixed(3)} MJ`},
+        {label: 'Voltage', value: `${batteries.at(-1)?.voltage.toFixed(2)} V`},
+        {label: 'Energy rate', value: `${batteries.at(-1)?.powerConsumptionRateWatts} W`},
     ];
 
     const renderActiveComponent = () => {
         switch (activeItem) {
             case "cpu":
-                return <CpuComponent
-                    usage={cpuUsage}
-                    averageLoad={cpuAverageLoad}
-                    uptime={uptime}
-                    processes={cpuProcesses}
-                />;
+                return <CpuComponent/>;
             case "memory":
                 return <MemoryComponent
                     memoryDetails={memoryDetails}

@@ -1,6 +1,6 @@
 export enum ServerEvent {
     SysInfo = "emit_sysinfo",
-    GlobalCpu = "emit_global_cpu",
+    GlobalCpu = "emit_global_cpus",
     Cpus = "emit_cpus",
     Memory = "emit_memory",
     Swap = "emit_swap",
@@ -14,12 +14,20 @@ export enum ServerEvent {
 
 type Timestamp = number;
 
+export interface LoadAverage {
+    one: number;
+    five: number;
+    fifteen: number;
+}
+
 export interface SysInfo {
     hostname: string;
     kernelVersion: string;
     osVersion: string;
     coreCount: string;
+    uptime: number,
     timestamp: Timestamp;
+    loadAverage: LoadAverage;
 }
 
 export interface Memory {
@@ -82,8 +90,8 @@ export interface Process {
 
 export interface DeviceBattery {
     chargePercent: number;
-    secsUntilFull: number;
-    secsUntilEmpty: number;
+    hoursUntilFull: number;
+    hoursUntilEmpty: number;
     powerConsumptionRateWatts: number;
     healthPercent: number;
     vendor: string;
@@ -91,4 +99,8 @@ export interface DeviceBattery {
     cycleCount: number;
     model: string;
     state: string;
+    temperature: number;
+    energy: number;
+    energyFull: number;
+    voltage: number;
 }

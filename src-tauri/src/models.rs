@@ -4,6 +4,12 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Timestamp(pub i64);
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct LoadAverage {
+    pub one: f64,
+    pub five: f64,
+    pub fifteen: f64,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -31,7 +37,7 @@ pub struct GlobalCpu {
 }
 
 pub trait GlobalCpuTrait {
-    fn get_global_cpu(&mut self) -> GlobalCpu;
+    fn get_global_cpus(&mut self) -> Vec<GlobalCpu>;
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -67,7 +73,9 @@ pub struct SysInfo {
     pub os_version: String,
     pub hostname: String,
     pub core_count: String,
+    pub uptime: u64,
     pub timestamp: Timestamp,
+    pub load_average: LoadAverage,
 }
 
 pub trait SystemInformationTrait {
@@ -123,8 +131,8 @@ pub trait ProcessTrait {
 #[serde(rename_all = "camelCase")]
 pub struct DeviceBattery {
     pub charge_percent: f64,
-    pub secs_until_full: i64,
-    pub secs_until_empty: i64,
+    pub hours_until_full: i64,
+    pub hours_until_empty: i64,
     pub power_consumption_rate_watts: f64,
     pub health_percent: f64,
     pub vendor: String,
@@ -132,6 +140,10 @@ pub struct DeviceBattery {
     pub cycle_count: u32,
     pub model: String,
     pub state: String,
+    pub temperature: f64,
+    pub energy: f64,
+    pub energy_full: f64,
+    pub voltage: f64,
 }
 
 pub trait BatteryTrait {

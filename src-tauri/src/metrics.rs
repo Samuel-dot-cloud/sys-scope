@@ -1,9 +1,13 @@
+use std::{thread, time};
 use starship_battery::Manager;
-use starship_battery::units::power::watt;
+use starship_battery::units::electric_potential::volt;
+use starship_battery::units::energy::{megajoule, megawatt_hour, watt_hour};
+use starship_battery::units::power::{gigawatt, watt};
 use starship_battery::units::ratio::percent;
-use starship_battery::units::time::second;
-use sysinfo::{Disks, Networks, System};
-use crate::models::{BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait};
+use starship_battery::units::thermodynamic_temperature::degree_celsius;
+use starship_battery::units::time::{hour, second};
+use sysinfo::{CpuRefreshKind, Disks, Networks, RefreshKind, System};
+use crate::models::{BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage, Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait};
 use crate::utils::{current_time, get_percentage, round};
 
 pub struct Metrics {
@@ -28,44 +32,61 @@ impl SystemInformationTrait for Metrics {
     fn get_system_information(&mut self) -> SysInfo {
         self.sys.refresh_all();
 
+        // TODO: Toy with this system update logic to get as accurate results as possible.
+        thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
+
         let kernel_version = System::kernel_version().unwrap_or("Unknown".to_string());
         let os_version = System::long_os_version().unwrap_or("Unknown".to_string());
         let hostname = System::host_name().unwrap_or("Unknown".to_string());
         let core_count = self.sys.physical_core_count().unwrap_or(0).to_string();
+        let uptime = System::uptime();
+        let load_average = System::load_average();
 
         SysInfo {
             kernel_version,
             os_version,
             hostname,
             core_count,
+            uptime,
             timestamp: current_time(),
+            load_average: LoadAverage {
+                one: load_average.one,
+                five: load_average.five,
+                fifteen: load_average.fifteen
+            }
         }
     }
 }
 
 impl GlobalCpuTrait for Metrics {
-    fn get_global_cpu(&mut self) -> GlobalCpu {
-        self.sys.refresh_cpu();
+    fn get_global_cpus(&mut self) -> Vec<GlobalCpu> {
+        let mut global_cpus: Vec<GlobalCpu> = Vec::new();
 
-        let cpu = self.sys.global_cpu_info();
-        let usage = if cpu.cpu_usage().is_nan() {
-            0.0
-        } else {
-            cpu.cpu_usage()
-        };
-        let brand = cpu.brand().to_owned();
-        let frequency = cpu.frequency().to_owned();
-        let name = cpu.name().to_owned();
-        let vendor = cpu.vendor_id().to_owned();
+        let system = System::new_with_specifics(
+            RefreshKind::new().with_cpu(CpuRefreshKind::everything())
+        );
 
-        GlobalCpu {
-            usage,
-            brand,
-            frequency,
-            name,
-            vendor,
-            timestamp: current_time(),
+        for cpu  in system.cpus() {
+            let usage = if cpu.cpu_usage().is_nan() {
+                0.0
+            } else {
+                cpu.cpu_usage()
+            };
+            let brand = cpu.brand().to_owned();
+            let frequency = cpu.frequency().to_owned();
+            let name = cpu.name().to_owned();
+            let vendor = cpu.vendor_id().to_owned();
+
+            global_cpus.push(GlobalCpu {
+                    usage,
+                    brand,
+                    frequency,
+                    name,
+                    vendor,
+                    timestamp: current_time(),
+                });
         }
+        global_cpus
     }
 }
 
@@ -233,14 +254,14 @@ impl BatteryTrait for Metrics {
         if let Ok(batteries) = self.batteries.batteries() {
             for battery in batteries {
                 if let Ok(battery_info) = battery {
-                    let secs_until_full = battery_info.time_to_full()
-                        .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
-                    let secs_until_empty = battery_info.time_to_empty()
-                        .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
+                    let hours_until_full = battery_info.time_to_full()
+                        .map(|time| f64::from(time.get::<hour>()) as i64).unwrap_or(0);
+                    let hours_until_empty = battery_info.time_to_empty()
+                        .map(|time| f64::from(time.get::<hour>()) as i64).unwrap_or(0);
                     let charge_percent = f64::from(battery_info.state_of_charge().get::<percent>());
                     let power_consumption_rate_watts = f64::from(battery_info.energy_rate().get::<watt>());
                     let health_percent = f64::from(battery_info.state_of_health().get::<percent>());
-                    let vendor = battery_info.vendor().unwrap_or("Unknown").to_owned();
+                    let vendor = battery_info.vendor().unwrap_or("-----").to_owned();
                     let technology = match battery_info.technology() {
                         starship_battery::Technology::LeadAcid => "Lead Acid".to_string(),
                         starship_battery::Technology::LithiumIon => "Lithium Ion".to_string(),
@@ -250,7 +271,7 @@ impl BatteryTrait for Metrics {
                         starship_battery::Technology::NickelZinc => "Nickel Zinc".to_string(),
                         starship_battery::Technology::LithiumIronPhosphate => "Lithium Iron Phosphate".to_string(),
                         starship_battery::Technology::RechargeableAlkalineManganese => "Rechargeable Alkaline Manganese".to_string(),
-                        _ => "Unknown".to_string(),
+                        _ => "-----".to_string(),
                     };
                     let cycle_count = battery_info.cycle_count().unwrap_or(0);
                     let model = battery_info.model().unwrap_or("Unknown").to_string();
@@ -259,13 +280,18 @@ impl BatteryTrait for Metrics {
                         starship_battery::State::Discharging => "Discharging".to_string(),
                         starship_battery::State::Empty => "Empty".to_string(),
                         starship_battery::State::Full => "Full".to_string(),
-                        _ => "Unknown".to_string(),
+                        _ => "-----".to_string(),
                     };
+
+                    let temperature = f64::from(battery_info.temperature().unwrap().get::<degree_celsius>());
+                    let energy = f64::from(battery_info.energy().get::<megajoule>());
+                    let energy_full = f64::from(battery_info.energy_full().get::<megajoule>());
+                    let voltage = f64::from(battery_info.voltage().get::<volt>());
 
                     device_batteries.push(DeviceBattery {
                         charge_percent,
-                        secs_until_full,
-                        secs_until_empty,
+                        hours_until_full,
+                        hours_until_empty,
                         power_consumption_rate_watts,
                         health_percent,
                         vendor,
@@ -273,6 +299,10 @@ impl BatteryTrait for Metrics {
                         cycle_count,
                         model,
                         state,
+                        temperature,
+                        energy,
+                        energy_full,
+                        voltage,
                     });
                 }
             }

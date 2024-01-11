@@ -1,50 +1,54 @@
-import React from "react";
-import {Container, Label, Section, SectionTitle, StatItem, StatList, Value} from "./styles.ts";
+import {Container, HorizontalSection, Label, Section, SectionTitle, StatItem, StatList, Value} from "./styles.ts";
+import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 
 
-interface CpuDetail {
-    label: string;
-    value: string;
-}
+const CpuComponent = () => {
 
-interface CpuComponentProps {
-    usage: string;
-    averageLoad: CpuDetail[];
-    uptime: string;
-    processes: CpuDetail[];
-}
-const CpuComponent: React.FC<CpuComponentProps> = ({usage, averageLoad, uptime, processes}) => {
+    const { globalCpu, sysInfo, processes } = useServerEventsContext();
+
     return (
         <Container>
-            <Section>
-                <SectionTitle>Usage</SectionTitle>
-                <Value>{usage}</Value>
-            </Section>
+            <HorizontalSection>
+                <Label>Brand</Label>
+                <Value>{globalCpu[0]?.brand ?? ""}</Value>
+            </HorizontalSection>
+
+            <HorizontalSection>
+                <Label>Uptime</Label>
+                <Value>{sysInfo?.uptime ?? 0}</Value>
+            </HorizontalSection>
+
 
             <Section>
                 <SectionTitle>Average load</SectionTitle>
                 <StatList>
-                    {averageLoad.map((load, index) => (
-                        <StatItem key={index}>
-                            <Label>{load.label}</Label>
-                            <Value>{load.value}</Value>
+                        <StatItem>
+                            <Label>1 min</Label>
+                            <Value>{sysInfo?.loadAverage.one.toFixed(2) ?? 0}</Value>
                         </StatItem>
-                    ))}
-                </StatList>
-            </Section>
 
-            <Section>
-                <SectionTitle>Uptime</SectionTitle>
-                <Value>{uptime}</Value>
+                    <StatItem>
+                        <Label>5 min</Label>
+                        <Value>{sysInfo?.loadAverage.five.toFixed(2) ?? 0}</Value>
+                    </StatItem>
+
+                    <StatItem>
+                        <Label>15 min</Label>
+                        <Value>{sysInfo?.loadAverage.fifteen.toFixed(2) ?? 0}</Value>
+                    </StatItem>
+                </StatList>
             </Section>
 
             <Section>
                 <SectionTitle>Process name</SectionTitle>
                 <StatList>
-                    {processes.map((process, index) => (
+                    {[...processes]
+                        .sort((a, b) => b.cpuUsage - a.cpuUsage)
+                        .slice(0, 5)
+                        .map((process, index) => (
                         <StatItem key={index}>
-                            <Label>{index + 1}. {process.label}</Label>
-                            <Value>{process.value}</Value>
+                            <Label>{index + 1}. {process.name}</Label>
+                            <Value>{process.cpuUsage}</Value>
                         </StatItem>
                     ))}
                 </StatList>

@@ -32,7 +32,7 @@ pub fn show(app: AppState) {
             tauri::async_runtime::spawn(async move {
                 loop {
                     state.emit_sysinfo(&win);
-                    state.emit_global_cpu(&win);
+                    state.emit_global_cpus(&win);
                     state.emit_cpus(&win);
                     state.emit_memory(&win);
                     state.emit_swap(&win);

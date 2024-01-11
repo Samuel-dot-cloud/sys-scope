@@ -22,9 +22,9 @@ impl AppState {
         window.emit("emit_sysinfo", &sys_info).unwrap();
     }
 
-    pub fn emit_global_cpu(&self, window: &Window) {
-        let global_cpu = self.0.lock().unwrap().metrics.get_global_cpu();
-        window.emit("emit_global_cpu", &global_cpu).unwrap();
+    pub fn emit_global_cpus(&self, window: &Window) {
+        let global_cpu = self.0.lock().unwrap().metrics.get_global_cpus();
+        window.emit("emit_global_cpus", &global_cpu).unwrap();
     }
 
     pub fn emit_cpus(&self, window: &Window) {
