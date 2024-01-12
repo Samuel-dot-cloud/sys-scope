@@ -90,8 +90,8 @@ export interface Process {
 
 export interface DeviceBattery {
     chargePercent: number;
-    hoursUntilFull: number;
-    hoursUntilEmpty: number;
+    secsUntilFull: number;
+    secsUntilEmpty: number;
     powerConsumptionRateWatts: number;
     healthPercent: number;
     vendor: string;

@@ -124,13 +124,13 @@ impl DiskTrait for Metrics {
                 let name = match disk.name().to_str() {
                     Some("") => disk.mount_point().to_str().unwrap_or("Unknown").to_owned(),
                     Some(name) => name.to_owned(),
-                    None => "Unknown".to_owned(),
+                    None => "-----".to_owned(),
                 };
 
                 let disk_type = match disk.kind() {
                     sysinfo::DiskKind::HDD => "HDD".to_owned(),
                     sysinfo::DiskKind::SSD => "SSD".to_owned(),
-                    _ => "Unknown".to_owned(),
+                    _ => "-----".to_owned(),
                 };
 
                 let file_system = disk.file_system().to_string_lossy().to_ascii_uppercase();
@@ -226,6 +226,7 @@ impl ProcessTrait for Metrics {
     }
 }
 
+// TODO: Fix issue with get_networks returning nonsensical results
 impl NetworkTrait for Metrics {
     fn get_networks(&mut self) -> Vec<Network> {
         let networks: Vec<Network> = self
@@ -254,10 +255,10 @@ impl BatteryTrait for Metrics {
         if let Ok(batteries) = self.batteries.batteries() {
             for battery in batteries {
                 if let Ok(battery_info) = battery {
-                    let hours_until_full = battery_info.time_to_full()
-                        .map(|time| f64::from(time.get::<hour>()) as i64).unwrap_or(0);
-                    let hours_until_empty = battery_info.time_to_empty()
-                        .map(|time| f64::from(time.get::<hour>()) as i64).unwrap_or(0);
+                    let secs_until_full = battery_info.time_to_full()
+                        .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
+                    let secs_until_empty = battery_info.time_to_empty()
+                        .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
                     let charge_percent = f64::from(battery_info.state_of_charge().get::<percent>());
                     let power_consumption_rate_watts = f64::from(battery_info.energy_rate().get::<watt>());
                     let health_percent = f64::from(battery_info.state_of_health().get::<percent>());
@@ -290,8 +291,8 @@ impl BatteryTrait for Metrics {
 
                     device_batteries.push(DeviceBattery {
                         charge_percent,
-                        hours_until_full,
-                        hours_until_empty,
+                        secs_until_full,
+                        secs_until_empty,
                         power_consumption_rate_watts,
                         health_percent,
                         vendor,

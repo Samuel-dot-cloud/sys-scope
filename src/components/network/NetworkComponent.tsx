@@ -1,36 +1,30 @@
 import {Container, Icon, Label, SpeedStats, StatItem, StatList, Value} from "./styles.ts";
+import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 
-interface NetworkDetail {
-    name: string;
-    download: string;
-    upload: string;
-}
+const NetworkComponent = () => {
+    const { networks } = useServerEventsContext();
 
-interface NetworkComponentProps {
-    downloadSpeed: string;
-    uploadSpeed: string;
-    processes: NetworkDetail[];
-}
-
-const NetworkComponent: React.FC<NetworkComponentProps> = ({ downloadSpeed, uploadSpeed, processes}) => {
     return (
         <Container>
             <SpeedStats>
                 <Label>Download speed</Label>
-                <Value>{downloadSpeed}</Value>
+                <Value>{0}</Value>
             </SpeedStats>
             <SpeedStats>
                 <Label>Upload speed</Label>
-                <Value>{uploadSpeed}</Value>
+                <Value>{0}</Value>
             </SpeedStats>
 
             <StatList>
-                {processes.map((process, index) => (
+                {[...networks]
+                    .sort((a, b) => b.data[0].transmitted - a.data[0].transmitted)
+                    .slice(0, 5)
+                    .map((network, index) => (
                     <StatItem key={index}>
-                        <Label>{index + 1}. {process.name}</Label>
+                        <Label>{index + 1}. {network.data.at(-1)?.name}</Label>
                         <Value>
-                            <Icon>↓</Icon>{process.download}
-                            <Icon>↑</Icon>{process.upload}
+                            <Icon>↓</Icon>{network.data.at(-1)?.received}
+                            <Icon>↑</Icon>{network.data.at(-1)?.transmitted}
                         </Value>
                     </StatItem>
                 ))}

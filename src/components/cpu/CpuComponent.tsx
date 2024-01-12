@@ -1,5 +1,6 @@
 import {Container, HorizontalSection, Label, Section, SectionTitle, StatItem, StatList, Value} from "./styles.ts";
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
+import {convertTime} from "../../utils/FrontendUtils.ts";
 
 
 const CpuComponent = () => {
@@ -10,12 +11,12 @@ const CpuComponent = () => {
         <Container>
             <HorizontalSection>
                 <Label>Brand</Label>
-                <Value>{globalCpu[0]?.brand ?? ""}</Value>
+                <Value>{globalCpu[0]?.brand}</Value>
             </HorizontalSection>
 
             <HorizontalSection>
                 <Label>Uptime</Label>
-                <Value>{sysInfo?.uptime ?? 0}</Value>
+                <Value>{convertTime(sysInfo?.uptime)}</Value>
             </HorizontalSection>
 
 
@@ -24,17 +25,17 @@ const CpuComponent = () => {
                 <StatList>
                         <StatItem>
                             <Label>1 min</Label>
-                            <Value>{sysInfo?.loadAverage.one.toFixed(2) ?? 0}</Value>
+                            <Value>{sysInfo?.loadAverage.one.toFixed(2)}</Value>
                         </StatItem>
 
                     <StatItem>
                         <Label>5 min</Label>
-                        <Value>{sysInfo?.loadAverage.five.toFixed(2) ?? 0}</Value>
+                        <Value>{sysInfo?.loadAverage.five.toFixed(2)}</Value>
                     </StatItem>
 
                     <StatItem>
                         <Label>15 min</Label>
-                        <Value>{sysInfo?.loadAverage.fifteen.toFixed(2) ?? 0}</Value>
+                        <Value>{sysInfo?.loadAverage.fifteen.toFixed(2)}</Value>
                     </StatItem>
                 </StatList>
             </Section>

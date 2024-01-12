@@ -131,8 +131,8 @@ pub trait ProcessTrait {
 #[serde(rename_all = "camelCase")]
 pub struct DeviceBattery {
     pub charge_percent: f64,
-    pub hours_until_full: i64,
-    pub hours_until_empty: i64,
+    pub secs_until_full: i64,
+    pub secs_until_empty: i64,
     pub power_consumption_rate_watts: f64,
     pub health_percent: f64,
     pub vendor: String,

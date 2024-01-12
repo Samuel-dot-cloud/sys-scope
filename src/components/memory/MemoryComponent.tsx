@@ -1,41 +1,40 @@
 import {Container, Label, Section, StatItem, StatList, Title, Value} from "./styles.ts";
+import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
+import {convertBytes, Unit} from "../../utils/FrontendUtils.ts";
 
-interface MemoryDetail {
-    label: string;
-    value: string | number;
-}
+const MemoryComponent = () => {
+    const { memory, processes } = useServerEventsContext();
+    const memoryDetail = memory.at(-1);
 
-interface ProcessDetail {
-    name: string;
-    ram: string;
-}
-
-interface MemoryComponentProps {
-    memoryDetails: MemoryDetail[];
-    processes: ProcessDetail[];
-}
-
-const MemoryComponent: React.FC<MemoryComponentProps> = ({ memoryDetails, processes}) => {
     return (
         <Container>
             <Section>
                 <StatList>
-                    {memoryDetails.map((detail, index) => (
-                        <StatItem key={index}>
-                            <Label>{detail.label}</Label>
-                            <Value>{detail.value}</Value>
+                        <StatItem>
+                            <Label>Total RAM</Label>
+                            <Value>{convertBytes(memoryDetail?.total ?? 0, Unit.GB).toFixed(0) + " GB"}</Value>
                         </StatItem>
-                    ))}
+                    <StatItem>
+                        <Label>Free RAM</Label>
+                        <Value>{convertBytes(memoryDetail?.free ?? 0, Unit.GB).toFixed(0) + " GB"}</Value>
+                    </StatItem>
+                    <StatItem>
+                        <Label>Used RAM</Label>
+                        <Value>{convertBytes(memoryDetail?.used ?? 0, Unit.GB).toFixed(0) + " GB"}</Value>
+                    </StatItem>
                 </StatList>
             </Section>
 
             <Section>
                 <Title>Process name</Title>
                 <StatList>
-                    {processes.map((process, index) => (
+                    {[...processes]
+                        .sort((a, b) => b.memoryUsage - a.memoryUsage)
+                        .slice(0, 5)
+                        .map((process, index) => (
                         <StatItem key={index}>
                             <Label>{index + 1}. {process.name}</Label>
-                            <Value>{process.ram}</Value>
+                            <Value>{convertBytes(process.memoryUsage, Unit.MB).toFixed(0) + " MB"}</Value>
                         </StatItem>
                     ))}
                 </StatList>
