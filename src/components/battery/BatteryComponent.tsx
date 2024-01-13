@@ -15,7 +15,7 @@ const BatteryComponent = () => {
     const powerDetails: BatteryDetail[] = [
         {label: 'Vendor', value: battery?.vendor},
         {label: 'Percentage', value: `${battery?.chargePercent.toFixed(1)}%`},
-        {label: 'Charging state', value: battery?.state},
+        {label: 'State', value: battery?.state},
         {label: 'Cycle Count', value: battery?.cycleCount},
         {label: 'Technology', value: battery?.technology},
         {label: 'Maximum Battery Capacity', value: `${battery?.healthPercent.toFixed(0)}%`},

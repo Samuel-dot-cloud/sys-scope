@@ -5,7 +5,7 @@ import {convertTime} from "../../utils/FrontendUtils.ts";
 
 const CpuComponent = () => {
 
-    const { globalCpu, sysInfo, processes } = useServerEventsContext();
+    const {globalCpu, sysInfo, processes} = useServerEventsContext();
 
     return (
         <Container>
@@ -23,10 +23,10 @@ const CpuComponent = () => {
             <Section>
                 <SectionTitle>Average load</SectionTitle>
                 <StatList>
-                        <StatItem>
-                            <Label>1 min</Label>
-                            <Value>{sysInfo?.loadAverage.one.toFixed(2)}</Value>
-                        </StatItem>
+                    <StatItem>
+                        <Label>1 min</Label>
+                        <Value>{sysInfo?.loadAverage.one.toFixed(2)}</Value>
+                    </StatItem>
 
                     <StatItem>
                         <Label>5 min</Label>
@@ -47,11 +47,11 @@ const CpuComponent = () => {
                         .sort((a, b) => b.cpuUsage - a.cpuUsage)
                         .slice(0, 5)
                         .map((process, index) => (
-                        <StatItem key={index}>
-                            <Label>{index + 1}. {process.name}</Label>
-                            <Value>{process.cpuUsage}</Value>
-                        </StatItem>
-                    ))}
+                            <StatItem key={index}>
+                                <Label>{index + 1}. {process.name}</Label>
+                                <Value>{process.cpuUsage}%</Value>
+                            </StatItem>
+                        ))}
                 </StatList>
             </Section>
         </Container>

@@ -1,12 +1,12 @@
-use std::{thread, time};
+use std::thread;
 use starship_battery::Manager;
 use starship_battery::units::electric_potential::volt;
-use starship_battery::units::energy::{megajoule, megawatt_hour, watt_hour};
-use starship_battery::units::power::{gigawatt, watt};
+use starship_battery::units::energy::megajoule;
+use starship_battery::units::power::watt;
 use starship_battery::units::ratio::percent;
 use starship_battery::units::thermodynamic_temperature::degree_celsius;
-use starship_battery::units::time::{hour, second};
-use sysinfo::{CpuRefreshKind, Disks, Networks, RefreshKind, System};
+use starship_battery::units::time::second;
+use sysinfo::{Disks, Networks, System};
 use crate::models::{BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage, Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait};
 use crate::utils::{current_time, get_percentage, round};
 
@@ -31,9 +31,6 @@ impl Default for Metrics {
 impl SystemInformationTrait for Metrics {
     fn get_system_information(&mut self) -> SysInfo {
         self.sys.refresh_all();
-
-        // TODO: Toy with this system update logic to get as accurate results as possible.
-        thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
 
         let kernel_version = System::kernel_version().unwrap_or("Unknown".to_string());
         let os_version = System::long_os_version().unwrap_or("Unknown".to_string());
@@ -60,13 +57,13 @@ impl SystemInformationTrait for Metrics {
 
 impl GlobalCpuTrait for Metrics {
     fn get_global_cpus(&mut self) -> Vec<GlobalCpu> {
+        self.sys.refresh_cpu();
+        thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
+        self.sys.refresh_cpu();
+
         let mut global_cpus: Vec<GlobalCpu> = Vec::new();
 
-        let system = System::new_with_specifics(
-            RefreshKind::new().with_cpu(CpuRefreshKind::everything())
-        );
-
-        for cpu  in system.cpus() {
+        for cpu  in self.sys.cpus() {
             let usage = if cpu.cpu_usage().is_nan() {
                 0.0
             } else {
@@ -92,6 +89,8 @@ impl GlobalCpuTrait for Metrics {
 
 impl CpuTrait for Metrics {
     fn get_cpus(&mut self) -> Vec<Cpu> {
+        self.sys.refresh_cpu();
+        thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
         self.sys.refresh_cpu();
 
         let cpus: Vec<Cpu> = self

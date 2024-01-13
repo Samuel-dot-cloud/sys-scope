@@ -13,5 +13,5 @@ pub fn get_percentage(value: &u64, total: &u64) -> f64 {
 }
 
 pub fn round(x: f32) -> f32 {
-    (x * 100.0).round() / 100.0
+    (x * 1000.0).round() / 100.0
 }
