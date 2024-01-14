@@ -10,16 +10,16 @@ export const AppContainer = styled.div`
 export const Sidebar = styled.div`
     width: 200px;
     background: transparent;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    //color: #ffffff;
+    border-right: 1px solid ${props => `rgba(${props.theme.borderRgba})`};
     padding: 40px 20px 20px;
 `;
 
 export const SidebarItem = styled.div`
     cursor: pointer;
+    color: ${props => props.theme.text};
     padding: 10px;
     &:hover {
-        background-color: #333;
+        background-color: ${props => `rgba(${props.theme.hoverRgba})`};
         border-radius: 10px;
     }
     &.active {

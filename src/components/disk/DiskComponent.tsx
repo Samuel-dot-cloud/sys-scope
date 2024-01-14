@@ -1,6 +1,6 @@
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import {convertBytes, Unit} from "../../utils/FrontendUtils.ts";
-import {Container, Label, StatItem, StatList, Value} from "./styles.ts";
+import {Container, Label, StatItem, StatList, Value} from "../../styles/globals.ts";
 
 interface DiskDetail {
     name: string;

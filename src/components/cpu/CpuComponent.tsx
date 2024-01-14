@@ -1,6 +1,7 @@
-import {Container, HorizontalSection, Label, Section, SectionTitle, StatItem, StatList, Value} from "./styles.ts";
+import {StatList} from "./styles.ts";
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import {convertTime} from "../../utils/FrontendUtils.ts";
+import {Container, HorizontalSection, Label, Section, SectionTitle, StatItem, Value} from "../../styles/globals.ts";
 
 
 const CpuComponent = () => {

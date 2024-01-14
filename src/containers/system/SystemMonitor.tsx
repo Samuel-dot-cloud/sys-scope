@@ -54,11 +54,11 @@ const SystemMonitor: React.FC = () => {
                         onClick={() => setActiveItem('battery')}
                     >Battery
                     </SidebarItem>
-                    <SidebarItem
-                        className={activeItem == 'network' ? 'active' : ''}
-                        onClick={() => setActiveItem('network')}
-                    >Network
-                    </SidebarItem>
+                    {/*<SidebarItem*/}
+                    {/*    className={activeItem == 'network' ? 'active' : ''}*/}
+                    {/*    onClick={() => setActiveItem('network')}*/}
+                    {/*>Network*/}
+                    {/*</SidebarItem>*/}
                 </Sidebar>
                 <Content>
                     {renderActiveComponent()}

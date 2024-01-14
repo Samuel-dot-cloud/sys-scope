@@ -1,6 +1,6 @@
-import {Container, Label, Section, StatItem, StatList, Title, Value} from "./styles.ts";
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import {convertBytes, Unit} from "../../utils/FrontendUtils.ts";
+import {Container, Label, Section, StatItem, StatList, Title, Value} from "../../styles/globals.ts";
 
 const MemoryComponent = () => {
     const { memory, processes } = useServerEventsContext();

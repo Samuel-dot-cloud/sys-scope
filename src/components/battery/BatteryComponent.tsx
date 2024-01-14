@@ -1,6 +1,6 @@
-import {Container, Label, StatItem, StatList, Value} from "./styles.ts";
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import {formatTime} from "../../utils/FrontendUtils.ts";
+import {Container, Label, StatItem, StatList, Value} from "../../styles/globals.ts";
 
 
 interface BatteryDetail {

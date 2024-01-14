@@ -9,8 +9,7 @@ export const FooterContainer = styled.div`
     align-items: center;
     padding: 5px 20px;
     background: transparent;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    //color: #ffffff;
+    border-top: 1px solid ${props => `rgba(${props.theme.borderRgba})`};
 `;
 
 export const AppNameContainer = styled.div`
@@ -24,14 +23,17 @@ export const AppIcon = styled(Discord)`
 
 export const AppleIcon = styled(Apple)`
     margin-left: 10px;
+    color: ${props => props.theme.text};
 `;
 
 export const AppName = styled.span`
     font-weight: bold;
+    color: ${props => props.theme.text};
 `;
 
 export const SettingsIcon = styled(Settings2Outline)`
     cursor: pointer;
+    color: ${props => props.theme.text};
     &:hover {
         opacity: 0.8;
     }
