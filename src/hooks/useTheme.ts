@@ -1,21 +1,14 @@
-import {DefaultTheme} from "styled-components";
-import {createContext, useContext} from "react";
-import {light} from "../styles/themes.ts";
+import {useContext} from "react";
+import {ThemeContext} from "../providers/ThemeProvider.tsx";
 
+export const useTheme = () => {
+    const context = useContext(ThemeContext);
+    if (context === undefined) {
+        throw new Error('useTheme must be used within a ThemeProvider');
+    }
 
-export interface ThemeContextType {
-    theme: DefaultTheme;
-    toggleTheme: () => void;
+    return context;
 }
 
-export const ThemeContext = createContext<ThemeContextType>({
-    theme: light,
-    toggleTheme: () => {
 
-    },
-});
 
-export const useTheme = (): ThemeContextType => {
-    const {theme, toggleTheme} = useContext(ThemeContext);
-    return { theme, toggleTheme };
-}

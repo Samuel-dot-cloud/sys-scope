@@ -1,16 +1,36 @@
 import React, {useState} from "react";
 import CpuComponent from "../../components/cpu/CpuComponent.tsx";
-import {AppContainer, AppWindow, Content, Sidebar, SidebarItem} from "./styles.ts";
+import {
+    AppContainer,
+    AppWindow,
+    BatteryIcon,
+    Content,
+    CpuIcon,
+    DiskIcon,
+    MemoryIcon,
+    Sidebar,
+    SidebarItem
+} from "./styles.ts";
 import MemoryComponent from "../../components/memory/MemoryComponent.tsx";
 import BatteryComponent from "../../components/battery/BatteryComponent.tsx";
 import NetworkComponent from "../../components/network/NetworkComponent.tsx";
 import FooterComponent from "../../components/footer/FooterComponent.tsx";
 import DiskComponent from "../../components/disk/DiskComponent.tsx";
+import SettingsDialog from "../../components/settings/SettingsDialog.tsx";
 
 type SidebarItemType = 'cpu' | 'memory' | 'disk' | 'battery' | 'network';
 
 const SystemMonitor: React.FC = () => {
     const [activeItem, setActiveItem] = useState<SidebarItemType>('cpu');
+    const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+
+    const showSettingsDialog = () => {
+        setIsDialogVisible(true);
+    }
+
+    const hideSettingsDialog = () => {
+        setIsDialogVisible(false);
+    }
 
 
     const renderActiveComponent = () => {
@@ -37,22 +57,26 @@ const SystemMonitor: React.FC = () => {
                     <SidebarItem
                         className={activeItem == 'cpu' ? 'active' : ''}
                         onClick={() => setActiveItem('cpu')}
-                    >CPU
+                    >
+                       <CpuIcon/> CPU
                     </SidebarItem>
                     <SidebarItem
                         className={activeItem == 'memory' ? 'active' : ''}
                         onClick={() => setActiveItem('memory')}
-                    >Memory
+                    >
+                        <MemoryIcon/> Memory
                     </SidebarItem>
                     <SidebarItem
                         className={activeItem == 'disk' ? 'active' : ''}
                         onClick={() => setActiveItem('disk')}
-                    >Disk
+                    >
+                        <DiskIcon/> Disk
                     </SidebarItem>
                     <SidebarItem
                         className={activeItem == 'battery' ? 'active' : ''}
                         onClick={() => setActiveItem('battery')}
-                    >Battery
+                    >
+                        <BatteryIcon/> Battery
                     </SidebarItem>
                     {/*<SidebarItem*/}
                     {/*    className={activeItem == 'network' ? 'active' : ''}*/}
@@ -63,8 +87,9 @@ const SystemMonitor: React.FC = () => {
                 <Content>
                     {renderActiveComponent()}
                 </Content>
+                <SettingsDialog isVisible={isDialogVisible} onClose={hideSettingsDialog}/>
             </AppContainer>
-            <FooterComponent/>
+            <FooterComponent openSettings={showSettingsDialog}/>
         </AppWindow>
     );
 }

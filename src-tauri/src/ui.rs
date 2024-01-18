@@ -1,6 +1,7 @@
 use std::time::Duration;
 use tauri::Manager;
 use window_shadows::set_shadow;
+use tauri_plugin_theme::ThemePlugin;
 
 #[allow(unused_imports)]
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
@@ -8,6 +9,8 @@ use window_vibrancy::NSVisualEffectState;
 use crate::app::AppState;
 
 pub fn show(app: AppState) {
+    let mut ctx = tauri::generate_context!();
+
     tauri::Builder::default()
         .setup(|app| {
             let win = app.get_window("main").unwrap();
@@ -47,6 +50,7 @@ pub fn show(app: AppState) {
             Ok(())
         })
         .manage(app)
-        .run(tauri::generate_context!())
+        .plugin(ThemePlugin::init(ctx.config_mut()))
+        .run(ctx)
         .expect("error while running tauri application");
 }

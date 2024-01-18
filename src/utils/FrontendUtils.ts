@@ -36,3 +36,5 @@ export const formatTime = (seconds: number): string => {
 
     return `${hours}:${paddedMinutes}:${paddedSeconds}`;
 }
+
+export type AppTheme = 'light' | 'dark' | 'auto';

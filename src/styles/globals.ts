@@ -45,11 +45,13 @@ export const StatItem = styled.ul`
 export const Label = styled.span`
     color: ${props => props.theme.text};
     font-weight: normal;
+    font-size: 15px;
 `;
 
 export const Value = styled.span`
     color: ${props => props.theme.text};
     font-weight: lighter;
+    font-size: 15px;
 `;
 
 export const Section = styled.div`
@@ -65,14 +67,15 @@ export const HorizontalSection = styled.div`
 `;
 
 export const SectionTitle = styled.h3`
-    color: ${props => props.theme.title};
+    color: ${props => props.theme.text};
+    font-size: 15px;
     margin: 0;
     padding-bottom: 5px;
     border-bottom: 1px solid ${props => `rgba(${ props.theme.borderRgba})`};
 `;
 
 export const Title = styled.h3`
-    color: ${props => props.theme.title};
+    color: ${props => props.theme.text};
     padding-bottom: 5px;
     border-bottom: 1px solid ${props => `rgba(${ props.theme.borderRgba})`};
     margin: 0 0 10px;
