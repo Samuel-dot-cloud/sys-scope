@@ -6,29 +6,45 @@ import {
     ThemeText, TranslucentModal
 } from "./styles.ts";
 import React, {useEffect, useState} from "react";
-import {Form} from "antd";
+import {Form, Skeleton} from "antd";
 import {useTheme} from "../../hooks/useTheme.ts";
 import {AppTheme} from "../../utils/FrontendUtils.ts";
+import {autostart} from "../../lib/autostart.ts";
 
 interface SettingsDialogProps {
     isVisible: boolean;
     onClose: () => void;
 }
 
-const SettingsDialog: React.FC<SettingsDialogProps> = ({ isVisible, onClose }) => {
-    const [launchAtLogin, setLaunchAtLogin] = useState(false);
+const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => {
     const [globalHotkey, setGlobalHotkey] = useState('');
-    const { darkMode, setDarkMode } = useTheme();
+    const {darkMode, setDarkMode} = useTheme();
+    const [checked, setChecked] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (isVisible) {
-            setLaunchAtLogin(false);
+            const checkAutostart = async () => setChecked(
+                await autostart.isEnabled()
+            );
+            checkAutostart();
+            setLoading(false);
+        }
+    }, [isVisible]);
+
+    useEffect(() => {
+        if (isVisible) {
             setGlobalHotkey('');
         }
     }, [isVisible]);
 
-    const handleLaunchChange = (checked: boolean) => {
-        setLaunchAtLogin(checked);
+    const handleLaunchChange = () => {
+        if (!checked) {
+            autostart.enable();
+        } else {
+            autostart.disable();
+        }
+        setChecked(!checked);
     }
 
     const handleThemeChange = (newTheme: AppTheme) => {
@@ -70,17 +86,20 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ isVisible, onClose }) =
             title="Settings"
             open={isVisible}
             footer={null}
-            // onOk={onClose}
             onCancel={onClose}
         >
 
             <StyledForm layout="horizontal">
-                <Form.Item label="Launch at login">
-                    <StyledSwitch
-                        checked={launchAtLogin}
-                        onChange={handleLaunchChange}
+                {loading ? (
+                    <Skeleton.Avatar active size="default" shape="circle"/>
+                ) : (
+                    <Form.Item label="Launch at login">
+                        <StyledSwitch
+                            checked={checked}
+                            onChange={handleLaunchChange}
                         />
-                </Form.Item>
+                    </Form.Item>
+                )}
 
                 <Form.Item label="SysScope Hotkey">
                     <StyledInput
@@ -88,7 +107,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ isVisible, onClose }) =
                         value={globalHotkey}
                         onKeyDown={handleHotkeyChange}
                         readOnly
-                        />
+                    />
                 </Form.Item>
 
                 <Form.Item label="Appearance">

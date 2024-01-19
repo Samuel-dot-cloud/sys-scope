@@ -6,8 +6,6 @@ import {dark, light} from "../styles/themes.ts";
 import {AppTheme} from "../utils/FrontendUtils.ts";
 import useEffectAsync from "../hooks/useEffectAsync.tsx";
 
-
-
 const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
 
 interface ThemeContextProps {
@@ -39,7 +37,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     useEffect(() => {
         const updateDocumentMode = () => {
             const isSystemDarkMode = prefersDarkMode.matches;
-            let isDark;
+            let isDark: boolean;
 
             if (darkMode === "auto") {
                 isDark = isSystemDarkMode;

@@ -2,14 +2,18 @@ use std::time::Duration;
 use tauri::Manager;
 use window_shadows::set_shadow;
 use tauri_plugin_theme::ThemePlugin;
+use tauri_plugin_autostart::MacosLauncher;
 
 #[allow(unused_imports)]
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 use window_vibrancy::NSVisualEffectState;
 use crate::app::AppState;
+use crate::ui::tray::setup_tray;
 
 pub fn show(app: AppState) {
     let mut ctx = tauri::generate_context!();
+
+    let auto_start_plugin = tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None);
 
     tauri::Builder::default()
         .setup(|app| {
@@ -50,6 +54,12 @@ pub fn show(app: AppState) {
             Ok(())
         })
         .manage(app)
+        .setup(|app| {
+            setup_tray(app);
+
+            Ok(())
+        })
+        .plugin(auto_start_plugin)
         .plugin(ThemePlugin::init(ctx.config_mut()))
         .run(ctx)
         .expect("error while running tauri application");
