@@ -3,7 +3,7 @@ use tauri::{
     SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent,
 };
 
-const MAIN_WINDOW_LABEL: &str = "main";
+pub const MAIN_WINDOW_LABEL: &str = "main";
 const ABOUT_WINDOW_LABEL: &str = "about";
 const QUIT_MENU_ITEM_ID: &str = "quit";
 const SETTINGS_MENU_ITEM_ID: &str = "settings";
@@ -18,20 +18,20 @@ fn create_window_event_handler<R: Runtime>(app_handle: AppHandle<R>) -> impl Fn(
             if main_window.is_visible().unwrap() {
                 main_window.hide().unwrap();
             } else {
-                let tray_size = size.width as i32;
-                let window_size = main_window.outer_size().unwrap();
-                let window_width = window_size.width as i32;
-                let window_height = window_size.height as i32;
-
-                let tray_icon_x = position.x as i32;
-                let tray_y = position.y as i32;
-
-                let window_position = Position::Physical(PhysicalPosition {
-                    x: (tray_icon_x + (tray_size / 2)) - (window_width / 2),
-                    y: tray_y - window_height,
-                });
-
-                main_window.set_position(window_position).unwrap();
+                // let tray_size = size.width as i32;
+                // let window_size = main_window.outer_size().unwrap();
+                // let window_width = window_size.width as i32;
+                // let window_height = window_size.height as i32;
+                //
+                // let tray_icon_x = position.x as i32;
+                // let tray_y = position.y as i32;
+                //
+                // let window_position = Position::Physical(PhysicalPosition {
+                //     x: (tray_icon_x + (tray_size / 2)) - (window_width / 2),
+                //     y: tray_y - window_height,
+                // });
+                //
+                // main_window.set_position(window_position).unwrap();
                 main_window.show().unwrap();
                 main_window.set_focus().unwrap();
             }

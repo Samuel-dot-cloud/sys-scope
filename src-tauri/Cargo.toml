@@ -17,7 +17,7 @@ tauri-build = { version = "1.5.1", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.5.4", features = [ "macos-private-api", "system-tray", "dialog-all", "updater"] }
+tauri = { version = "1.5.4", features = [ "shell-open", "dialog-message", "macos-private-api", "system-tray"] }
 sysinfo = "0.30.5"
 log = "0.4.20"
 pretty_env_logger = "0.5.0"

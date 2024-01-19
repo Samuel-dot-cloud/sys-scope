@@ -8,7 +8,7 @@ use tauri_plugin_autostart::MacosLauncher;
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 use window_vibrancy::NSVisualEffectState;
 use crate::app::AppState;
-use crate::ui::tray::setup_tray;
+use crate::ui::tray::{MAIN_WINDOW_LABEL, setup_tray};
 
 pub fn show(app: AppState) {
     let mut ctx = tauri::generate_context!();
@@ -17,8 +17,10 @@ pub fn show(app: AppState) {
 
     tauri::Builder::default()
         .setup(|app| {
-            let win = app.get_window("main").unwrap();
+            let win = app.get_window(MAIN_WINDOW_LABEL).unwrap();
             let state = AppState::new();
+
+            setup_tray(app);
 
             #[cfg(target_os = "macos")]
             apply_vibrancy(
@@ -54,11 +56,6 @@ pub fn show(app: AppState) {
             Ok(())
         })
         .manage(app)
-        .setup(|app| {
-            setup_tray(app);
-
-            Ok(())
-        })
         .plugin(auto_start_plugin)
         .plugin(ThemePlugin::init(ctx.config_mut()))
         .run(ctx)

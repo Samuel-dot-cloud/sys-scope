@@ -3,7 +3,7 @@
 
 use log::debug;
 use app::app::AppState;
-use app::ui;
+use app::display;
 
 
 fn main() {
@@ -11,5 +11,5 @@ fn main() {
 
     let app = AppState::new();
 
-    ui::show(app);
+    display::show(app);
 }

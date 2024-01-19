@@ -10,12 +10,20 @@
     "version": "0.1.0"
   },
   "tauri": {
-    "allowlist": {
-      "all": false
-    },
     "systemTray": {
-      "iconPath": "icons/icon.png",
+      "iconPath": "icons/tray-icon.png",
       "iconAsTemplate": true
+    },
+    "allowlist": {
+      "all": false,
+      "dialog": {
+        "all": false,
+        "message": true
+      },
+      "shell": {
+        "all": false,
+        "open": "^https://github.com/Samuel-dot-cloud/sys-scope$"
+      }
     },
     "bundle": {
       "active": true,
@@ -32,8 +40,8 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
-      "longDescription": "",
+      "identifier": "com.samwahome.sysscope",
+      "longDescription": "A feature-packed system monitor to view resources as disk, battery, CPU and memory usage",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -42,7 +50,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "",
+      "shortDescription": "SysScope",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
