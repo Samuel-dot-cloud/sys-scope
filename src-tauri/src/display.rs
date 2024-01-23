@@ -8,6 +8,7 @@ use tauri_plugin_autostart::MacosLauncher;
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 use window_vibrancy::NSVisualEffectState;
 use crate::app::AppState;
+use crate::generators::macos::set_titlebar_style;
 use crate::ui::tray::{MAIN_WINDOW_LABEL, setup_tray};
 
 pub fn show(app: AppState) {
@@ -36,7 +37,13 @@ pub fn show(app: AppState) {
                 .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
 
             #[cfg(any(windows, target_os = "macos"))]
-            set_shadow(&win, true).unwrap();
+            {
+                set_shadow(&win, true).unwrap();
+
+                let nswindow = win.ns_window().unwrap();
+
+                unsafe { set_titlebar_style(&nswindow)};
+            }
 
             tauri::async_runtime::spawn(async move {
                 loop {
