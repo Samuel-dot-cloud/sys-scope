@@ -62,7 +62,12 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true,
+      "endpoints": [
+        "https://github.com/Samuel-dot-cloud/sys-scope/releases/latest/download/latest.json"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEEwMzFEQTIwQjhDMUVGNDUKUldSRjc4RzRJTm94b0dURG1YOEFkMmNnZ3dhYnNZS0Z0Q05md0V2VmFWN3FxT0VURUJhbTZKOG4K"
     },
     "macOSPrivateApi": true,
     "windows": [
@@ -72,10 +77,10 @@
         "hiddenTitle": true,
         "decorations": true,
         "titleBarStyle": "Visible",
-        "height": 600,
-        "resizable": true,
+        "height": 490,
+        "resizable": false,
         "title": "System Scope",
-        "width": 800
+        "width": 750
       }
     ]
   }

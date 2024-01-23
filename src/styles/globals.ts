@@ -27,7 +27,7 @@ export const GlabalStyles = createGlobalStyle`
 export const Container = styled.div`
     background-color: transparent;
     border-radius: 10px;
-    padding: 20px;
+    padding: 3px;
 `;
 
 export const StatList = styled.ul`
@@ -39,7 +39,7 @@ export const StatList = styled.ul`
 export const StatItem = styled.ul`
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 `;
 
 export const Label = styled.span`

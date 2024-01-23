@@ -49,7 +49,7 @@ pub fn show(app: AppState) {
                     state.emit_disks(&win);
                     state.emit_processes(&win);
                     state.emit_batteries(&win);
-                    std::thread::sleep(Duration::from_secs(1));
+                    tokio::time::sleep(Duration::from_secs(1)).await;
                 }
             });
 
