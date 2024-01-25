@@ -54,7 +54,7 @@ const iconStyles = css<{ isActive: boolean }>`
 
 export const LightIcon = styled(Sun)<{ isActive: boolean }>`
     ${iconStyles};
-    color: ${props => props.isActive ? 'yellow' : 'darkgrey'};
+    color: ${props => props.isActive ? 'darkkhaki' : 'darkgrey'};
 `;
 
 export const DarkIcon = styled(Moon)<{ isActive: boolean}>`
@@ -81,15 +81,16 @@ export const ThemeOptionsContainer = styled.div`
     justify-content: space-around;
 `;
 
-export const ThemeText = styled.div<{ isActive: boolean }>`
+export const ThemeText = styled.div<{ isActive: boolean, isLight: boolean }>`
     padding: 4px;
     border-radius: 4px;
     color: #ccc;
     border: 1px solid transparent;
+    margin-top: 5px;
     
     ${props => props.isActive && css`
-        background-color: whitesmoke;
-        color: black;
+        background-color: ${props => props.theme.text};
+        color: ${props.isLight ? 'white' : 'black'}
     `}
 `;
 
@@ -115,9 +116,9 @@ export const StyledInput = styled(Input)`
     color: ${props => props.theme.text};
     border: none;
     
-    &:focus {
-        box-shadow: none;
-    }
+    //&:focus {
+    //    box-shadow: none;
+    //}
     
     &::placeholder {
         color: grey;

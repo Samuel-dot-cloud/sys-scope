@@ -116,19 +116,31 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => 
                             isActive={darkMode === 'light'}
                             onClick={() => handleThemeChange('light')}>
                             <LightIcon isActive={darkMode === 'light'}/>
-                            <ThemeText isActive={darkMode === 'light'}>Light</ThemeText>
+                            <ThemeText
+                                isActive={darkMode === 'light'}
+                                isLight={true}
+                            >Light
+                            </ThemeText>
                         </ThemeOption>
                         <ThemeOption
                             isActive={darkMode === 'dark'}
                             onClick={() => handleThemeChange('dark')}>
                             <DarkIcon isActive={darkMode === 'dark'}/>
-                            <ThemeText isActive={darkMode === 'dark'}>Dark</ThemeText>
+                            <ThemeText
+                                isActive={darkMode === 'dark'}
+                                isLight={false}
+                            >Dark
+                            </ThemeText>
                         </ThemeOption>
                         <ThemeOption
                             isActive={darkMode === 'auto'}
                             onClick={() => handleThemeChange('auto')}>
                             <SystemIcon isActive={darkMode === 'auto'}/>
-                            <ThemeText isActive={darkMode === 'auto'}>System</ThemeText>
+                            <ThemeText
+                                isActive={darkMode === 'auto'}
+                                isLight={false}
+                            >System
+                            </ThemeText>
                         </ThemeOption>
                     </ThemeOptionsContainer>
                 </Form.Item>
