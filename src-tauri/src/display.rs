@@ -4,12 +4,10 @@ use window_shadows::set_shadow;
 use tauri_plugin_theme::ThemePlugin;
 use tauri_plugin_autostart::MacosLauncher;
 
-#[allow(unused_imports)]
-use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
-use window_vibrancy::NSVisualEffectState;
 use crate::app::AppState;
-use crate::generators::macos::set_titlebar_style;
+use crate::generators::macos::set_transparent_titlebar;
 use crate::ui::tray::{MAIN_WINDOW_LABEL, setup_tray};
+use crate::ui::window::decorate_window;
 
 pub fn show(app: AppState) {
     let mut ctx = tauri::generate_context!();
@@ -23,18 +21,7 @@ pub fn show(app: AppState) {
 
             setup_tray(app);
 
-            #[cfg(target_os = "macos")]
-            apply_vibrancy(
-                &win,
-                NSVisualEffectMaterial::Popover,
-                Some(NSVisualEffectState::FollowsWindowActiveState),
-                Some(8.0),
-            )
-                .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
-
-            #[cfg(target_os = "windows")]
-            apply_blur(&win, Some((10, 10, 10, 125)))
-                .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+            decorate_window(&win);
 
             #[cfg(any(windows, target_os = "macos"))]
             {
@@ -42,7 +29,7 @@ pub fn show(app: AppState) {
 
                 let nswindow = win.ns_window().unwrap();
 
-                unsafe { set_titlebar_style(&nswindow)};
+                unsafe { set_transparent_titlebar(&nswindow)};
             }
 
             tauri::async_runtime::spawn(async move {

@@ -6,10 +6,9 @@
 //
 
 import AppKit
-import SwiftRs
 
-@_cdecl("set_titlebar_style")
-public func setTitlebarStyle(window: NSWindow) {
+@_cdecl("set_transparent_titlebar")
+public func setTransparentTitlebar(window: NSWindow) {
     window.titlebarAppearsTransparent = true
 
     // Ensures the window is draggable by keeping the title bar area active

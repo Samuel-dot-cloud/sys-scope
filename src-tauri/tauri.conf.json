@@ -79,6 +79,7 @@
         "titleBarStyle": "Visible",
         "height": 490,
         "resizable": false,
+        "minimizable": false,
         "title": "System Scope",
         "width": 750
       }

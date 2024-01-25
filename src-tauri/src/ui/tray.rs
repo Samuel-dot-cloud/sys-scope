@@ -2,9 +2,10 @@ use tauri::{
     api::dialog, App, AppHandle, CustomMenuItem, Manager, PhysicalPosition, Position, Runtime,
     SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent,
 };
+use crate::ui::window::setup_about_window;
 
 pub const MAIN_WINDOW_LABEL: &str = "main";
-const ABOUT_WINDOW_LABEL: &str = "about";
+pub const ABOUT_WINDOW_LABEL: &str = "about";
 const QUIT_MENU_ITEM_ID: &str = "quit";
 const SETTINGS_MENU_ITEM_ID: &str = "settings";
 const CHECK_UPDATES_MENU_ITEM_ID: &str = "check_updates";
@@ -14,24 +15,23 @@ fn create_window_event_handler<R: Runtime>(app_handle: AppHandle<R>) -> impl Fn(
     let main_window = app_handle.get_window(MAIN_WINDOW_LABEL).unwrap();
 
     move |event| match event {
-        SystemTrayEvent::LeftClick { position, size, .. } => {
+        SystemTrayEvent::LeftClick { position: _position, size: _size, .. } => {
             if main_window.is_visible().unwrap() {
                 main_window.hide().unwrap();
             } else {
-                // let tray_size = size.width as i32;
-                // let window_size = main_window.outer_size().unwrap();
-                // let window_width = window_size.width as i32;
-                // let window_height = window_size.height as i32;
-                //
-                // let tray_icon_x = position.x as i32;
-                // let tray_y = position.y as i32;
-                //
-                // let window_position = Position::Physical(PhysicalPosition {
-                //     x: (tray_icon_x + (tray_size / 2)) - (window_width / 2),
-                //     y: tray_y - window_height,
-                // });
-                //
-                // main_window.set_position(window_position).unwrap();
+                let window_size = main_window.outer_size().unwrap();
+                let window_width = window_size.width as i32;
+                let window_height = window_size.height as i32;
+
+                let current_monitor = main_window.current_monitor().unwrap().unwrap();
+                let monitor_size = current_monitor.size();
+
+                let x = (monitor_size.width as i32 - window_width) / 2;
+                let y = (monitor_size.height as i32 - window_height) / 2;
+
+                let window_position = Position::Physical(PhysicalPosition { x, y });
+
+                main_window.set_position(window_position).unwrap();
                 main_window.show().unwrap();
                 main_window.set_focus().unwrap();
             }
@@ -47,13 +47,12 @@ fn create_window_event_handler<R: Runtime>(app_handle: AppHandle<R>) -> impl Fn(
                 } else {
                     std::thread::scope(|s| {
                         s.spawn(|| {
-                            // TODO: Set up about window
+                            setup_about_window(&app_handle).unwrap();
                         });
                     });
                 }
             }
             CHECK_UPDATES_MENU_ITEM_ID => {
-                // TODO: Fix up the update logic
                 let handle = app_handle.clone();
                 tauri::async_runtime::spawn(async move {
                     let another_handle = handle.clone();
