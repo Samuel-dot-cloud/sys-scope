@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import CpuComponent from "../../components/cpu/CpuComponent.tsx";
 import {
     AppContainer,
@@ -17,12 +17,22 @@ import NetworkComponent from "../../components/network/NetworkComponent.tsx";
 import FooterComponent from "../../components/footer/FooterComponent.tsx";
 import DiskComponent from "../../components/disk/DiskComponent.tsx";
 import SettingsDialog from "../../components/settings/SettingsDialog.tsx";
+import {Toaster} from "react-hot-toast";
+import {listen} from "@tauri-apps/api/event";
 
 type SidebarItemType = 'cpu' | 'memory' | 'disk' | 'battery' | 'network';
 
 const SystemMonitor: React.FC = () => {
     const [activeItem, setActiveItem] = useState<SidebarItemType>('cpu');
     const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+
+    useEffect(() => {
+        listen("settings-clicked", ({ payload } : { payload: string }) => {
+            if (payload === "show") {
+                setIsDialogVisible(true);
+            }
+        })
+    }, [])
 
     const showSettingsDialog = () => {
         setIsDialogVisible(true);
@@ -52,6 +62,10 @@ const SystemMonitor: React.FC = () => {
 
     return (
         <AppWindow>
+            <Toaster
+                position={"bottom-right"}
+                reverseOrder={false}
+            />
             <AppContainer>
                 <Sidebar>
                     <SidebarItem

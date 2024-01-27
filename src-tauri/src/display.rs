@@ -50,6 +50,9 @@ pub fn show(app: AppState) {
             Ok(())
         })
         .manage(app)
+        .invoke_handler(tauri::generate_handler![
+            crate::ui::tray::show_about_window,
+        ])
         .plugin(auto_start_plugin)
         .plugin(ThemePlugin::init(ctx.config_mut()))
         .run(ctx)

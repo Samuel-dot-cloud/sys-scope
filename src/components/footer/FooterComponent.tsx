@@ -12,24 +12,54 @@ import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import appIconImage from "../../assets/app-icon.png";
 import {Dropdown, Menu} from "antd";
 import React from "react";
+import toast from "react-hot-toast";
+import {checkUpdate, installUpdate} from "@tauri-apps/api/updater";
+import {ask, message} from "@tauri-apps/api/dialog";
+import {relaunch} from "@tauri-apps/api/process";
+import {showAboutWindow} from "../../utils/TauriUtils.ts";
 
 interface FooterComponentProps {
     openSettings: () => void;
 }
-const FooterComponent: React.FC<FooterComponentProps> = ({ openSettings }) => {
+
+const FooterComponent: React.FC<FooterComponentProps> = ({openSettings}) => {
     const {sysInfo} = useServerEventsContext();
 
-    const handleMenuClick = (menuItem: string) => {
+    const handleMenuClick = async (menuItem: string) => {
         switch (menuItem) {
             case "1":
-                console.log("About is clicked");
+                await showAboutWindow();
                 break;
             case "2":
                 openSettings();
                 break;
-            case "3":
-                console.log("Check for updates is clicked");
+            case "3": {
+                toast.loading("Checking for updates", {duration: 1000});
+                const updateStatus = checkUpdate();
+                updateStatus.then(async (result) => {
+                    console.log("The result: ", result);
+                    if (!result.shouldUpdate) {
+                        await message("There are currently no updates available.", {
+                            title: "The app is up-to-date",
+                            type: "info"
+                        });
+                    } else {
+                        const confirm = await ask("An update is available. Install now?", {
+                            title: "Install update",
+                            type: "info"
+                        });
+
+                        if (confirm) {
+                            await installUpdate();
+
+                            await relaunch();
+                        }
+                    }
+                }).catch((error) => {
+                    toast.error(`${error}`, {duration: 1500})
+                });
                 break;
+            }
             case "4":
                 console.log("Quit is clicked");
                 break;
@@ -39,7 +69,7 @@ const FooterComponent: React.FC<FooterComponentProps> = ({ openSettings }) => {
     }
 
     const settingsMenu = (
-        <TranslucentMenu onClick={({ key }) => handleMenuClick(key)}>
+        <TranslucentMenu onClick={({key}) => handleMenuClick(key)}>
             <Menu.Item key="1">
                 <MenuItemContent>
                     <InfoIcon/>

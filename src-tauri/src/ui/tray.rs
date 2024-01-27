@@ -39,18 +39,12 @@ fn create_window_event_handler<R: Runtime>(app_handle: AppHandle<R>) -> impl Fn(
         SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
             QUIT_MENU_ITEM_ID => app_handle.exit(0),
             SETTINGS_MENU_ITEM_ID => {
-                // TODO: Add logic to emit click event
+                main_window.show().unwrap();
+                main_window.emit("settings-clicked", "show").unwrap();
             },
             ABOUT_MENU_ITEM_ID => {
-                if let Some(about_window) = app_handle.get_window(ABOUT_WINDOW_LABEL) {
-                    about_window.show().unwrap();
-                } else {
-                    std::thread::scope(|s| {
-                        s.spawn(|| {
-                            setup_about_window(&app_handle).unwrap();
-                        });
-                    });
-                }
+                let handle =  app_handle.clone();
+                show_about_window(handle);
             }
             CHECK_UPDATES_MENU_ITEM_ID => {
                 let handle = app_handle.clone();
@@ -81,6 +75,19 @@ fn create_window_event_handler<R: Runtime>(app_handle: AppHandle<R>) -> impl Fn(
             id=> eprintln!("Unsupported menu item clicked {:?}", id),
         },
         _ => {}
+    }
+}
+
+#[tauri::command]
+pub fn show_about_window<R: Runtime>(app_handle: AppHandle<R>) {
+    if let Some(about_window) = app_handle.get_window(ABOUT_WINDOW_LABEL) {
+        about_window.show().unwrap();
+    } else {
+        std::thread::scope(|s| {
+            s.spawn(|| {
+                setup_about_window(&app_handle).unwrap();
+            });
+        });
     }
 }
 
