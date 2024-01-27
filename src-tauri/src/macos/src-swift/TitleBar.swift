@@ -11,7 +11,7 @@ import AppKit
 public func setTransparentTitlebar(window: NSWindow) {
     window.titlebarAppearsTransparent = true
 
-    // Ensures the window is draggable by keeping the title bar area active
+    // Ensures the window is movable by clicking and dragging anywhere in its background.
     window.isMovableByWindowBackground = true
 
     let toolbar = NSToolbar(identifier: "window_invisible_toolbar")

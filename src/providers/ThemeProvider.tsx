@@ -5,9 +5,7 @@ import {invoke} from "@tauri-apps/api/tauri";
 import {dark, light} from "../styles/themes.ts";
 import {AppTheme} from "../utils/FrontendUtils.ts";
 import useEffectAsync from "../hooks/useEffectAsync.tsx";
-import {setTheme, Theme} from "../utils/theme.ts";
-
-const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
+import {prefersDarkMode, setTheme, Theme} from "../utils/theme.ts";
 
 interface ThemeContextProps {
     darkMode: AppTheme;
@@ -28,6 +26,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     useEffect(() => {
         invoke<AppTheme>("plugin:theme|get_theme").then((theme) => {
             setDarkMode(theme || 'auto');
+            setTheme(theme === 'dark' ? Theme.Dark : Theme.Light);
         });
     }, []);
 

@@ -1,3 +1,5 @@
+export const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
+
 export const enum Theme {
     Dark = "dark",
     Light = "light",
@@ -14,7 +16,7 @@ export const setTheme = (theme: Theme) => {
 }
 
 export const followSystemTheme = () => {
-    const matchMediaPrefDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const matchMediaPrefDark = prefersDarkMode;
     const handleSystemThemeChange = (event: MediaQueryListEvent) => {
         const isDark = event.matches;
         setTheme(isDark ? Theme.Dark : Theme.Light);

@@ -10,6 +10,7 @@ import {Form, Skeleton} from "antd";
 import {useTheme} from "../../hooks/useTheme.ts";
 import {AppTheme} from "../../utils/FrontendUtils.ts";
 import {autostart} from "../../lib/autostart.ts";
+import {prefersDarkMode} from "../../utils/theme.ts";
 
 interface SettingsDialogProps {
     isVisible: boolean;
@@ -118,7 +119,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => 
                             <LightIcon isActive={darkMode === 'light'}/>
                             <ThemeText
                                 isActive={darkMode === 'light'}
-                                isLight={true}
+                                isLight={darkMode === 'light'}
                             >Light
                             </ThemeText>
                         </ThemeOption>
@@ -138,7 +139,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => 
                             <SystemIcon isActive={darkMode === 'auto'}/>
                             <ThemeText
                                 isActive={darkMode === 'auto'}
-                                isLight={false}
+                                isLight={!prefersDarkMode.matches}
                             >System
                             </ThemeText>
                         </ThemeOption>
