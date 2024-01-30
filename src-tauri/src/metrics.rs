@@ -225,7 +225,7 @@ impl ProcessTrait for Metrics {
     }
 }
 
-// TODO: Fix issue with get_networks returning nonsensical results
+// TODO: Find a means of displaying accurate network info as sysinfo crate does not cut it.
 impl NetworkTrait for Metrics {
     fn get_networks(&mut self) -> Vec<Network> {
         let networks: Vec<Network> = self

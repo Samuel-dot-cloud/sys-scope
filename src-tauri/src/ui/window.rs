@@ -25,7 +25,7 @@ pub fn decorate_window<R: Runtime>(window: &Window<R>) {
                     .expect("Unsupported platform! 'apply_acrylic' is only supported on Windows"),
                 Theme::Dark => apply_acrylic(window, Some((0, 0, 0, 50)))
                     .expect("Unsupported platform! 'apply_acrylic' is only supported on Windows"),
-                _ => todo!(),
+                _ => {},
             }
         }
 

@@ -1,21 +1,30 @@
+use std::sync::RwLock;
 use std::time::Duration;
-use tauri::Manager;
+use tauri::{Manager, Runtime};
 use window_shadows::set_shadow;
 use tauri_plugin_theme::ThemePlugin;
 use tauri_plugin_autostart::MacosLauncher;
 
 use crate::app::AppState;
 use crate::generators::macos::set_transparent_titlebar;
+use crate::helpers::fs::load_settings;
+use crate::state::Settings;
 use crate::ui::tray::{MAIN_WINDOW_LABEL, setup_tray};
 use crate::ui::window::decorate_window;
 
-pub fn show(app: AppState) {
+pub type SettingsState = RwLock<Settings>;
+
+pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> tauri::App<R> {
     let mut ctx = tauri::generate_context!();
 
     let auto_start_plugin = tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None);
 
-    tauri::Builder::default()
+   builder
+       .menu(tauri::Menu::new())
+       .manage(app)
+       .manage::<SettingsState>(RwLock::new(Settings::default()))
         .setup(|app| {
+            let app_handle = app.app_handle();
             let win = app.get_window(MAIN_WINDOW_LABEL).unwrap();
             let state = AppState::new();
 
@@ -30,6 +39,17 @@ pub fn show(app: AppState) {
                 let nswindow = win.ns_window().unwrap();
 
                 unsafe { set_transparent_titlebar(&nswindow)};
+            }
+
+            {
+                match load_settings(&app_handle) {
+                    Ok(settings) => {
+                        *app.state::<SettingsState>().write().unwrap() = settings;
+                    }
+                    Err(error) => {
+                        eprintln!("Failed to load settings with error {:?}", error)
+                    }
+                }
             }
 
             tauri::async_runtime::spawn(async move {
@@ -49,12 +69,26 @@ pub fn show(app: AppState) {
 
             Ok(())
         })
-        .manage(app)
         .invoke_handler(tauri::generate_handler![
             crate::ui::tray::show_about_window,
+            crate::commands::settings::get_settings,
+            crate::commands::settings::set_settings
         ])
         .plugin(auto_start_plugin)
         .plugin(ThemePlugin::init(ctx.config_mut()))
-        .run(ctx)
-        .expect("error while running tauri application");
+        .build(ctx)
+        .expect("error while running tauri application")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tauri::Manager;
+
+    #[test]
+    fn creates_main_window() {
+        let app_state = AppState::new();
+        let app = create_app(app_state, tauri::test::mock_builder());
+        assert!(app.get_window(MAIN_WINDOW_LABEL).is_some());
+    }
 }

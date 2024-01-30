@@ -11,6 +11,7 @@ import {useTheme} from "../../hooks/useTheme.ts";
 import {AppTheme} from "../../utils/FrontendUtils.ts";
 import {autostart} from "../../lib/autostart.ts";
 import {prefersDarkMode} from "../../utils/theme.ts";
+import {getSettings, saveSettings} from "../../utils/TauriUtils.ts";
 
 interface SettingsDialogProps {
     isVisible: boolean;
@@ -35,7 +36,17 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => 
 
     useEffect(() => {
         if (isVisible) {
-            setGlobalHotkey('');
+            const fetchSettings = async () => {
+                try {
+                    const response = await getSettings();
+                    if (response.toggleAppShortcut) {
+                        setGlobalHotkey(response.toggleAppShortcut);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch settings: ", error);
+                }
+            };
+            fetchSettings();
         }
     }, [isVisible]);
 
@@ -75,8 +86,12 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => 
             hotkeyCombination += event.key === "Backspace" ? "" : event.key.toUpperCase();
         }
 
-        console.log("Hotkey value", hotkeyCombination)
-        setGlobalHotkey(hotkeyCombination);
+        if (!hotkeyCombination.endsWith("+ ")) {
+            console.log("Hotkey value", hotkeyCombination);
+            setGlobalHotkey(hotkeyCombination);
+        } else {
+            console.log("Incomplete hotkey combination");
+        }
 
         event.preventDefault();
     }
@@ -86,7 +101,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => 
             centered={true}
             title="Settings"
             open={isVisible}
-            footer={null}
+            onOk={() => saveSettings(globalHotkey)}
             onCancel={onClose}
         >
 
