@@ -30,7 +30,12 @@ export const saveSettings = async (globalShortcut: string) => {
     const settings: SettingsPayload = {
         toggle_app_shortcut: globalShortcut || null,
     };
-    return await invoke("set_settings", {
-        newSettings: settings,
-    })
+
+    try {
+        await invoke("set_settings", {
+            newSettings: settings,
+        });
+    } catch (error) {
+        console.error("Error saving global shortcut: ", error);
+    }
 }

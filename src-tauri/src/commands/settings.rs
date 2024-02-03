@@ -46,12 +46,10 @@ pub fn set_settings<R: Runtime>(
     if let Some(toggle_app_shortcut) = &settings.toggle_app_shortcut {
         register_toggle_shortcut(&app_handle, toggle_app_shortcut)
             .map_err(|e| format!("Failed to register shortcut with error {}", e))?;
-        println!("New settings saved 1");
         if let Some(old_app_shortcut) = &old_settings.toggle_app_shortcut {
             unregister_global_shortcut(&app_handle, old_app_shortcut)
                 .map_err(|e| format!("Failed to unregister old shortcut with error {}", e))?;
         }
-        println!("New settings saved 2");
     } else if let Some(old_toggle_app_shortcut) = &old_settings.toggle_app_shortcut {
         unregister_global_shortcut(&app_handle, old_toggle_app_shortcut)
             .map_err(|e| format!("Failed to unregister old shortcut with error {}", e))?;

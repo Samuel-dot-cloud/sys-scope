@@ -12,6 +12,7 @@ import {AppTheme} from "../../utils/FrontendUtils.ts";
 import {autostart} from "../../lib/autostart.ts";
 import {prefersDarkMode} from "../../utils/theme.ts";
 import {getSettings, saveSettings} from "../../utils/TauriUtils.ts";
+import toast from "react-hot-toast";
 
 interface SettingsDialogProps {
     isVisible: boolean;
@@ -63,7 +64,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => 
         setDarkMode(newTheme)
     }
 
-    const handleHotkeyChange = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleHotkeyChange = async (event: React.KeyboardEvent<HTMLInputElement>) => {
         let hotkeyCombination = '';
 
         if (event.metaKey) {
@@ -87,8 +88,9 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => 
         }
 
         if (!hotkeyCombination.endsWith("+ ")) {
-            console.log("Hotkey value", hotkeyCombination);
             setGlobalHotkey(hotkeyCombination);
+            await saveSettings(globalHotkey)
+            toast.success("Global hotkey saved!", { duration: 1000 })
         } else {
             console.log("Incomplete hotkey combination");
         }
@@ -101,7 +103,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({isVisible, onClose}) => 
             centered={true}
             title="Settings"
             open={isVisible}
-            onOk={() => saveSettings(globalHotkey)}
+            footer={null}
             onCancel={onClose}
         >
 

@@ -28,8 +28,10 @@ pub fn register_toggle_shortcut<R: Runtime>(
             let app_handle = app_handle.clone();
             move || {
                 if let Some(window) = app_handle.get_window(MAIN_WINDOW_LABEL) {
-                    window.show().unwrap();
-                    window.set_focus().unwrap();
+                    match window.is_visible().unwrap() {
+                        true => window.hide().unwrap(),
+                        false => window.show().unwrap(),
+                    }
                 }
             }
         })?;

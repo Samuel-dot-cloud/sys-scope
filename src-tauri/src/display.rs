@@ -21,6 +21,12 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
 
    builder
        .menu(tauri::Menu::new())
+       .on_window_event(|event| {
+           if let tauri::WindowEvent::CloseRequested {api, .. } = event.event() {
+               event.window().hide().unwrap();
+               api.prevent_close();
+           }
+       })
        .manage(app)
        .manage::<SettingsState>(RwLock::new(Settings::default()))
         .setup(|app| {
@@ -30,6 +36,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
 
             setup_tray(app);
 
+            #[cfg(not(test))]
             decorate_window(&win);
 
             #[cfg(any(windows, target_os = "macos"))]
