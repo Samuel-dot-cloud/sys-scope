@@ -3,7 +3,7 @@ import {
     AppleIcon,
     AppName,
     AppNameContainer,
-    FooterContainer, InfoIcon, MenuItemContent, MenuItemText,
+    FooterContainer, InfoIcon, MenuItemContent, MenuItemText, OSInfoContainer,
     PowerIcon, QuitText,
     SettingsIcon,
     TranslucentMenu, UpdateIcon
@@ -16,7 +16,7 @@ import toast from "react-hot-toast";
 import {checkUpdate, installUpdate} from "@tauri-apps/api/updater";
 import {ask, message} from "@tauri-apps/api/dialog";
 import {relaunch} from "@tauri-apps/api/process";
-import {showAboutWindow} from "../../utils/TauriUtils.ts";
+import {showAboutWindow, shutDown} from "../../utils/TauriUtils.ts";
 
 interface FooterComponentProps {
     openSettings: () => void;
@@ -61,7 +61,7 @@ const FooterComponent: React.FC<FooterComponentProps> = ({openSettings}) => {
                 break;
             }
             case "4":
-                console.log("Quit is clicked");
+                await shutDown();
                 break;
             default:
                 console.log("Unknown menu item");
@@ -114,10 +114,10 @@ const FooterComponent: React.FC<FooterComponentProps> = ({openSettings}) => {
                     <AppName>SysScope</AppName>
                 </AppNameContainer>
             </Dropdown>
-            <AppNameContainer>
+            <OSInfoContainer>
                 <AppName>{sysInfo?.osVersion}</AppName>
                 <AppleIcon size="1.5em"/>
-            </AppNameContainer>
+            </OSInfoContainer>
         </FooterContainer>
     );
 }

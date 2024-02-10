@@ -79,7 +79,8 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
         .invoke_handler(tauri::generate_handler![
             crate::ui::tray::show_about_window,
             crate::commands::settings::get_settings,
-            crate::commands::settings::set_settings
+            crate::commands::settings::set_settings,
+            crate::utils::quit_app
         ])
         .plugin(auto_start_plugin)
         .plugin(ThemePlugin::init(ctx.config_mut()))

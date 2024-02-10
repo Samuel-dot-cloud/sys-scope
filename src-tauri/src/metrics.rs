@@ -7,14 +7,18 @@ use starship_battery::units::ratio::percent;
 use starship_battery::units::thermodynamic_temperature::degree_celsius;
 use starship_battery::units::time::second;
 use sysinfo::{Disks, Networks, System};
-use crate::models::{BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage, Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait};
+use crate::models::{
+    BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage,
+    Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo,
+    SystemInformationTrait,
+};
 use crate::utils::{current_time, get_percentage, round};
 
 pub struct Metrics {
     sys: System,
     disks: Disks,
     networks: Networks,
-    batteries: Manager,
+    batteries: Option<Manager>,
 }
 
 impl Default for Metrics {
@@ -23,7 +27,7 @@ impl Default for Metrics {
             sys: System::new_all(),
             disks: Disks::new_with_refreshed_list(),
             networks: Networks::new_with_refreshed_list(),
-            batteries: Manager::new().expect("Failed to create battery manager"),
+            batteries: Manager::new().ok(),
         }
     }
 }
@@ -49,8 +53,8 @@ impl SystemInformationTrait for Metrics {
             load_average: LoadAverage {
                 one: load_average.one,
                 five: load_average.five,
-                fifteen: load_average.fifteen
-            }
+                fifteen: load_average.fifteen,
+            },
         }
     }
 }
@@ -63,7 +67,7 @@ impl GlobalCpuTrait for Metrics {
 
         let mut global_cpus: Vec<GlobalCpu> = Vec::new();
 
-        for cpu  in self.sys.cpus() {
+        for cpu in self.sys.cpus() {
             let usage = if cpu.cpu_usage().is_nan() {
                 0.0
             } else {
@@ -75,13 +79,13 @@ impl GlobalCpuTrait for Metrics {
             let vendor = cpu.vendor_id().to_owned();
 
             global_cpus.push(GlobalCpu {
-                    usage,
-                    brand,
-                    frequency,
-                    name,
-                    vendor,
-                    timestamp: current_time(),
-                });
+                usage,
+                brand,
+                frequency,
+                name,
+                vendor,
+                timestamp: current_time(),
+            });
         }
         global_cpus
     }
@@ -251,59 +255,61 @@ impl BatteryTrait for Metrics {
     fn get_batteries(&mut self) -> Vec<DeviceBattery> {
         let mut device_batteries: Vec<DeviceBattery> = Vec::new();
 
-        if let Ok(batteries) = self.batteries.batteries() {
-            for battery in batteries {
-                if let Ok(battery_info) = battery {
-                    let secs_until_full = battery_info.time_to_full()
-                        .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
-                    let secs_until_empty = battery_info.time_to_empty()
-                        .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
-                    let charge_percent = f64::from(battery_info.state_of_charge().get::<percent>());
-                    let power_consumption_rate_watts = f64::from(battery_info.energy_rate().get::<watt>());
-                    let health_percent = f64::from(battery_info.state_of_health().get::<percent>());
-                    let vendor = battery_info.vendor().unwrap_or("-----").to_owned();
-                    let technology = match battery_info.technology() {
-                        starship_battery::Technology::LeadAcid => "Lead Acid".to_string(),
-                        starship_battery::Technology::LithiumIon => "Lithium Ion".to_string(),
-                        starship_battery::Technology::LithiumPolymer => "Lithium Polymer".to_string(),
-                        starship_battery::Technology::NickelMetalHydride => "Nickel Metal Hydride".to_string(),
-                        starship_battery::Technology::NickelCadmium => "Nickel Cadmium".to_string(),
-                        starship_battery::Technology::NickelZinc => "Nickel Zinc".to_string(),
-                        starship_battery::Technology::LithiumIronPhosphate => "Lithium Iron Phosphate".to_string(),
-                        starship_battery::Technology::RechargeableAlkalineManganese => "Rechargeable Alkaline Manganese".to_string(),
-                        _ => "-----".to_string(),
-                    };
-                    let cycle_count = battery_info.cycle_count().unwrap_or(0);
-                    let model = battery_info.model().unwrap_or("Unknown").to_string();
-                    let state = match battery_info.state() {
-                        starship_battery::State::Charging => "Charging".to_string(),
-                        starship_battery::State::Discharging => "Discharging".to_string(),
-                        starship_battery::State::Empty => "Empty".to_string(),
-                        starship_battery::State::Full => "Full".to_string(),
-                        _ => "-----".to_string(),
-                    };
+        if let Some(manager) = &self.batteries {
+            if let Ok(batteries) = manager.batteries() {
+                for battery in batteries {
+                    if let Ok(battery_info) = battery {
+                        let secs_until_full = battery_info.time_to_full()
+                            .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
+                        let secs_until_empty = battery_info.time_to_empty()
+                            .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
+                        let charge_percent = f64::from(battery_info.state_of_charge().get::<percent>());
+                        let power_consumption_rate_watts = f64::from(battery_info.energy_rate().get::<watt>());
+                        let health_percent = f64::from(battery_info.state_of_health().get::<percent>());
+                        let vendor = battery_info.vendor().unwrap_or("-----").to_owned();
+                        let technology = match battery_info.technology() {
+                            starship_battery::Technology::LeadAcid => "Lead Acid".to_string(),
+                            starship_battery::Technology::LithiumIon => "Lithium Ion".to_string(),
+                            starship_battery::Technology::LithiumPolymer => "Lithium Polymer".to_string(),
+                            starship_battery::Technology::NickelMetalHydride => "Nickel Metal Hydride".to_string(),
+                            starship_battery::Technology::NickelCadmium => "Nickel Cadmium".to_string(),
+                            starship_battery::Technology::NickelZinc => "Nickel Zinc".to_string(),
+                            starship_battery::Technology::LithiumIronPhosphate => "Lithium Iron Phosphate".to_string(),
+                            starship_battery::Technology::RechargeableAlkalineManganese => "Rechargeable Alkaline Manganese".to_string(),
+                            _ => "-----".to_string(),
+                        };
+                        let cycle_count = battery_info.cycle_count().unwrap_or(0);
+                        let model = battery_info.model().unwrap_or("Unknown").to_string();
+                        let state = match battery_info.state() {
+                            starship_battery::State::Charging => "Charging".to_string(),
+                            starship_battery::State::Discharging => "Discharging".to_string(),
+                            starship_battery::State::Empty => "Empty".to_string(),
+                            starship_battery::State::Full => "Full".to_string(),
+                            _ => "-----".to_string(),
+                        };
 
-                    let temperature = f64::from(battery_info.temperature().unwrap().get::<degree_celsius>());
-                    let energy = f64::from(battery_info.energy().get::<megajoule>());
-                    let energy_full = f64::from(battery_info.energy_full().get::<megajoule>());
-                    let voltage = f64::from(battery_info.voltage().get::<volt>());
+                        let temperature = f64::from(battery_info.temperature().unwrap().get::<degree_celsius>());
+                        let energy = f64::from(battery_info.energy().get::<megajoule>());
+                        let energy_full = f64::from(battery_info.energy_full().get::<megajoule>());
+                        let voltage = f64::from(battery_info.voltage().get::<volt>());
 
-                    device_batteries.push(DeviceBattery {
-                        charge_percent,
-                        secs_until_full,
-                        secs_until_empty,
-                        power_consumption_rate_watts,
-                        health_percent,
-                        vendor,
-                        technology,
-                        cycle_count,
-                        model,
-                        state,
-                        temperature,
-                        energy,
-                        energy_full,
-                        voltage,
-                    });
+                        device_batteries.push(DeviceBattery {
+                            charge_percent,
+                            secs_until_full,
+                            secs_until_empty,
+                            power_consumption_rate_watts,
+                            health_percent,
+                            vendor,
+                            technology,
+                            cycle_count,
+                            model,
+                            state,
+                            temperature,
+                            energy,
+                            energy_full,
+                            voltage,
+                        });
+                    }
                 }
             }
         }

@@ -25,6 +25,11 @@ export const AppNameContainer = styled.div`
     cursor: pointer;
 `;
 
+export const OSInfoContainer = styled.div`
+    display: flex;
+    align-items: center;
+`;
+
 export const AppIcon = styled.img<AppIconProps>`
     width: ${props => props.size};
     height: ${props => props.size};

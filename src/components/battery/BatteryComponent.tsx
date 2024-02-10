@@ -14,11 +14,11 @@ const BatteryComponent = () => {
 
     const powerDetails: BatteryDetail[] = [
         {label: 'Vendor', value: battery?.vendor},
-        {label: 'Percentage', value: `${battery?.chargePercent.toFixed(1)}%`},
+        // {label: 'Percentage', value: `${battery?.chargePercent.toFixed(1)}%`},
         {label: 'State', value: battery?.state},
         {label: 'Cycle Count', value: battery?.cycleCount},
         {label: 'Technology', value: battery?.technology},
-        {label: 'Maximum Battery Capacity', value: `${battery?.healthPercent.toFixed(0)}%`},
+        // {label: 'Maximum Battery Capacity', value: `${battery?.healthPercent.toFixed(0)}%`},
         {label: 'Time to full battery', value: formatTime(battery?.secsUntilFull ?? 0)},
         {label: 'Time to empty battery', value: formatTime(battery?.secsUntilEmpty ?? 0)},
         {label: 'Temperature', value: `${battery?.temperature.toFixed(1)} °C`},

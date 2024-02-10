@@ -1,4 +1,5 @@
 use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::{AppHandle, Runtime};
 use crate::models::Timestamp;
 
 pub fn current_time() -> Timestamp {
@@ -14,6 +15,11 @@ pub fn get_percentage(value: &u64, total: &u64) -> f64 {
 
 pub fn round(x: f32) -> f32 {
     (x * 1000.0).round() / 100.0
+}
+
+#[tauri::command]
+pub fn quit_app<R: Runtime>(app: AppHandle<R>) {
+    app.exit(0);
 }
 
 #[cfg(test)]

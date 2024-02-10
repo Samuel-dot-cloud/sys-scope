@@ -39,3 +39,11 @@ export const saveSettings = async (globalShortcut: string) => {
         console.error("Error saving global shortcut: ", error);
     }
 }
+
+export const shutDown = async () => {
+    try {
+        await invoke('quit_app');
+    } catch (error) {
+        console.error("Something went wrong trying to quit the app: ", error);
+    }
+}
