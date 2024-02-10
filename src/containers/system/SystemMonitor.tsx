@@ -1,88 +1,109 @@
-import React, {useState} from "react";
-import Section from "../../components/section/SectionComponent.tsx";
-import {AppWindow, ContentContainer, Tab, TabContainer} from "./styles.ts";
+import React, {useEffect, useState} from "react";
+import CpuComponent from "../../components/cpu/CpuComponent.tsx";
+import {
+    AppContainer,
+    AppWindow,
+    BatteryIcon,
+    Content,
+    CpuIcon,
+    DiskIcon,
+    MemoryIcon,
+    Sidebar,
+    SidebarItem
+} from "./styles.ts";
+import MemoryComponent from "../../components/memory/MemoryComponent.tsx";
+import BatteryComponent from "../../components/battery/BatteryComponent.tsx";
+import NetworkComponent from "../../components/network/NetworkComponent.tsx";
+import FooterComponent from "../../components/footer/FooterComponent.tsx";
+import DiskComponent from "../../components/disk/DiskComponent.tsx";
+import SettingsDialog from "../../components/settings/SettingsDialog.tsx";
+import {Toaster} from "react-hot-toast";
+import {listen} from "@tauri-apps/api/event";
 
-
-
-interface SectionDetails {
-    label: string;
-    value: string | number;
-}
-
-interface Section {
-    title: string;
-    details: SectionDetails[];
-    usage?: string; // Optional if you have a usage property
-}
-
-type Sections = {
-    [key: string]: Section;
-};
+type SidebarItemType = 'cpu' | 'memory' | 'disk' | 'battery' | 'network';
 
 const SystemMonitor: React.FC = () => {
-    // const [selectedItem, setSelectedItem] = useState<string | null>(null);
+    const [activeItem, setActiveItem] = useState<SidebarItemType>('cpu');
+    const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
 
-    const cpuDetails = [
-        { label: 'Average Load', value: '2.45' },
-        { label: 'Uptime', value: '13 hours ago' }
-        // Add more details as needed
-    ];
+    useEffect(() => {
+        listen("settings-clicked", ({ payload } : { payload: string }) => {
+            if (payload === "show") {
+                setIsDialogVisible(true);
+            }
+        })
+    }, [])
 
-    const memoryDetails = [
-        { label: 'Memory Used', value: '30% (~10 GB)' },
-        { label: 'Memory Used1', value: '30% 11(~10 GB)' },
-        { label: 'Memory Used2', value: '30% (~10332 GB)' },
-        { label: 'Memory Used', value: '30% (~10 GB)' },
-        // Add more details as needed
-    ];
+    const showSettingsDialog = () => {
+        setIsDialogVisible(true);
+    }
 
-    const powerDetails = [
-        { label: 'Battery Level', value: '98%' },
-        { label: 'Charging', value: 'Yes' }
-        // Add more details as needed
-    ];
+    const hideSettingsDialog = () => {
+        setIsDialogVisible(false);
+    }
 
-    const networkDetails = [
-        { label: 'Download', value: '2.17 KB/s' },
-        { label: 'Upload', value: '0 B/s' }
-        // Add more details as needed
-    ];
 
-    const [activeSection, setActiveSection] = useState<string>('cpu');
-
-    const sections: Sections  = {
-        cpu: { title: 'CPU', details: cpuDetails },
-        memory: { title: 'Memory', details: memoryDetails },
-        power: { title: 'Power', details: powerDetails },
-        network: { title: 'Network', details: networkDetails },
+    const renderActiveComponent = () => {
+        switch (activeItem) {
+            case "cpu":
+                return <CpuComponent/>;
+            case "memory":
+                return <MemoryComponent />;
+            case "disk":
+                return <DiskComponent />;
+            case "battery":
+                return <BatteryComponent />;
+            case "network":
+                return <NetworkComponent/>
+            default:
+                return null;
+        }
     };
 
     return (
         <AppWindow>
-            {/* Sidebar */}
-            <TabContainer>
-                {Object.keys(sections).map((key) => {
-                    const sectionKey: string = key;
-                    return (
-                        <Tab
-                            key={sectionKey}
-                            className={activeSection === sectionKey ? 'active' : ''}
-                            onClick={() => setActiveSection(sectionKey)}
-                        >
-                            {sections[sectionKey].title}
-                        </Tab>
-                    );
-                })}
-            </TabContainer>
-
-            {/* Main Content */}
-            <ContentContainer>
-                <Section
-                    title={sections[activeSection].title}
-                    usage={sections[activeSection].usage || 'N/A'} // Provide a default value
-                    details={sections[activeSection].details}
-                />
-            </ContentContainer>
+            <Toaster
+                position={"bottom-right"}
+                reverseOrder={false}
+            />
+            <AppContainer>
+                <Sidebar>
+                    <SidebarItem
+                        className={activeItem == 'cpu' ? 'active' : ''}
+                        onClick={() => setActiveItem('cpu')}
+                    >
+                       <CpuIcon/> CPU
+                    </SidebarItem>
+                    <SidebarItem
+                        className={activeItem == 'memory' ? 'active' : ''}
+                        onClick={() => setActiveItem('memory')}
+                    >
+                        <MemoryIcon/> Memory
+                    </SidebarItem>
+                    <SidebarItem
+                        className={activeItem == 'disk' ? 'active' : ''}
+                        onClick={() => setActiveItem('disk')}
+                    >
+                        <DiskIcon/> Disk
+                    </SidebarItem>
+                    <SidebarItem
+                        className={activeItem == 'battery' ? 'active' : ''}
+                        onClick={() => setActiveItem('battery')}
+                    >
+                        <BatteryIcon/> Battery
+                    </SidebarItem>
+                    {/*<SidebarItem*/}
+                    {/*    className={activeItem == 'network' ? 'active' : ''}*/}
+                    {/*    onClick={() => setActiveItem('network')}*/}
+                    {/*>Network*/}
+                    {/*</SidebarItem>*/}
+                </Sidebar>
+                <Content>
+                    {renderActiveComponent()}
+                </Content>
+                <SettingsDialog isVisible={isDialogVisible} onClose={hideSettingsDialog}/>
+            </AppContainer>
+            <FooterComponent openSettings={showSettingsDialog}/>
         </AppWindow>
     );
 }

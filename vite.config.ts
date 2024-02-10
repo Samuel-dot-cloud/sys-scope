@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  appType: "mpa",
   plugins: [react()],
   // prevent vite from obscuring rust errors
   clearScreen: false,
@@ -19,5 +21,11 @@ export default defineConfig({
     minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
+    rollupOptions: {
+      input: {
+        index: resolve(__dirname, 'index.html'),
+        about: resolve(__dirname, 'src/pages/about/about.html'),
+      },
+    },
   },
 })

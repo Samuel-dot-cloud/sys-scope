@@ -1,8 +1,23 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use tauri::RunEvent;
+use app::app::AppState;
+use app::display;
+use app::helpers::shortcut::setup_shortcut;
+
+
 fn main() {
-  tauri::Builder::default()
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    pretty_env_logger::init();
+
+    let app_state = AppState::new();
+
+    let app = display::create_app(app_state, tauri::Builder::default());
+
+    app.run(move |app_handle, e| {
+        if matches!(e, RunEvent::Ready) {
+            setup_shortcut(app_handle);
+        }
+    });
+
 }
