@@ -1,0 +1,77 @@
+@import "@fontsource-variable/rubik";
+
+body {
+    font-family: 'Rubik Variable', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: whitesmoke;
+}
+
+.about-container {
+    text-align: center;
+    background-color: transparent;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.app-image img {
+    width: 80px;
+    height: auto;
+    border-radius: 50%;
+}
+
+.app-info {
+    margin-top: 8px;
+}
+
+.app-name {
+    color: black;
+    font-size: 25px;
+    margin: 10px 0;
+}
+
+.app-description {
+    color: black;
+    font-size: 14px;
+}
+
+.repo-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #0077cc;
+    text-decoration: none;
+    border: 1px solid #0077cc;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.repo-link:hover {
+    background-color: #0077cc;
+    color: white;
+}
+
+html[data-theme='dark'] {
+    body {
+        background-color: #333333;
+        color: #f4f4f4;
+    }
+
+    .app-name,
+    .app-description,
+    .repo-link {
+        color: #f4f4f4;
+    }
+
+    .repo-link {
+        border-color: #f4f4f4;
+    }
+
+    .repo-link:hover {
+        background-color: #f4f4f4;
+        color: #333333;
+    }
+}
