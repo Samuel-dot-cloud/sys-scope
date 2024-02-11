@@ -19,17 +19,25 @@ runs:
           src-tauri
         shared-key: base-env
 
-    # Install Xcode Command Line Tools
-    - name: Install Xcode Command Line Tools
+    - name: Check Swift version
       shell: bash
-      run: |
-        sudo xcode-select --install || true
-        sudo xcode-select --reset
+      run: swift --version
 
-    # Set DYLD_LIBRARY_PATH to include the path to Swift runtime libraries
-    - name: Set DYLD_LIBRARY_PATH
+    - name: Locate libswiftCore.dylib
       shell: bash
-      run: echo "DYLD_LIBRARY_PATH=$(xcrun --show-sdk-path)/usr/lib/swift" >> $GITHUB_ENV
+      run: find $(xcrun --show-sdk-path) -name libswiftCore.dylib
+
+#    # Install Xcode Command Line Tools
+#    - name: Install Xcode Command Line Tools
+#      shell: bash
+#      run: |
+#        sudo xcode-select --install || true
+#        sudo xcode-select --reset
+#
+#    # Set DYLD_LIBRARY_PATH to include the path to Swift runtime libraries
+#    - name: Set DYLD_LIBRARY_PATH
+#      shell: bash
+#      run: echo "DYLD_LIBRARY_PATH=$(xcrun --show-sdk-path)/usr/lib/swift" >> $GITHUB_ENV
 
     - name: Install frontend dependencies
       shell: bash
