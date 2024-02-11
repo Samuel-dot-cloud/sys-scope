@@ -45,6 +45,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
 
                 let nswindow = win.ns_window().unwrap();
 
+                #[cfg(not(test))]
                 unsafe { set_transparent_titlebar(&nswindow)};
             }
 
