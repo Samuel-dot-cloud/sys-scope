@@ -19,9 +19,9 @@ runs:
           src-tauri
         shared-key: base-env
 
-    - name: Check Swift version
+    - name: Install Xcode Command Line Tools
       shell: bash
-      run: swift --version
+      run: xcode-select --install || true
 
 #    - name: Broadly locate libswiftCore.dylib
 #      shell: bash
@@ -35,9 +35,6 @@ runs:
 #        sudo xcode-select --install || true
 #        sudo xcode-select --reset
 #
-    - name: Set DYLD_LIBRARY_PATH for macOS Swift libraries
-      shell: bash
-      run: echo "DYLD_LIBRARY_PATH=/Library/Developer/CommandLineTools/usr/lib/swift-5.0/macosx:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
 
     - name: Install frontend dependencies
       shell: bash
