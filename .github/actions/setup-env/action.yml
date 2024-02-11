@@ -23,9 +23,10 @@ runs:
       shell: bash
       run: swift --version
 
-    - name: Locate libswiftCore.dylib
+    - name: Broadly locate libswiftCore.dylib
       shell: bash
-      run: find $(xcrun --show-sdk-path) -name libswiftCore.dylib
+      run: |
+        sudo find / -name libswiftCore.dylib 2>/dev/null
 
 #    # Install Xcode Command Line Tools
 #    - name: Install Xcode Command Line Tools
