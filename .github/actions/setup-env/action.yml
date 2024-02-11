@@ -19,11 +19,10 @@ runs:
           src-tauri
         shared-key: base-env
 
-    - name: Install Swift Runtime
-      shell: bash
-      run: |
-        brew install swift
-        ln -s /usr/local/opt/swift/Swift-5.8.xctoolchain ~/Library/Developer/Toolchains/Swift-5.8.xctoolchain
+    - name: Install Xcode
+      uses: maxim-lobanov/setup-xcode@v1.6.0
+      with:
+        xcode-version: latest-stable
 
     - name: Install frontend dependencies
       shell: bash
