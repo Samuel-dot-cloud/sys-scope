@@ -6,8 +6,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "sys-scope",
-    "version": "0.1.0"
+    "productName": "SysScope",
+    "version": "1.0.0"
   },
   "tauri": {
     "systemTray": {
@@ -80,7 +80,7 @@
         "height": 490,
         "resizable": false,
         "minimizable": false,
-        "title": "System Scope",
+        "title": "SysScope",
         "width": 750
       }
     ]
