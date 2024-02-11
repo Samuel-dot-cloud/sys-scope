@@ -23,7 +23,7 @@ runs:
       shell: bash
       run: |
         brew install swift
-        echo 'export PATH="/usr/local/opt/swift/bin:$PATH"' >> /Users/runner/.bash_profile
+        ln -s /usr/local/opt/swift/Swift-5.8.xctoolchain ~/Library/Developer/Toolchains/Swift-5.8.xctoolchain
 
     - name: Install frontend dependencies
       shell: bash
