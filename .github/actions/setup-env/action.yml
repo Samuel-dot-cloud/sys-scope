@@ -21,7 +21,9 @@ runs:
 
     - name: Install Swift Runtime
       shell: bash
-      run: brew install swift
+      run: |
+        brew install swift
+        echo 'export PATH="/usr/local/opt/swift/bin:$PATH"' >> /Users/runner/.bash_profile
 
     - name: Install frontend dependencies
       shell: bash
