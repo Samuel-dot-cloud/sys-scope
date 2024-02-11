@@ -23,10 +23,10 @@ runs:
       shell: bash
       run: swift --version
 
-    - name: Broadly locate libswiftCore.dylib
-      shell: bash
-      run: |
-        sudo find / -name libswiftCore.dylib 2>/dev/null
+#    - name: Broadly locate libswiftCore.dylib
+#      shell: bash
+#      run: |
+#        sudo find / -name libswiftCore.dylib 2>/dev/null
 
 #    # Install Xcode Command Line Tools
 #    - name: Install Xcode Command Line Tools
@@ -35,10 +35,9 @@ runs:
 #        sudo xcode-select --install || true
 #        sudo xcode-select --reset
 #
-#    # Set DYLD_LIBRARY_PATH to include the path to Swift runtime libraries
-#    - name: Set DYLD_LIBRARY_PATH
-#      shell: bash
-#      run: echo "DYLD_LIBRARY_PATH=$(xcrun --show-sdk-path)/usr/lib/swift" >> $GITHUB_ENV
+    - name: Set DYLD_LIBRARY_PATH for macOS Swift libraries
+      shell: bash
+      run: echo "DYLD_LIBRARY_PATH=/Library/Developer/CommandLineTools/usr/lib/swift-5.0/macosx:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
 
     - name: Install frontend dependencies
       shell: bash
