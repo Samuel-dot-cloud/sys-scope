@@ -19,11 +19,6 @@ runs:
           src-tauri
         shared-key: base-env
 
-    - name: Set up Xcode
-      uses: maxim-lobanov/setup-xcode@v1.6.0
-      with:
-        xcode-version: '15.2'
-
     - name: Install frontend dependencies
       shell: bash
       run: yarn install
