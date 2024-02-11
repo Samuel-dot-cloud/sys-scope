@@ -19,10 +19,17 @@ runs:
           src-tauri
         shared-key: base-env
 
-    - name: Install Xcode
-      uses: maxim-lobanov/setup-xcode@v1.6.0
-      with:
-        xcode-version: latest-stable
+    # Install Xcode Command Line Tools
+    - name: Install Xcode Command Line Tools
+      shell: bash
+      run: |
+        sudo xcode-select --install || true
+        sudo xcode-select --reset
+
+    # Set DYLD_LIBRARY_PATH to include the path to Swift runtime libraries
+    - name: Set DYLD_LIBRARY_PATH
+      shell: bash
+      run: echo "DYLD_LIBRARY_PATH=$(xcrun --show-sdk-path)/usr/lib/swift" >> $GITHUB_ENV
 
     - name: Install frontend dependencies
       shell: bash
