@@ -19,11 +19,15 @@ runs:
           src-tauri
         shared-key: base-env
 
-    - name: Install Xcode Command Line Tools
+    - name: Verify Swift installation
       shell: bash
-      run: xcode-select --install || true
+      run: |
+        swift --version
+        which swift
+        echo $DYLD_LIBRARY_PATH
+    
 
-#    - name: Broadly locate libswiftCore.dylib
+    #    - name: Broadly locate libswiftCore.dylib
 #      shell: bash
 #      run: |
 #        sudo find / -name libswiftCore.dylib 2>/dev/null
