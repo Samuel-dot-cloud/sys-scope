@@ -19,6 +19,10 @@ runs:
           src-tauri
         shared-key: base-env
 
+    - name: Install Swift Runtime
+      shell: bash
+      run: brew install swift
+
     - name: Install frontend dependencies
       shell: bash
       run: yarn install
