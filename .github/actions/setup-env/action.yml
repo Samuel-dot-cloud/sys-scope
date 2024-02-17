@@ -1,0 +1,24 @@
+name: 'Setup environment'
+description: 'Sets up local action environment with the necessary components'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'yarn'
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@1.75.0
+
+    - uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: |
+          src-tauri
+        shared-key: base-env
+
+    - name: Install frontend dependencies
+      shell: bash
+      run: yarn install
