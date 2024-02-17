@@ -6,8 +6,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "sys-scope",
-    "version": "0.1.0"
+    "productName": "SysScope",
+    "version": "1.0.0"
   },
   "tauri": {
     "systemTray": {
@@ -47,7 +47,8 @@
         "exceptionDomain": "",
         "frameworks": [],
         "providerShortName": null,
-        "signingIdentity": null
+        "signingIdentity": null,
+        "minimumSystemVersion": "10.15"
       },
       "resources": [],
       "shortDescription": "SysScope",
@@ -80,7 +81,7 @@
         "height": 490,
         "resizable": false,
         "minimizable": false,
-        "title": "System Scope",
+        "title": "SysScope",
         "width": 750
       }
     ]
