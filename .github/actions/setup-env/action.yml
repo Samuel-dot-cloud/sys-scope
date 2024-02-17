@@ -19,12 +19,12 @@ runs:
           src-tauri
         shared-key: base-env
 
-    - name: Verify Swift installation
-      shell: bash
-      run: |
-        swift --version
-        which swift
-        echo $DYLD_LIBRARY_PATH
+#    - name: Verify Swift installation
+#      shell: bash
+#      run: |
+#        swift --version
+#        which swift
+#        echo $DYLD_LIBRARY_PATH
     
 
     #    - name: Broadly locate libswiftCore.dylib
