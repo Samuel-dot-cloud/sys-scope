@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{matrix.platform}}
     steps:
       - name: Checkout repository
-        uses: actions/checkut@v4
+        uses: actions/checkout@v4
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
