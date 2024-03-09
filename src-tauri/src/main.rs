@@ -12,7 +12,9 @@ fn main() {
 
     let app_state = AppState::new();
 
-    let app = display::create_app(app_state, tauri::Builder::default());
+    let mut app = display::create_app(app_state, tauri::Builder::default());
+
+    app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
     app.run(move |app_handle, e| {
         if matches!(e, RunEvent::Ready) {
