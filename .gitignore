@@ -15,7 +15,7 @@ dist-ssr
 # local env files
 .env
 
-.swiftpm/*
+.swiftpm/xcode/*
 
 # Editor directories and files
 .vscode/*
