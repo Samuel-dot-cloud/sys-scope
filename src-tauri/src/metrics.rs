@@ -6,7 +6,9 @@ use starship_battery::units::power::watt;
 use starship_battery::units::ratio::percent;
 use starship_battery::units::thermodynamic_temperature::degree_celsius;
 use starship_battery::units::time::second;
+use swift_rs::SRString;
 use sysinfo::{Disks, Networks, System};
+use crate::generators::macos::fetch_battery_info;
 use crate::models::{
     BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage,
     Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo,
@@ -254,6 +256,13 @@ impl NetworkTrait for Metrics {
 impl BatteryTrait for Metrics {
     fn get_batteries(&mut self) -> Vec<DeviceBattery> {
         let mut device_batteries: Vec<DeviceBattery> = Vec::new();
+
+        // TODO: Fix issue with some values not being outputted correctly from Swift
+        let result = unsafe { fetch_battery_info() };
+        let value = result.is_charged.unwrap_or(false);
+        println!("The is charged value: {}", value);
+        let max_capacity = result.cycle.unwrap_or(0);
+        println!("The cycle value: {}", max_capacity);
 
         if let Some(manager) = &self.batteries {
             if let Ok(batteries) = manager.batteries() {

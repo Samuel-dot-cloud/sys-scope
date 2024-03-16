@@ -11,14 +11,14 @@ pub struct BatteryInfo {
     pub time_to_full: Option<Int>,
     pub time_to_empty: Option<Int>,
 
-    pub manufacturer: Option<SRString>,
+    // pub manufacturer: Option<SRString>,
     // pub manufacture_date: Option<SRString>,
 
     pub current_capacity: Option<Int>,
     pub max_capacity: Option<Int>,
     pub design_capacity: Option<Int>,
 
-    pub cycle_count: Option<Int>,
+    pub cycle: Option<Int>,
     pub design_cycle_count: Option<Int>,
 
     pub ac_powered: Option<Bool>,
@@ -32,7 +32,7 @@ pub struct BatteryInfo {
     pub charge: Option<Double>,
     pub health: Option<Double>,
 
-    // pub time_left: Option<SRString>,
+    pub time_left: Option<SRString>,
     pub time_remaining: Option<Int>,
 }
 

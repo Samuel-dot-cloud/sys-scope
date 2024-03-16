@@ -3,19 +3,19 @@ import SwiftRs
 import IOKit.ps
 
 public class BatteryInfo: NSObject {
-    var name: String?
+    var name: SRString?
     
     var timeToFull: Int?
     var timeToEmpty: Int?
     
-    var manufacturer: String?
-    var manufactureDate: String?
+//    var manufacturer: SRString?
+//    var manufactureDate: SRString?
     
     var currentCapacity: Int?
     var maxCapacity: Int?
     var designCapacity: Int?
     
-    var cycleCount: Int?
+    var cycle: Int?
     var designCycleCount: Int?
     
     var acPowered: Bool?
@@ -25,10 +25,11 @@ public class BatteryInfo: NSObject {
     var voltage: Double?
     var watts: Double?
     var temperature: Double?
+    var chargerType: SRString?
     
     var charge: Double?
     var health: Double?
-    var timeLeft: String?
+    var timeLeft: SRString?
     var timeRemaining: Int?
 }
 
@@ -47,6 +48,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     }
     
     print("Service for AppleSmartBattery found.")
+    print(service)
     
     func getIntValue(_ property: CFString) -> Int? {
         print("Attempting to get Int value for property: \(property)")
@@ -97,7 +99,11 @@ public func fetchBatteryInfo() -> BatteryInfo {
         let info = IOPSGetPowerSourceDescription(snapshot, ps).takeUnretainedValue() as! Dictionary<String, Any>
         print("Processing power source: \(info)")
         
-        batteryInfo.name = info[kIOPSNameKey] as? String
+        batteryInfo.name = SRString(info[kIOPSNameKey] as? String ?? "-----")
+        if let chargerType = info["kIOPSPowerSourceTypeKey"] as? String {
+                batteryInfo.chargerType = SRString(chargerType)
+            print("The charger type: \(chargerType)")
+        }
         batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int
         batteryInfo.timeToFull = info[kIOPSTimeToFullChargeKey] as? Int
     }
@@ -108,7 +114,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     batteryInfo.designCapacity = getIntValue("DesignCapacity" as CFString)
     
     // Battery cycles
-    batteryInfo.cycleCount = getIntValue("CycleCount" as CFString)
+    batteryInfo.cycle = getIntValue("CycleCount" as CFString)
     batteryInfo.designCycleCount = getIntValue("DesignCycleCount9C" as CFString)
     
     // Plug
@@ -124,7 +130,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     batteryInfo.temperature = getDoubleValue("Temperature" as CFString)! / 100.0
     
     // Manufacture
-    //    batteryInfo.manufacturer = getStringValue("Manufacturer" as CFString)
+//    batteryInfo.manufacturer = SRString(getStringValue("Manufacturer" as CFString) ?? "-----")
     
     // Charge
     if let current = batteryInfo.currentCapacity, let max = batteryInfo.maxCapacity {
@@ -136,12 +142,13 @@ public func fetchBatteryInfo() -> BatteryInfo {
     if let design = batteryInfo.designCapacity, let current = batteryInfo.maxCapacity {
         let value = (Double(current) / Double(design)) * 100.0
         batteryInfo.health = value
+        print("The battery health: \(value)")
     }
     
     // Time left
     if let isCharging = batteryInfo.isCharging, let minutes = isCharging ? batteryInfo.timeToFull : batteryInfo.timeToEmpty, minutes > 0 {
         let value = String(format: "%.2d:%.2d", minutes / 60, minutes % 60)
-        batteryInfo.timeLeft = value
+        batteryInfo.timeLeft = SRString(value)
     }
     
     // Time remaining
@@ -152,29 +159,27 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     
     // Manufacture date
-    if let manufactureDateInt = getIntValue("ManufactureDate" as CFString) {
-        let day = manufactureDateInt & 31
-        let month = (manufactureDateInt >> 5) & 15
-        let year = ((manufactureDateInt >> 9) & 127) + 1980
-        
-        var components = DateComponents()
-        components.day = day
-        components.month = month
-        components.year = year
-        
-        if let date = Calendar.current.date(from: components) {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "dd-MM-yyyy"
-            let dateString = dateFormatter.string(from: date)
-            print("The manufacture date: \(dateString)")
-            batteryInfo.manufactureDate = dateString
-        }
-    }
+//    if let manufactureDateInt = getIntValue("ManufactureDate" as CFString) {
+//        let day = manufactureDateInt & 31
+//        let month = (manufactureDateInt >> 5) & 15
+//        let year = ((manufactureDateInt >> 9) & 127) + 1980
+//        
+//        var components = DateComponents()
+//        components.day = day
+//        components.month = month
+//        components.year = year
+//        
+//        if let date = Calendar.current.date(from: components) {
+//            let dateFormatter = DateFormatter()
+//            dateFormatter.dateFormat = "dd-MM-yyyy"
+//            let dateString = dateFormatter.string(from: date)
+//            print("The manufacture date: \(dateString)")
+//            batteryInfo.manufactureDate = SRString(dateString)
+//        }
+//    }
     
     IOServiceClose(service)
     IOObjectRelease(service)
-    
-    print("The battery info: \(batteryInfo)")
     
     return batteryInfo
 }
