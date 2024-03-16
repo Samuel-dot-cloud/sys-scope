@@ -6,34 +6,31 @@ pub type NSObject = *mut std::ffi::c_void;
 
 #[repr(C)]
 pub struct BatteryInfo {
-    pub name: Option<SRString>,
+    pub name: SRString,
 
-    pub time_to_full: Option<Int>,
-    pub time_to_empty: Option<Int>,
+    pub time_to_full: Int,
+    pub time_to_empty: Int,
 
-    // pub manufacturer: Option<SRString>,
-    // pub manufacture_date: Option<SRString>,
+    pub current_capacity: Int,
+    pub max_capacity: Int,
+    pub design_capacity: Int,
 
-    pub current_capacity: Option<Int>,
-    pub max_capacity: Option<Int>,
-    pub design_capacity: Option<Int>,
+    pub cycle_count: Int,
+    pub design_cycle_count: Int,
 
-    pub cycle: Option<Int>,
-    pub design_cycle_count: Option<Int>,
+    pub ac_powered: Bool,
+    pub is_charging: Bool,
+    pub is_charged: Bool,
+    pub amperage: Int,
+    pub voltage: Double,
+    pub watts: Double,
+    pub temperature: Double,
 
-    pub ac_powered: Option<Bool>,
-    pub is_charging: Option<Bool>,
-    pub is_charged: Option<Bool>,
-    pub amperage: Option<Int>,
-    pub voltage: Option<Double>,
-    pub watts: Option<Double>,
-    pub temperature: Option<Double>,
+    pub charge: Double,
+    pub health: Double,
 
-    pub charge: Option<Double>,
-    pub health: Option<Double>,
-
-    pub time_left: Option<SRString>,
-    pub time_remaining: Option<Int>,
+    pub time_left: SRString,
+    pub time_remaining: Int,
 }
 
 swift!(pub fn set_transparent_titlebar(window: &NSObject));

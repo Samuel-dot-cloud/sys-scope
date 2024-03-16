@@ -3,34 +3,30 @@ import SwiftRs
 import IOKit.ps
 
 public class BatteryInfo: NSObject {
-    var name: SRString?
+    var name: SRString = SRString("-----")
     
-    var timeToFull: Int?
-    var timeToEmpty: Int?
+    var timeToFull: Int = 0
+    var timeToEmpty: Int = 0
     
-//    var manufacturer: SRString?
-//    var manufactureDate: SRString?
+    var currentCapacity: Int = 0
+    var maxCapacity: Int = 0
+    var designCapacity: Int = 0
     
-    var currentCapacity: Int?
-    var maxCapacity: Int?
-    var designCapacity: Int?
+    var cycleCount: Int = 0
+    var designCycleCount: Int = 0
     
-    var cycle: Int?
-    var designCycleCount: Int?
+    var acPowered: Bool = false
+    var isCharging: Bool = false
+    var isCharged: Bool = false
+    var amperage: Int = 0
+    var voltage: Double = 0.0
+    var watts: Double = 0.0
+    var temperature: Double = 0.0
     
-    var acPowered: Bool?
-    var isCharging: Bool?
-    var isCharged: Bool?
-    var amperage: Int?
-    var voltage: Double?
-    var watts: Double?
-    var temperature: Double?
-    var chargerType: SRString?
-    
-    var charge: Double?
-    var health: Double?
-    var timeLeft: SRString?
-    var timeRemaining: Int?
+    var charge: Double = 0.0
+    var health: Double = 0.0
+    var timeLeft: SRString = SRString("--:--")
+    var timeRemaining: Int = 0
 }
 
 @_cdecl("fetch_battery_info")
@@ -50,44 +46,44 @@ public func fetchBatteryInfo() -> BatteryInfo {
     print("Service for AppleSmartBattery found.")
     print(service)
     
-    func getIntValue(_ property: CFString) -> Int? {
+    func getIntValue(_ property: CFString) -> Int {
         print("Attempting to get Int value for property: \(property)")
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Int {
             print("Successfully got Int value for \(property): \(value)")
             return value
         }
         print("Could not get Int value for property: \(property)")
-        return nil
+        return 0
     }
     
-    func getStringValue(_ property: CFString) -> String? {
+    func getStringValue(_ property: CFString) -> String {
         print("Attempting to get String value for property: \(property)")
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? String {
             print("Successfully got String value for \(property): \(value)")
             return value
         }
         print("Could not get String value for property: \(property)")
-        return nil
+        return "-----"
     }
     
-    func getBoolValue(_ property: CFString) -> Bool? {
+    func getBoolValue(_ property: CFString) -> Bool {
         print("Attempting to get Bool value for property: \(property)")
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Bool {
             print("Successfully got Bool value for \(property): \(value)")
             return value
         }
         print("Could not get Bool value for property: \(property)")
-        return nil
+        return false
     }
     
-    func getDoubleValue(_ property: CFString) -> Double? {
+    func getDoubleValue(_ property: CFString) -> Double {
         print("Attempting to get Double value for property: \(property)")
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Double {
             print("Successfully got Double value for \(property): \(value)")
             return value
         }
         print("Could not get Double value for property: \(property)")
-        return nil
+        return 0.0
     }
     
     
@@ -100,12 +96,8 @@ public func fetchBatteryInfo() -> BatteryInfo {
         print("Processing power source: \(info)")
         
         batteryInfo.name = SRString(info[kIOPSNameKey] as? String ?? "-----")
-        if let chargerType = info["kIOPSPowerSourceTypeKey"] as? String {
-                batteryInfo.chargerType = SRString(chargerType)
-            print("The charger type: \(chargerType)")
-        }
-        batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int
-        batteryInfo.timeToFull = info[kIOPSTimeToFullChargeKey] as? Int
+        batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int ?? 0
+        batteryInfo.timeToFull = info[kIOPSTimeToFullChargeKey] as? Int ?? 0
     }
     
     // Capacities
@@ -114,7 +106,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     batteryInfo.designCapacity = getIntValue("DesignCapacity" as CFString)
     
     // Battery cycles
-    batteryInfo.cycle = getIntValue("CycleCount" as CFString)
+    batteryInfo.cycleCount = getIntValue("CycleCount" as CFString)
     batteryInfo.designCycleCount = getIntValue("DesignCycleCount9C" as CFString)
     
     // Plug
@@ -124,59 +116,44 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     // Power
     batteryInfo.amperage = getIntValue("Amperage" as CFString)
-    batteryInfo.voltage = getDoubleValue("Voltage" as CFString)! / 1000.0
+    batteryInfo.voltage = getDoubleValue("Voltage" as CFString) / 1000.0
     
     // Temperature
-    batteryInfo.temperature = getDoubleValue("Temperature" as CFString)! / 100.0
+    batteryInfo.temperature = getDoubleValue("Temperature" as CFString) / 100.0
     
-    // Manufacture
-//    batteryInfo.manufacturer = SRString(getStringValue("Manufacturer" as CFString) ?? "-----")
-    
+
     // Charge
-    if let current = batteryInfo.currentCapacity, let max = batteryInfo.maxCapacity {
-        let value = (Double(current) / Double(max)) * 100.0
-        batteryInfo.charge = value
-    }
+    let value = (Double(batteryInfo.currentCapacity) / Double(batteryInfo.maxCapacity)) * 100.0
+    batteryInfo.charge = value
+    print("The current charge value: \(value)")
     
     // Health
-    if let design = batteryInfo.designCapacity, let current = batteryInfo.maxCapacity {
-        let value = (Double(current) / Double(design)) * 100.0
-        batteryInfo.health = value
-        print("The battery health: \(value)")
-    }
+    
+    let value2 = (Double(batteryInfo.maxCapacity) / Double(batteryInfo.designCapacity)) * 100.0
+    batteryInfo.health = value2
+    print("The battery health: \(value2)")
+    
     
     // Time left
-    if let isCharging = batteryInfo.isCharging, let minutes = isCharging ? batteryInfo.timeToFull : batteryInfo.timeToEmpty, minutes > 0 {
+    let minutes = batteryInfo.isCharging ? batteryInfo.timeToFull : batteryInfo.timeToEmpty
+    
+    if minutes > 0 {
         let value = String(format: "%.2d:%.2d", minutes / 60, minutes % 60)
         batteryInfo.timeLeft = SRString(value)
     }
     
     // Time remaining
-    if let isCharging = batteryInfo.isCharging {
-        let value =  isCharging ? batteryInfo.timeToFull : batteryInfo.timeToEmpty
-        batteryInfo.timeRemaining = value
-    }
     
+    let value3 =  batteryInfo.isCharging ? batteryInfo.timeToFull : batteryInfo.timeToEmpty
+    batteryInfo.timeRemaining = value3
+    print("The time remaining: \(value3)")
     
-    // Manufacture date
-//    if let manufactureDateInt = getIntValue("ManufactureDate" as CFString) {
-//        let day = manufactureDateInt & 31
-//        let month = (manufactureDateInt >> 5) & 15
-//        let year = ((manufactureDateInt >> 9) & 127) + 1980
-//        
-//        var components = DateComponents()
-//        components.day = day
-//        components.month = month
-//        components.year = year
-//        
-//        if let date = Calendar.current.date(from: components) {
-//            let dateFormatter = DateFormatter()
-//            dateFormatter.dateFormat = "dd-MM-yyyy"
-//            let dateString = dateFormatter.string(from: date)
-//            print("The manufacture date: \(dateString)")
-//            batteryInfo.manufactureDate = SRString(dateString)
-//        }
-//    }
+    // Watts
+    let factor: CGFloat = batteryInfo.isCharging ? 1 : -1
+    let watts: CGFloat = (CGFloat(batteryInfo.amperage) * CGFloat(batteryInfo.voltage)) / 1000 * factor
+    batteryInfo.watts = Double(watts)
+    print("The battery wattage: \(Double(watts))")
+    
     
     IOServiceClose(service)
     IOObjectRelease(service)
