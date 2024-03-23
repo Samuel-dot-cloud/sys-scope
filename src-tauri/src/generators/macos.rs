@@ -6,7 +6,7 @@ pub type NSObject = *mut std::ffi::c_void;
 
 #[repr(C)]
 pub struct BatteryInfo {
-    pub name: SRString,
+    pub power_source: SRString,
 
     pub time_to_full: Int,
     pub time_to_empty: Int,
@@ -28,9 +28,6 @@ pub struct BatteryInfo {
 
     pub charge: Double,
     pub health: Double,
-
-    pub time_left: SRString,
-    pub time_remaining: Int,
 }
 
 swift!(pub fn set_transparent_titlebar(window: &NSObject));
