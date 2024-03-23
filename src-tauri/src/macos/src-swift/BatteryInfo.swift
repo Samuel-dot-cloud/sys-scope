@@ -3,38 +3,32 @@ import SwiftRs
 import IOKit.ps
 
 public class BatteryInfo: NSObject {
-    var name: String?
+    var powerSource: SRString = SRString("-----")
     
-    var timeToFull: Int?
-    var timeToEmpty: Int?
+    var timeToFull: Int = 0
+    var timeToEmpty: Int = 0
     
-    var manufacturer: String?
-    var manufactureDate: String?
+    var currentCapacity: Int = 0
+    var maxCapacity: Int = 0
+    var designCapacity: Int = 0
     
-    var currentCapacity: Int?
-    var maxCapacity: Int?
-    var designCapacity: Int?
+    var cycleCount: Int = 0
+    var designCycleCount: Int = 0
     
-    var cycleCount: Int?
-    var designCycleCount: Int?
+    var acPowered: Bool = false
+    var isCharging: Bool = false
+    var isCharged: Bool = false
+    var amperage: Int = 0
+    var voltage: Double = 0.0
+    var watts: Double = 0.0
+    var temperature: Double = 0.0
     
-    var acPowered: Bool?
-    var isCharging: Bool?
-    var isCharged: Bool?
-    var amperage: Int?
-    var voltage: Double?
-    var watts: Double?
-    var temperature: Double?
-    
-    var charge: Double?
-    var health: Double?
-    var timeLeft: String?
-    var timeRemaining: Int?
+    var charge: Double = 0.0
+    var health: Double = 0.0
 }
 
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
-    print("Starting to fetch battery info...")
     let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("AppleSmartBattery"))
     
     let batteryInfo = BatteryInfo()
@@ -46,60 +40,53 @@ public func fetchBatteryInfo() -> BatteryInfo {
         return batteryInfo
     }
     
-    print("Service for AppleSmartBattery found.")
-    
-    func getIntValue(_ property: CFString) -> Int? {
-        print("Attempting to get Int value for property: \(property)")
+    func getIntValue(_ property: CFString) -> Int {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Int {
             print("Successfully got Int value for \(property): \(value)")
             return value
         }
         print("Could not get Int value for property: \(property)")
-        return nil
+        return 0
     }
     
-    func getStringValue(_ property: CFString) -> String? {
-        print("Attempting to get String value for property: \(property)")
+    func getStringValue(_ property: CFString) -> String {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? String {
             print("Successfully got String value for \(property): \(value)")
             return value
         }
         print("Could not get String value for property: \(property)")
-        return nil
+        return "-----"
     }
     
-    func getBoolValue(_ property: CFString) -> Bool? {
-        print("Attempting to get Bool value for property: \(property)")
+    func getBoolValue(_ property: CFString) -> Bool {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Bool {
             print("Successfully got Bool value for \(property): \(value)")
             return value
         }
         print("Could not get Bool value for property: \(property)")
-        return nil
+        return false
     }
     
-    func getDoubleValue(_ property: CFString) -> Double? {
-        print("Attempting to get Double value for property: \(property)")
+    func getDoubleValue(_ property: CFString) -> Double {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Double {
             print("Successfully got Double value for \(property): \(value)")
             return value
         }
         print("Could not get Double value for property: \(property)")
-        return nil
+        return 0.0
     }
     
     
-    print("Fetching power source information...")
     let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
     let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as Array
     
     for ps in sources {
         let info = IOPSGetPowerSourceDescription(snapshot, ps).takeUnretainedValue() as! Dictionary<String, Any>
-        print("Processing power source: \(info)")
+
         
-        batteryInfo.name = info[kIOPSNameKey] as? String
-        batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int
-        batteryInfo.timeToFull = info[kIOPSTimeToFullChargeKey] as? Int
+        batteryInfo.powerSource = SRString(info[kIOPSPowerSourceStateKey] as? String ?? "AC power")
+        batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int ?? 0
+        batteryInfo.timeToFull = info[kIOPSTimeToFullChargeKey] as? Int ?? 0
     }
     
     // Capacities
@@ -118,64 +105,115 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     // Power
     batteryInfo.amperage = getIntValue("Amperage" as CFString)
-    batteryInfo.voltage = getDoubleValue("Voltage" as CFString)! / 1000.0
+    batteryInfo.voltage = getDoubleValue("Voltage" as CFString) / 1000.0
     
     // Temperature
-    batteryInfo.temperature = getDoubleValue("Temperature" as CFString)! / 100.0
+    batteryInfo.temperature = getDoubleValue("Temperature" as CFString) / 100.0
     
-    // Manufacture
-    //    batteryInfo.manufacturer = getStringValue("Manufacturer" as CFString)
-    
+
     // Charge
-    if let current = batteryInfo.currentCapacity, let max = batteryInfo.maxCapacity {
-        let value = (Double(current) / Double(max)) * 100.0
-        batteryInfo.charge = value
-    }
+    let value = (Double(batteryInfo.currentCapacity) / Double(batteryInfo.maxCapacity)) * 100.0
+    batteryInfo.charge = value
     
     // Health
-    if let design = batteryInfo.designCapacity, let current = batteryInfo.maxCapacity {
-        let value = (Double(current) / Double(design)) * 100.0
-        batteryInfo.health = value
-    }
     
-    // Time left
-    if let isCharging = batteryInfo.isCharging, let minutes = isCharging ? batteryInfo.timeToFull : batteryInfo.timeToEmpty, minutes > 0 {
-        let value = String(format: "%.2d:%.2d", minutes / 60, minutes % 60)
-        batteryInfo.timeLeft = value
-    }
-    
-    // Time remaining
-    if let isCharging = batteryInfo.isCharging {
-        let value =  isCharging ? batteryInfo.timeToFull : batteryInfo.timeToEmpty
-        batteryInfo.timeRemaining = value
-    }
+    let value2 = (Double(batteryInfo.maxCapacity) / Double(batteryInfo.designCapacity)) * 100.0
+    batteryInfo.health = value2
     
     
-    // Manufacture date
-    if let manufactureDateInt = getIntValue("ManufactureDate" as CFString) {
-        let day = manufactureDateInt & 31
-        let month = (manufactureDateInt >> 5) & 15
-        let year = ((manufactureDateInt >> 9) & 127) + 1980
-        
-        var components = DateComponents()
-        components.day = day
-        components.month = month
-        components.year = year
-        
-        if let date = Calendar.current.date(from: components) {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "dd-MM-yyyy"
-            let dateString = dateFormatter.string(from: date)
-            print("The manufacture date: \(dateString)")
-            batteryInfo.manufactureDate = dateString
-        }
-    }
+    // Watts
+    let factor: CGFloat = batteryInfo.isCharging ? 1 : -1
+    let watts: CGFloat = (CGFloat(batteryInfo.amperage) * CGFloat(batteryInfo.voltage)) / 1000 * factor
+    batteryInfo.watts = Double(watts)
+    
     
     IOServiceClose(service)
     IOObjectRelease(service)
     
-    print("The battery info: \(batteryInfo)")
-    
     return batteryInfo
 }
+
+class BatteryProcessInfoReader: NSObject {
+    let logger = OSLogger(tag: "BatteryProcessInfo")
+    
+    private let queue = DispatchQueue(label: "com.sysscope.BatteryProcessInfoReader", attributes: .concurrent)
+    
+    func fetchTopBatteryProcesses(completion: @escaping ([TopProcess]) -> Void) {
+        queue.async {
+            let numberOfProcesses = 5
+            
+            guard let output = self.executeTopCommand() else {
+                DispatchQueue.main.async {
+                    completion([])
+                }
+                return
+            }
+            
+            let processes = self.parseOutput(output)
+            let sortedProcesses = self.sortAndLimitProcesses(processes, limit: numberOfProcesses)
+            
+            DispatchQueue.main.async {
+                completion(sortedProcesses)
+            }
+        }
+    }
+    
+    private func executeTopCommand() -> String? {
+        let task = Process()
+        task.launchPath = "/usr/bin/top"
+        task.arguments = ["-o", "power", "-l", "2", "-n", "5", "-stats", "pid,command,power"]
+        
+        let outputPipe = Pipe()
+        task.standardOutput = outputPipe
+        
+        do {
+            try task.run()
+            task.waitUntilExit()
+            let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+            return String(decoding: outputData.advanced(by: outputData.count/2), as: UTF8.self)
+            
+        } catch {
+            logger.error("Failed to run process: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    private func parseOutput(_ output: String) -> [TopProcess] {
+        var processes: [TopProcess] = []
+        
+        output.enumerateLines { line, _ in
+            let components = line.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+            if components.count >= 3,
+               let pid = Int(components.first ?? ""),
+               let usage = Double(components.last?.filter("01234567890.".contains) ?? "") {
+                let name = components.dropFirst().dropLast().joined(separator: " ")
+                processes.append(TopProcess(pid: pid, name: SRString(name), usage: usage))
+            }
+        }
+        
+        return processes
+    }
+    
+    private func sortAndLimitProcesses(_ processes: [TopProcess], limit: Int) -> [TopProcess] {
+        return Array(processes.sorted(by: { $0.usage > $1.usage }).prefix(limit))
+    }
+}
+
+extension BatteryProcessInfoReader {
+    func getTopProcessesSynchronously() -> [TopProcess] {
+        let dispatchGroup = DispatchGroup()
+        var topProcesses: [TopProcess] = []
+        
+        dispatchGroup.enter()
+        self.fetchTopBatteryProcesses { processes in
+            topProcesses = processes
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.wait()
+        return topProcesses
+    }
+}
+
+
 
