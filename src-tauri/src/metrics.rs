@@ -13,6 +13,7 @@ use crate::models::{
     SystemInformationTrait,
 };
 use crate::utils::{current_time, get_percentage, round};
+// use crate::generators::macos::fetch_battery_info;
 
 pub struct Metrics {
     sys: System,
