@@ -267,10 +267,9 @@ impl BatteryTrait for Metrics {
                             .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
                         let secs_until_empty = battery_info.time_to_empty()
                             .map(|time| f64::from(time.get::<second>()) as i64).unwrap_or(0);
-                        let charge_percent = f64::from(battery_info.state_of_charge().get::<percent>());
                         let power_consumption_rate_watts = f64::from(battery_info.energy_rate().get::<watt>());
                         let health_percent = f64::from(battery_info.state_of_health().get::<percent>());
-                        let vendor = battery_info.vendor().unwrap_or("-----").to_owned();
+                        // let vendor = battery_info.vendor().unwrap_or("-----").to_owned();
                         let technology = match battery_info.technology() {
                             starship_battery::Technology::LeadAcid => "Lead Acid".to_string(),
                             starship_battery::Technology::LithiumIon => "Lithium Ion".to_string(),
@@ -302,7 +301,7 @@ impl BatteryTrait for Metrics {
                             secs_until_full,
                             secs_until_empty,
                             power_consumption_rate_watts,
-                            health_percent: swift_battery_info.max_capacity as f64,
+                            health_percent: health_percent,
                             vendor: swift_battery_info.power_source.parse().unwrap(),
                             technology,
                             cycle_count,

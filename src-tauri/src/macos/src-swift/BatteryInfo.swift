@@ -3,28 +3,48 @@ import SwiftRs
 import IOKit.ps
 
 public class BatteryInfo: NSObject {
-    var powerSource: SRString = SRString("-----")
+    var powerSource: SRString
     
-    var timeToFull: Int = 0
-    var timeToEmpty: Int = 0
+    var timeToFull: Int
+    var timeToEmpty: Int
     
-    var currentCapacity: Int = 0
-    var maxCapacity: Int = 0
-    var designCapacity: Int = 0
+    var currentCapacity: Int
+    var maxCapacity: Int
+    var designCapacity: Int
     
-    var cycleCount: Int = 0
-    var designCycleCount: Int = 0
+    var cycleCount: Int
+    var designCycleCount: Int
     
-    var acPowered: Bool = false
-    var isCharging: Bool = false
-    var isCharged: Bool = false
-    var amperage: Int = 0
-    var voltage: Double = 0.0
-    var watts: Double = 0.0
-    var temperature: Double = 0.0
+    var acPowered: Bool
+    var isCharging: Bool
+    var isCharged: Bool
+    var amperage: Int
+    var voltage: Double
+    var watts: Double
+    var temperature: Double
     
-    var charge: Double = 0.0
-    var health: Double = 0.0
+    var charge: Double
+    var health: Double
+    
+    override init() {
+        self.powerSource = SRString("-----")
+        self.timeToFull = 0
+        self.timeToEmpty = 0
+        self.currentCapacity = 0
+        self.maxCapacity = 0
+        self.designCapacity = 0
+        self.cycleCount = 0
+        self.designCycleCount = 0
+        self.acPowered = false
+        self.isCharging = false
+        self.isCharged = false
+        self.amperage = 0
+        self.voltage = 0.0
+        self.watts = 0.0
+        self.temperature = 0.0
+        self.charge = 0.0
+        self.health = 0.0
+    }
 }
 
 class TopProcess: NSObject {
@@ -41,110 +61,94 @@ class TopProcess: NSObject {
     }
 }
 
-@_cdecl("fetch_battery_info")
-public func fetchBatteryInfo() -> BatteryInfo {
-    let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("AppleSmartBattery"))
+class BatteryInfoFetcher {
+    private let service: io_service_t
     
-    let batteryInfo = BatteryInfo()
+    init() {
+        self.service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("AppleSmartBattery"))
+    }
     
-    guard service != 0 else {
-        print("No service found for AppleSmartBattery. Exiting function.")
+    deinit {
         IOServiceClose(service)
         IOObjectRelease(service)
+    }
+    
+    //TODO: Find fix for wrong battery health value
+    public func fetchBatteryInfo() -> BatteryInfo {
+        let batteryInfo = BatteryInfo()
+        
+        guard service != 0 else {
+            print("No service found for AppleSmartBattery. Exiting function.")
+            return batteryInfo
+        }
+        
+        fetchPowerSourceInfo(for: batteryInfo)
+        fetchBatteryProperties(for: batteryInfo)
+        
+        let factor: CGFloat = batteryInfo.isCharging ? 1 : -1
+        let watts: CGFloat = (CGFloat(batteryInfo.amperage) * CGFloat(batteryInfo.voltage)) / 1000 * factor
+        batteryInfo.watts = Double(watts)
+        
+        let health: Double = (Double(batteryInfo.maxCapacity) / Double(batteryInfo.designCapacity)) * 100.0
+        batteryInfo.health = health
+        
+        let charge: Double = (Double(batteryInfo.currentCapacity) / Double(batteryInfo.maxCapacity)) * 100.0
+        batteryInfo.charge = charge
+        
         return batteryInfo
     }
     
-    func getIntValue(_ property: CFString) -> Int {
-        if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Int {
-            //            print("Successfully got Int value for \(property): \(value)")
-            return value
-        }
-        print("Could not get Int value for property: \(property)")
-        return 0
-    }
-    
-    func getStringValue(_ property: CFString) -> String {
-        if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? String {
-            //            print("Successfully got String value for \(property): \(value)")
-            return value
-        }
-        print("Could not get String value for property: \(property)")
-        return "-----"
-    }
-    
-    func getBoolValue(_ property: CFString) -> Bool {
-        if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Bool {
-            //            print("Successfully got Bool value for \(property): \(value)")
-            return value
-        }
-        print("Could not get Bool value for property: \(property)")
-        return false
-    }
-    
-    func getDoubleValue(_ property: CFString) -> Double {
-        if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Double {
-            //            print("Successfully got Double value for \(property): \(value)")
-            return value
-        }
-        print("Could not get Double value for property: \(property)")
-        return 0.0
-    }
-    
-    
-    let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
-    let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as Array
-    
-    for ps in sources {
-        let info = IOPSGetPowerSourceDescription(snapshot, ps).takeUnretainedValue() as! Dictionary<String, Any>
+    private func fetchPowerSourceInfo(for batteryInfo: BatteryInfo) {
+        let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
+        let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as Array
         
-        
-        batteryInfo.powerSource = SRString(info[kIOPSPowerSourceStateKey] as? String ?? "AC power")
-        batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int ?? 0
-        batteryInfo.timeToFull = info[kIOPSTimeToFullChargeKey] as? Int ?? 0
+        for ps in sources {
+            if let info = IOPSGetPowerSourceDescription(snapshot, ps).takeUnretainedValue() as? [String: Any] {
+                batteryInfo.powerSource = SRString(info[kIOPSPowerSourceStateKey] as? String ?? "AC Power")
+                batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int ?? 0
+                batteryInfo.timeToFull = info[kIOPSTimeToFullChargeKey] as? Int ?? 0
+            }
+        }
     }
     
-    // Capacities
-    batteryInfo.currentCapacity = getIntValue("CurrentCapacity" as CFString)
-    batteryInfo.maxCapacity = getIntValue("MaxCapacity" as CFString)
-    batteryInfo.designCapacity = getIntValue("DesignCapacity" as CFString)
+    private func fetchBatteryProperties(for batteryInfo: BatteryInfo) {
+        batteryInfo.currentCapacity = getIntValue("CurrentCapacity" as CFString)
+        batteryInfo.maxCapacity = getIntValue("MaxCapacity" as CFString)
+        batteryInfo.designCapacity = getIntValue("DesignCapacity" as CFString)
+        
+        batteryInfo.cycleCount = getIntValue("CycleCount" as CFString)
+        batteryInfo.designCycleCount = getIntValue("DesignCycleCount9C" as CFString)
+        
+        batteryInfo.acPowered = getBoolValue("ExternalConnected" as CFString)
+        batteryInfo.isCharging = getBoolValue("IsCharging" as CFString)
+        batteryInfo.isCharged = getBoolValue("FullyCharged" as CFString)
+        
+        batteryInfo.amperage = getIntValue("Amperage" as CFString)
+        batteryInfo.voltage = getDoubleValue("Voltage" as CFString) / 1000.0
+        batteryInfo.temperature = getDoubleValue("Temperature" as CFString) / 100.0
+    }
     
-    // Battery cycles
-    batteryInfo.cycleCount = getIntValue("CycleCount" as CFString)
-    batteryInfo.designCycleCount = getIntValue("DesignCycleCount9C" as CFString)
+    private func getIntValue(_ property: CFString) -> Int {
+        return IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Int ?? 0
+    }
     
-    // Plug
-    batteryInfo.acPowered = getBoolValue("ExternalConnected" as CFString)
-    batteryInfo.isCharging = getBoolValue("IsCharging" as CFString)
-    batteryInfo.isCharged = getBoolValue("FullyCharged" as CFString)
+    private func getStringValue(_ property: CFString) -> String {
+        return IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? String ?? "-----"
+    }
     
-    // Power
-    batteryInfo.amperage = getIntValue("Amperage" as CFString)
-    batteryInfo.voltage = getDoubleValue("Voltage" as CFString) / 1000.0
+    private func getBoolValue(_ property: CFString) -> Bool {
+        return IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Bool ?? false
+    }
     
-    // Temperature
-    batteryInfo.temperature = getDoubleValue("Temperature" as CFString) / 100.0
-    
-    
-    // Charge
-    let value = (Double(batteryInfo.currentCapacity) / Double(batteryInfo.maxCapacity)) * 100.0
-    batteryInfo.charge = value
-    
-    // Health
-    
-    let value2 = (Double(batteryInfo.maxCapacity) / Double(batteryInfo.designCapacity)) * 100.0
-    batteryInfo.health = value2
-    
-    
-    // Watts
-    let factor: CGFloat = batteryInfo.isCharging ? 1 : -1
-    let watts: CGFloat = (CGFloat(batteryInfo.amperage) * CGFloat(batteryInfo.voltage)) / 1000 * factor
-    batteryInfo.watts = Double(watts)
-    
-    
-    IOServiceClose(service)
-    IOObjectRelease(service)
-    
-    return batteryInfo
+    private func getDoubleValue(_ property: CFString) -> Double {
+        return IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Double ?? 0.0
+    }
+}
+
+@_cdecl("fetch_battery_info")
+public func fetchBatteryInfo() -> BatteryInfo {
+    let fetcher = BatteryInfoFetcher()
+    return fetcher.fetchBatteryInfo()
 }
 
 @_cdecl("get_top_battery_processes")
@@ -177,7 +181,6 @@ func getTopBatteryProcesses() -> SRObjectArray {
     
     // Parse the output
     var processInfo: [TopProcess] = []
-    print(output)
     let lines = output.split(separator: "\n")
     for line in lines {
         let regex = try! NSRegularExpression(pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#, options: [])

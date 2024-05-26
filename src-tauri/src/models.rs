@@ -150,9 +150,9 @@ pub struct TopProcess {
 
 fn convert_top_process(source: &crate::macos::TopProcess) -> TopProcess {
     TopProcess {
-         pid: source.pid.clone() as u64,
+         pid: source.pid as u64,
           name: source.name.parse().unwrap(),
-           power: source.power.clone(),
+           power: source.power,
             icon_base: source.icon_base.parse().unwrap(),
          }
 }

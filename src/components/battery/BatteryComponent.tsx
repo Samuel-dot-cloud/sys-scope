@@ -19,16 +19,18 @@ const BatteryComponent = () => {
   const { batteries, batteryProcesses } = useServerEventsContext();
   const battery = batteries.at(-1);
 
+  console.log("The battery charge: ", battery?.chargePercent);
+
   const powerDetails: BatteryDetail[] = [
     { label: "Power source", value: battery?.vendor },
     { label: "Percentage", value: `${battery?.chargePercent.toFixed(1)}%` },
     // {label: 'State', value: battery?.state},
     { label: "Cycle Count", value: battery?.cycleCount },
     // {label: 'Technology', value: battery?.technology},
-    {
-      label: "Maximum Battery Capacity",
-      value: `${battery?.healthPercent.toFixed(0)}%`,
-    },
+    // {
+    //   label: "Health",
+    //   value: `${battery?.healthPercent.toFixed(0)}%`,
+    // },
     {
       label: "Time to full battery",
       value: formatTime(battery?.secsUntilFull ?? 0),
