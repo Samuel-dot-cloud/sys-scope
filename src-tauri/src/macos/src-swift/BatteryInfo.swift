@@ -1,4 +1,4 @@
-import Foundation
+import Cocoa
 import SwiftRs
 import IOKit.ps
 
@@ -27,6 +27,20 @@ public class BatteryInfo: NSObject {
     var health: Double = 0.0
 }
 
+class TopProcess: NSObject {
+    let pid: Int
+    let name: String
+    let power: Double
+    let iconBase64: String?
+    
+    init(pid: Int, name: String, power: Double, iconBase64: String?) {
+        self.pid = pid
+        self.name = name
+        self.power = power
+        self.iconBase64 = iconBase64
+    }
+}
+
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
     let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("AppleSmartBattery"))
@@ -40,9 +54,11 @@ public func fetchBatteryInfo() -> BatteryInfo {
         return batteryInfo
     }
     
+    displayTopProcesses()
+    
     func getIntValue(_ property: CFString) -> Int {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Int {
-            print("Successfully got Int value for \(property): \(value)")
+//            print("Successfully got Int value for \(property): \(value)")
             return value
         }
         print("Could not get Int value for property: \(property)")
@@ -51,7 +67,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     func getStringValue(_ property: CFString) -> String {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? String {
-            print("Successfully got String value for \(property): \(value)")
+//            print("Successfully got String value for \(property): \(value)")
             return value
         }
         print("Could not get String value for property: \(property)")
@@ -60,7 +76,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     func getBoolValue(_ property: CFString) -> Bool {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Bool {
-            print("Successfully got Bool value for \(property): \(value)")
+//            print("Successfully got Bool value for \(property): \(value)")
             return value
         }
         print("Could not get Bool value for property: \(property)")
@@ -69,7 +85,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     func getDoubleValue(_ property: CFString) -> Double {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Double {
-            print("Successfully got Double value for \(property): \(value)")
+//            print("Successfully got Double value for \(property): \(value)")
             return value
         }
         print("Could not get Double value for property: \(property)")
@@ -133,87 +149,78 @@ public func fetchBatteryInfo() -> BatteryInfo {
     return batteryInfo
 }
 
-class BatteryProcessInfoReader: NSObject {
-    let logger = OSLogger(tag: "BatteryProcessInfo")
+func getTopBatteryProcesses() -> [TopProcess] {
+    let command = "/usr/bin/top"
+    let arguments = ["-o", "power", "-l", "2", "-n", "5", "-stats", "pid,command,power"]
     
-    private let queue = DispatchQueue(label: "com.sysscope.BatteryProcessInfoReader", attributes: .concurrent)
+    // Create a process instance
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: command)
+    process.arguments = arguments
     
-    func fetchTopBatteryProcesses(completion: @escaping ([TopProcess]) -> Void) {
-        queue.async {
-            let numberOfProcesses = 5
-            
-            guard let output = self.executeTopCommand() else {
-                DispatchQueue.main.async {
-                    completion([])
-                }
-                return
-            }
-            
-            let processes = self.parseOutput(output)
-            let sortedProcesses = self.sortAndLimitProcesses(processes, limit: numberOfProcesses)
-            
-            DispatchQueue.main.async {
-                completion(sortedProcesses)
-            }
+    // Create a pipe to capture the output
+    let pipe = Pipe()
+    process.standardOutput = pipe
+    process.standardError = pipe
+    
+    do {
+        try process.run()
+    } catch {
+        print("Failed to run top command: \(error)")
+        return []
+    }
+    
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    guard let output = String(data: data, encoding: .utf8) else {
+        print("Failed to read output")
+        return []
+    }
+    
+    // Parse the output
+    var processInfo: [TopProcess] = []
+    let lines = output.split(separator: "\n")
+    for line in lines {
+        let components = line.split(separator: " ").filter { !$0.isEmpty }
+        if components.count >= 3, let pid = Int(components[0]), let power = Double(components[2]) {
+            let processName = String(components[1])
+            let iconBase64 = getProcessIconBase64(for: processName)
+            let topProcess = TopProcess(pid: pid, name: processName, power: power, iconBase64: iconBase64)
+            processInfo.append(topProcess)
         }
     }
     
-    private func executeTopCommand() -> String? {
-        let task = Process()
-        task.launchPath = "/usr/bin/top"
-        task.arguments = ["-o", "power", "-l", "2", "-n", "5", "-stats", "pid,command,power"]
-        
-        let outputPipe = Pipe()
-        task.standardOutput = outputPipe
-        
-        do {
-            try task.run()
-            task.waitUntilExit()
-            let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-            return String(decoding: outputData.advanced(by: outputData.count/2), as: UTF8.self)
-            
-        } catch {
-            logger.error("Failed to run process: \(error.localizedDescription)")
-            return nil
-        }
-    }
-    
-    private func parseOutput(_ output: String) -> [TopProcess] {
-        var processes: [TopProcess] = []
-        
-        output.enumerateLines { line, _ in
-            let components = line.split(whereSeparator: { $0.isWhitespace }).map(String.init)
-            if components.count >= 3,
-               let pid = Int(components.first ?? ""),
-               let usage = Double(components.last?.filter("01234567890.".contains) ?? "") {
-                let name = components.dropFirst().dropLast().joined(separator: " ")
-                processes.append(TopProcess(pid: pid, name: SRString(name), usage: usage))
-            }
-        }
-        
-        return processes
-    }
-    
-    private func sortAndLimitProcesses(_ processes: [TopProcess], limit: Int) -> [TopProcess] {
-        return Array(processes.sorted(by: { $0.usage > $1.usage }).prefix(limit))
-    }
+    processInfo.sort { $0.power > $1.power}
+    return Array(processInfo.prefix(5))
 }
 
-extension BatteryProcessInfoReader {
-    func getTopProcessesSynchronously() -> [TopProcess] {
-        let dispatchGroup = DispatchGroup()
-        var topProcesses: [TopProcess] = []
-        
-        dispatchGroup.enter()
-        self.fetchTopBatteryProcesses { processes in
-            topProcesses = processes
-            dispatchGroup.leave()
+func getProcessIconBase64(for processName: String) -> String? {
+    let workspace = NSWorkspace.shared
+    let applications = workspace.runningApplications
+    for app in applications {
+        if app.localizedName == processName, let icon = app.icon {
+            return convertImageToBase64(icon)
         }
-        
-        dispatchGroup.wait()
-        return topProcesses
     }
+    return convertImageToBase64(workspace.icon(forFile: "/bin/bash"))
 }
 
+private func convertImageToBase64(_ image: NSImage) -> String? {
+    guard let tiffData = image.tiffRepresentation else { return nil }
+    guard let bitmap = NSBitmapImageRep(data: tiffData) else { return nil }
+    guard let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
+    return pngData.base64EncodedString()
+}
+
+func displayTopProcesses() {
+    let topProcesses = getTopBatteryProcesses()
+    for (index, process) in topProcesses.enumerated() {
+        print("\(index + 1). PID: \(process.pid), Process: \(process.name), Power: \(process.power)%")
+        if let iconBase64 = process.iconBase64 {
+            print("Icon Base64 for \(process.name): \(iconBase64.prefix(30))...")
+        } else {
+            print("No icon found for \(process.name)")
+        }
+    }
+}
 
 
