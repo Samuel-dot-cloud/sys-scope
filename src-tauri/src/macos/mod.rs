@@ -32,4 +32,5 @@ pub struct BatteryInfo {
 
 swift!(pub fn set_transparent_titlebar(window: &NSObject));
 swift!(pub fn fetch_battery_info() -> SRObject<BatteryInfo>);
+swift!(pub fn monitor_battery_usage());
 
