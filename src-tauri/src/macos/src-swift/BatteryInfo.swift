@@ -150,7 +150,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
 @_cdecl("get_top_battery_processes")
 func getTopBatteryProcesses() -> SRObjectArray {
     let command = "/usr/bin/top"
-    let arguments = ["-o", "power", "-l", "2", "-n", "5", "-stats", "pid,command,power"]
+    let arguments = ["-o", "power", "-l", "2", "-n", "5", "-stats", "pid,command,state,power"]
     
     // Create a process instance
     let process = Process()
@@ -177,14 +177,21 @@ func getTopBatteryProcesses() -> SRObjectArray {
     
     // Parse the output
     var processInfo: [TopProcess] = []
+    print(output)
     let lines = output.split(separator: "\n")
     for line in lines {
-        let components = line.split(separator: " ").filter { !$0.isEmpty }
-        if components.count >= 3, let pid = Int(components[0]), let power = Double(components[2]), power > 0 {
-            let processName = String(components[1])
-            let iconBase64 = getProcessIconBase64(for: processName) ?? ""
-            let topProcess = TopProcess(pid: pid, name: SRString(processName), power: power, iconBase: SRString(iconBase64))
-            processInfo.append(topProcess)
+        let regex = try! NSRegularExpression(pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#, options: [])
+        let nsLine = line as NSString
+        if let match = regex.firstMatch(in: String(line), options: [], range: NSRange(location: 0, length: nsLine.length)) {
+            let pid = Int(nsLine.substring(with: match.range(at: 1)))!
+            let processName = nsLine.substring(with: match.range(at: 2))
+            let power = Double(nsLine.substring(with: match.range(at: 4)))!
+            
+            if power > 0 {
+                let iconBase64 = getProcessIconBase64(for: processName) ?? ""
+                let topProcess = TopProcess(pid: pid, name: SRString(processName), power: power, iconBase: SRString(iconBase64))
+                processInfo.append(topProcess)
+            }
         }
     }
     
@@ -192,7 +199,7 @@ func getTopBatteryProcesses() -> SRObjectArray {
     return SRObjectArray(processInfo)
 }
 
-func getProcessIconBase64(for processName: String) -> String? {
+private func getProcessIconBase64(for processName: String) -> String? {
     let workspace = NSWorkspace.shared
     let applications = workspace.runningApplications
     for app in applications {
