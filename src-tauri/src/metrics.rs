@@ -8,12 +8,10 @@ use starship_battery::units::thermodynamic_temperature::degree_celsius;
 use starship_battery::units::time::second;
 use sysinfo::{Disks, Networks, System};
 use crate::models::{
-    BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage,
-    Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo,
-    SystemInformationTrait,
+    convert_processes, BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage, Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait, TopProcess
 };
 use crate::utils::{current_time, get_percentage, round};
-// use crate::generators::macos::fetch_battery_info;
+use crate::macos::{fetch_battery_info, get_top_battery_processes};
 
 pub struct Metrics {
     sys: System,
@@ -255,6 +253,11 @@ impl NetworkTrait for Metrics {
 impl BatteryTrait for Metrics {
     fn get_batteries(&mut self) -> Vec<DeviceBattery> {
         let mut device_batteries: Vec<DeviceBattery> = Vec::new();
+        let swift_battery_info = unsafe {fetch_battery_info()};
+
+        // unsafe {
+        //     monitor_battery_usage()
+        // }
 
         if let Some(manager) = &self.batteries {
             if let Ok(batteries) = manager.batteries() {
@@ -295,12 +298,12 @@ impl BatteryTrait for Metrics {
                         let voltage = f64::from(battery_info.voltage().get::<volt>());
 
                         device_batteries.push(DeviceBattery {
-                            charge_percent,
+                            charge_percent: swift_battery_info.charge,
                             secs_until_full,
                             secs_until_empty,
                             power_consumption_rate_watts,
-                            health_percent,
-                            vendor,
+                            health_percent: swift_battery_info.max_capacity as f64,
+                            vendor: swift_battery_info.power_source.parse().unwrap(),
                             technology,
                             cycle_count,
                             model,
@@ -315,5 +318,12 @@ impl BatteryTrait for Metrics {
             }
         }
         device_batteries
+    }
+
+    fn get_battery_processes(&mut self) -> Vec<TopProcess> {
+        let top_processes_swift = unsafe { get_top_battery_processes()};
+        let top_processes_rust: Vec<TopProcess> = convert_processes(top_processes_swift);
+
+        top_processes_rust
     }
 }

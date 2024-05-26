@@ -29,15 +29,15 @@ public class BatteryInfo: NSObject {
 
 class TopProcess: NSObject {
     let pid: Int
-    let name: String
+    let name: SRString
     let power: Double
-    let iconBase64: String?
+    let iconBase: SRString
     
-    init(pid: Int, name: String, power: Double, iconBase64: String?) {
+    init(pid: Int, name: SRString, power: Double, iconBase: SRString) {
         self.pid = pid
         self.name = name
         self.power = power
-        self.iconBase64 = iconBase64
+        self.iconBase = iconBase
     }
 }
 
@@ -54,11 +54,9 @@ public func fetchBatteryInfo() -> BatteryInfo {
         return batteryInfo
     }
     
-    displayTopProcesses()
-    
     func getIntValue(_ property: CFString) -> Int {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Int {
-//            print("Successfully got Int value for \(property): \(value)")
+            //            print("Successfully got Int value for \(property): \(value)")
             return value
         }
         print("Could not get Int value for property: \(property)")
@@ -67,7 +65,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     func getStringValue(_ property: CFString) -> String {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? String {
-//            print("Successfully got String value for \(property): \(value)")
+            //            print("Successfully got String value for \(property): \(value)")
             return value
         }
         print("Could not get String value for property: \(property)")
@@ -76,7 +74,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     func getBoolValue(_ property: CFString) -> Bool {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Bool {
-//            print("Successfully got Bool value for \(property): \(value)")
+            //            print("Successfully got Bool value for \(property): \(value)")
             return value
         }
         print("Could not get Bool value for property: \(property)")
@@ -85,7 +83,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     func getDoubleValue(_ property: CFString) -> Double {
         if let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Double {
-//            print("Successfully got Double value for \(property): \(value)")
+            //            print("Successfully got Double value for \(property): \(value)")
             return value
         }
         print("Could not get Double value for property: \(property)")
@@ -98,7 +96,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     
     for ps in sources {
         let info = IOPSGetPowerSourceDescription(snapshot, ps).takeUnretainedValue() as! Dictionary<String, Any>
-
+        
         
         batteryInfo.powerSource = SRString(info[kIOPSPowerSourceStateKey] as? String ?? "AC power")
         batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int ?? 0
@@ -126,7 +124,7 @@ public func fetchBatteryInfo() -> BatteryInfo {
     // Temperature
     batteryInfo.temperature = getDoubleValue("Temperature" as CFString) / 100.0
     
-
+    
     // Charge
     let value = (Double(batteryInfo.currentCapacity) / Double(batteryInfo.maxCapacity)) * 100.0
     batteryInfo.charge = value
@@ -149,7 +147,8 @@ public func fetchBatteryInfo() -> BatteryInfo {
     return batteryInfo
 }
 
-func getTopBatteryProcesses() -> [TopProcess] {
+@_cdecl("get_top_battery_processes")
+func getTopBatteryProcesses() -> SRObjectArray {
     let command = "/usr/bin/top"
     let arguments = ["-o", "power", "-l", "2", "-n", "5", "-stats", "pid,command,power"]
     
@@ -167,13 +166,13 @@ func getTopBatteryProcesses() -> [TopProcess] {
         try process.run()
     } catch {
         print("Failed to run top command: \(error)")
-        return []
+        return SRObjectArray([])
     }
     
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
     guard let output = String(data: data, encoding: .utf8) else {
         print("Failed to read output")
-        return []
+        return SRObjectArray([])
     }
     
     // Parse the output
@@ -181,16 +180,16 @@ func getTopBatteryProcesses() -> [TopProcess] {
     let lines = output.split(separator: "\n")
     for line in lines {
         let components = line.split(separator: " ").filter { !$0.isEmpty }
-        if components.count >= 3, let pid = Int(components[0]), let power = Double(components[2]) {
+        if components.count >= 3, let pid = Int(components[0]), let power = Double(components[2]), power > 0 {
             let processName = String(components[1])
-            let iconBase64 = getProcessIconBase64(for: processName)
-            let topProcess = TopProcess(pid: pid, name: processName, power: power, iconBase64: iconBase64)
+            let iconBase64 = getProcessIconBase64(for: processName) ?? ""
+            let topProcess = TopProcess(pid: pid, name: SRString(processName), power: power, iconBase: SRString(iconBase64))
             processInfo.append(topProcess)
         }
     }
     
     processInfo.sort { $0.power > $1.power}
-    return Array(processInfo.prefix(5))
+    return SRObjectArray(processInfo)
 }
 
 func getProcessIconBase64(for processName: String) -> String? {
@@ -209,18 +208,6 @@ private func convertImageToBase64(_ image: NSImage) -> String? {
     guard let bitmap = NSBitmapImageRep(data: tiffData) else { return nil }
     guard let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
     return pngData.base64EncodedString()
-}
-
-func displayTopProcesses() {
-    let topProcesses = getTopBatteryProcesses()
-    for (index, process) in topProcesses.enumerated() {
-        print("\(index + 1). PID: \(process.pid), Process: \(process.name), Power: \(process.power)%")
-        if let iconBase64 = process.iconBase64 {
-            print("Icon Base64 for \(process.name): \(iconBase64.prefix(30))...")
-        } else {
-            print("No icon found for \(process.name)")
-        }
-    }
 }
 
 

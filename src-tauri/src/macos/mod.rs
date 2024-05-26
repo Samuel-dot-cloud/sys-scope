@@ -1,6 +1,6 @@
 #![cfg(target_os = "macos")]
 
-use swift_rs::{Bool, Double, Int, SRObject, SRString, swift};
+use swift_rs::{swift, Bool, Double, Int, SRObject, SRObjectArray, SRString};
 
 pub type NSObject = *mut std::ffi::c_void;
 
@@ -30,7 +30,15 @@ pub struct BatteryInfo {
     pub health: Double,
 }
 
+#[repr(C)]
+pub struct TopProcess {
+    pub pid: Int,
+    pub name: SRString,
+    pub power: Double,
+    pub icon_base: SRString,
+}
+
 swift!(pub fn set_transparent_titlebar(window: &NSObject));
 swift!(pub fn fetch_battery_info() -> SRObject<BatteryInfo>);
-swift!(pub fn monitor_battery_usage());
+swift!(pub fn get_top_battery_processes() -> SRObjectArray<TopProcess>);
 

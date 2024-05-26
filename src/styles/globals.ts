@@ -42,7 +42,17 @@ export const StatItem = styled.ul`
     margin-bottom: 5px;
 `;
 
+export const SmallImage = styled.img`
+    height: 18px;
+    width: 18px;
+    object-fit: cover;
+    margin-right: 5px;
+    margin-left: 3px;
+`;
+
 export const Label = styled.span`
+    display: flex;
+    align-items: center;
     color: ${props => props.theme.text};
     font-weight: normal;
     font-size: 15px;

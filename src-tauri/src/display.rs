@@ -70,7 +70,8 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
                     state.emit_disks(&win);
                     state.emit_processes(&win);
                     state.emit_batteries(&win);
-                    tokio::time::sleep(Duration::from_secs(10)).await;
+                    state.emit_battery_processes(&win);
+                    tokio::time::sleep(Duration::from_secs(5)).await;
                 }
             });
 
