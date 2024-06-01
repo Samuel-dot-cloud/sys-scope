@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use serde::{Serialize, Deserialize};
+use swift_rs::SRObjectArray;
 
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -123,6 +124,28 @@ pub struct Process {
     pub status: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TopProcess {
+    pub pid: u64,
+    pub name: String,
+    pub power: f64,
+    pub icon_base_64: String,
+}
+
+fn convert_top_process(source: &crate::macos::TopProcess) -> TopProcess {
+    TopProcess {
+         pid: source.pid as u64,
+          name: source.name.parse().unwrap(),
+           power: source.power,
+            icon_base_64: source.icon_base_64.parse().unwrap(),
+         }
+}
+
+pub fn convert_processes(source: SRObjectArray<crate::macos::TopProcess>) -> Vec<TopProcess> {
+    source.into_iter().map(|value| convert_top_process(value.as_ref())).collect()
+}
+
 pub trait ProcessTrait {
     fn get_processes(&mut self) -> Vec<Process>;
 }
@@ -148,5 +171,6 @@ pub struct DeviceBattery {
 
 pub trait BatteryTrait {
     fn get_batteries(&mut self) -> Vec<DeviceBattery>;
+    fn get_battery_processes(&mut self) -> Vec<TopProcess>;
 }
 

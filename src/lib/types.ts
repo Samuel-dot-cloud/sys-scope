@@ -7,7 +7,8 @@ export enum ServerEvent {
     Networks = "emit_networks",
     Disks = "emit_disks",
     Processes = "emit_processes",
-    Batteries = "emit_batteries"
+    Batteries = "emit_batteries",
+    BatteryProcesses = "emit_battery_processes"
 }
 
 // Typescript interfaces/types from models.rs
@@ -103,4 +104,11 @@ export interface DeviceBattery {
     energy: number;
     energyFull: number;
     voltage: number;
+}
+
+export interface TopProcess {
+    pid: number,
+    name: string,
+    power: number,
+    iconBase64: string
 }

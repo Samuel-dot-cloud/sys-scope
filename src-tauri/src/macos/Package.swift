@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "sys-scope-macos",
     platforms: [
-        .macOS(.v10_15), // macOS Catalina. Earliest version that is officially supported by Apple.
+        .macOS(.v11), // macOS BigSur.
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
