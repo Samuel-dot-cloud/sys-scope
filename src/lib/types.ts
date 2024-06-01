@@ -110,5 +110,5 @@ export interface TopProcess {
     pid: number,
     name: string,
     power: number,
-    iconBase: string
+    iconBase64: string
 }

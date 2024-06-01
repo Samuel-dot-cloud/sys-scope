@@ -130,30 +130,15 @@ pub struct TopProcess {
     pub pid: u64,
     pub name: String,
     pub power: f64,
-    pub icon_base: String,
+    pub icon_base_64: String,
 }
-
-// impl From<&crate::macos::TopProcess> for TopProcess {
-//     fn from(value: &crate::macos::TopProcess) -> Self {
-//         return TopProcess {
-//              pid: value.pid as u64,
-//               name: value.name.parse().unwrap(),
-//                power: value.power,
-//                 icon_base: value.icon_base.parse().unwrap(),
-//              }
-//     }
-// }
-
-// pub fn convert_processes<T>(source: T) -> Vec<TopProcess> where T: AsRef<SRObjectArray<crate::macos::TopProcess>> {
-//     source.as_ref().iter().map(|value| TopProcess::from(value.as_ref())).collect()
-// }
 
 fn convert_top_process(source: &crate::macos::TopProcess) -> TopProcess {
     TopProcess {
          pid: source.pid as u64,
           name: source.name.parse().unwrap(),
            power: source.power,
-            icon_base: source.icon_base.parse().unwrap(),
+            icon_base_64: source.icon_base_64.parse().unwrap(),
          }
 }
 

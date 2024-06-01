@@ -51,13 +51,13 @@ class TopProcess: NSObject {
     let pid: Int
     let name: SRString
     let power: Double
-    let iconBase: SRString
+    let iconBase64: SRString
     
-    init(pid: Int, name: SRString, power: Double, iconBase: SRString) {
+    init(pid: Int, name: SRString, power: Double, iconBase64: SRString) {
         self.pid = pid
         self.name = name
         self.power = power
-        self.iconBase = iconBase
+        self.iconBase64 = iconBase64
     }
 }
 
@@ -192,7 +192,7 @@ func getTopBatteryProcesses() -> SRObjectArray {
             
             if power > 0 {
                 let iconBase64 = getProcessIconBase64(for: processName) ?? ""
-                let topProcess = TopProcess(pid: pid, name: SRString(processName), power: power, iconBase: SRString(iconBase64))
+                let topProcess = TopProcess(pid: pid, name: SRString(processName), power: power, iconBase64: SRString(iconBase64))
                 processInfo.append(topProcess)
             }
         }
@@ -202,6 +202,7 @@ func getTopBatteryProcesses() -> SRObjectArray {
     return SRObjectArray(processInfo)
 }
 
+//TODO: Investigate replacing for-loop with NSRunningApplication check
 private func getProcessIconBase64(for processName: String) -> String? {
     let workspace = NSWorkspace.shared
     let applications = workspace.runningApplications

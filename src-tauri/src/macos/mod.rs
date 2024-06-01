@@ -35,7 +35,7 @@ pub struct TopProcess {
     pub pid: Int,
     pub name: SRString,
     pub power: Double,
-    pub icon_base: SRString,
+    pub icon_base_64: SRString,
 }
 
 swift!(pub fn set_transparent_titlebar(window: &NSObject));

@@ -19,11 +19,9 @@ const BatteryComponent = () => {
   const { batteries, batteryProcesses } = useServerEventsContext();
   const battery = batteries.at(-1);
 
-  console.log("The battery charge: ", battery?.chargePercent);
-
   const powerDetails: BatteryDetail[] = [
     { label: "Power source", value: battery?.vendor },
-    { label: "Percentage", value: `${battery?.chargePercent.toFixed(1)}%` },
+    { label: "Percentage", value: `${battery?.chargePercent.toFixed(0)}%` },
     // {label: 'State', value: battery?.state},
     { label: "Cycle Count", value: battery?.cycleCount },
     // {label: 'Technology', value: battery?.technology},
@@ -65,7 +63,7 @@ const BatteryComponent = () => {
           <StatItem key={index}>
             <Label>
               {index + 1}.{" "}
-              <SmallImage src={`data:image/png;base64,${process.iconBase}`} />{" "}
+              <SmallImage src={`data:image/png;base64,${process.iconBase64}`} />{" "}
               {process.name}
             </Label>
             <Value>{process.power}%</Value>
