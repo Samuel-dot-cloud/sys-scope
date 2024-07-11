@@ -147,19 +147,6 @@ class BatteryInfoFetcher {
 
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
-    if let bsdName = findMainMacintoshHDBSDName() {
-        if let stats = getDiskStats(forBSDName: bsdName) {
-            print("Total Space: \(stats.totalSpace)")
-            print("Free Space: \(stats.freeSpace)")
-            print("Bytes Read: \(stats.bytesRead)")
-            print("Bytes Written: \(stats.bytesWritten)")
-        } else {
-            print("Failed to retrieve disk stats.")
-        }
-    } else {
-        print("Failed to find the BSD name for the main Macintosh HD.")
-    }
-    
     let fetcher = BatteryInfoFetcher()
     return fetcher.fetchBatteryInfo()
 }
