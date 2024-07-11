@@ -255,10 +255,6 @@ impl BatteryTrait for Metrics {
         let mut device_batteries: Vec<DeviceBattery> = Vec::new();
         let swift_battery_info = unsafe {fetch_battery_info()};
 
-        // unsafe {
-        //     monitor_battery_usage()
-        // }
-
         if let Some(manager) = &self.batteries {
             if let Ok(batteries) = manager.batteries() {
                 for battery in batteries {

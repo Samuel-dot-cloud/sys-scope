@@ -55,7 +55,6 @@ class DiskUtility {
         do {
             let attributes = try FileManager.default.attributesOfFileSystem(forPath: path)
             if let space = (attributes[key] as? NSNumber)?.int64Value {
-                print("The space: \(space)")
                 return space
             }
         } catch {
@@ -64,31 +63,57 @@ class DiskUtility {
         return nil
     }
     
-    //TODO: Fix the below logic to get stats
+    private static func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int) -> io_registry_entry_t? {
+        var parent: io_registry_entry_t = 0
+        
+        if IORegistryEntryGetParentEntry(obj, kIOServiceClass, &parent) != KERN_SUCCESS {
+            return nil
+        }
+        
+        for _ in 1...level where IORegistryEntryGetParentEntry(parent, kIOServicePlane, &parent) != KERN_SUCCESS {
+            IOObjectRelease(parent)
+            return nil
+        }
+        
+        return parent
+    }
+    
+    private static func getIOProperties(_ entry: io_registry_entry_t) -> NSDictionary? {
+        var properties: Unmanaged<CFMutableDictionary>? = nil
+        
+        if IORegistryEntryCreateCFProperties(entry, &properties, kCFAllocatorDefault, 0) != kIOReturnSuccess {
+            return nil
+        }
+        
+        defer {
+            properties?.release()
+        }
+        
+        return properties?.takeUnretainedValue()
+    }
+    
     private static func getDiskIOStats(bsdName: String) -> (read: Int64, write: Int64)? {
-            var disk = IOServiceGetMatchingService(kIOMasterPortDefault, IOBSDNameMatching(kIOMasterPortDefault, 0, bsdName))
-            guard disk != 0 else { return nil }
-            defer { IOObjectRelease(disk) }
-            
-            var parent = disk
-            while IOObjectConformsTo(disk, kIOBlockStorageDeviceClass) == 0 {
-                let error = IORegistryEntryGetParentEntry(disk, kIOServicePlane, &parent)
-                if error != KERN_SUCCESS || parent == 0 { return nil }
-                IOObjectRelease(disk)
-                disk = parent
-            }
-            
-            guard IOObjectConformsTo(disk, kIOBlockStorageDeviceClass) != 0 else { return nil }
-            
-            guard let props = IORegistryEntryCreateCFProperty(disk, "Statistics" as CFString, kCFAllocatorDefault, 0)?.takeUnretainedValue() as? [String: AnyObject] else {
+        var disk = IOServiceGetMatchingService(kIOMasterPortDefault, IOBSDNameMatching(kIOMasterPortDefault, 0, bsdName))
+        guard disk != 0 else { return nil }
+        defer { IOObjectRelease(disk) }
+        
+        let partitionLevel = bsdName.filter {"0"..."9"~=$0}.count
+        
+        if let parent = getDeviceIOParent(disk, level: partitionLevel) {
+            guard let props = getIOProperties(parent) else {
                 return nil
             }
-            
-            let bytesRead = props["Bytes (Read)"] as? Int64 ?? 0
-            let bytesWritten = props["Bytes (Write)"] as? Int64 ?? 0
-            
-            return (read: bytesRead, write: bytesWritten)
+            if let statistics = props.object(forKey: "Statistics") as? NSDictionary {
+                let bytesRead = statistics.object(forKey: "Bytes (Read)") as? Int64 ?? 0
+                let bytesWritten = statistics.object(forKey: "Bytes (Write)") as? Int64 ?? 0
+                
+                return (read: bytesRead, write: bytesWritten)
+            }
+        } else {
+            return nil
         }
+        return nil
+    }
 }
 
 func findMainMacintoshHDBSDName() -> String? {
