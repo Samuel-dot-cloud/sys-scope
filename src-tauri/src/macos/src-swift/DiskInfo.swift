@@ -63,25 +63,6 @@ func getTopDiskIOprocesses(topN: Int = 5) -> [DiskProcess]? {
     return Array(processes.prefix(topN))
 }
 
-private func runProcess(path: String, args: [String]) -> String? {
-    let task = Process()
-    task.executableURL = URL(fileURLWithPath: path)
-    task.arguments = args
-    
-    let outputPipe = Pipe()
-    task.standardOutput = outputPipe
-    
-    do {
-        try task.run()
-        
-    } catch {
-        return nil
-    }
-    
-    let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-    return String(decoding: outputData, as: UTF8.self)
-}
-
 private func getProcessDiskIOStats(pid: Int32) -> (read: Int, write: Int)? {
     var usage = rusage_info_current()
     let result = withUnsafeMutablePointer(to: &usage) {
@@ -142,35 +123,6 @@ class DiskUtility {
             print("Error retrieving disk space for \(path): \(error.localizedDescription)")
         }
         return nil
-    }
-    
-    private static func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int) -> io_registry_entry_t? {
-        var parent: io_registry_entry_t = 0
-        
-        if IORegistryEntryGetParentEntry(obj, kIOServiceClass, &parent) != KERN_SUCCESS {
-            return nil
-        }
-        
-        for _ in 1...level where IORegistryEntryGetParentEntry(parent, kIOServicePlane, &parent) != KERN_SUCCESS {
-            IOObjectRelease(parent)
-            return nil
-        }
-        
-        return parent
-    }
-    
-    private static func getIOProperties(_ entry: io_registry_entry_t) -> NSDictionary? {
-        var properties: Unmanaged<CFMutableDictionary>? = nil
-        
-        if IORegistryEntryCreateCFProperties(entry, &properties, kCFAllocatorDefault, 0) != kIOReturnSuccess {
-            return nil
-        }
-        
-        defer {
-            properties?.release()
-        }
-        
-        return properties?.takeUnretainedValue()
     }
     
     private static func getDiskIOStats(bsdName: String) -> (read: Int64, write: Int64)? {

@@ -1,4 +1,4 @@
-import Cocoa
+import Foundation
 import SwiftRs
 import IOKit.ps
 
@@ -147,15 +147,6 @@ class BatteryInfoFetcher {
 
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
-        if let topProcesses = getTopDiskIOprocesses() {
-            print("Top processes by Disk I/O:")
-            for process in topProcesses {
-                print("PID: \(process.pid), Name: \(process.name), Bytes Read: \(process.bytesRead), Bytes Written: \(process.bytesWritten)")
-            }
-        } else {
-            print("Failed to retrieve disk I/O processes")
-        }
-   
     let fetcher = BatteryInfoFetcher()
     return fetcher.fetchBatteryInfo()
 }
@@ -210,25 +201,6 @@ func getTopBatteryProcesses() -> SRObjectArray {
     
     processInfo.sort { $0.power > $1.power}
     return SRObjectArray(processInfo)
-}
-
-//TODO: Investigate replacing for-loop with NSRunningApplication check
-private func getProcessIconBase64(for processName: String) -> String? {
-    let workspace = NSWorkspace.shared
-    let applications = workspace.runningApplications
-    for app in applications {
-        if app.localizedName == processName, let icon = app.icon {
-            return convertImageToBase64(icon)
-        }
-    }
-    return convertImageToBase64(workspace.icon(forFile: "/bin/bash"))
-}
-
-private func convertImageToBase64(_ image: NSImage) -> String? {
-    guard let tiffData = image.tiffRepresentation else { return nil }
-    guard let bitmap = NSBitmapImageRep(data: tiffData) else { return nil }
-    guard let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
-    return pngData.base64EncodedString()
 }
 
 
