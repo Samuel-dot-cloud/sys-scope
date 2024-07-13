@@ -147,6 +147,15 @@ class BatteryInfoFetcher {
 
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
+        if let topProcesses = getTopDiskIOprocesses() {
+            print("Top processes by Disk I/O:")
+            for process in topProcesses {
+                print("PID: \(process.pid), Name: \(process.name), Bytes Read: \(process.bytesRead), Bytes Written: \(process.bytesWritten)")
+            }
+        } else {
+            print("Failed to retrieve disk I/O processes")
+        }
+   
     let fetcher = BatteryInfoFetcher()
     return fetcher.fetchBatteryInfo()
 }
@@ -156,6 +165,7 @@ func getTopBatteryProcesses() -> SRObjectArray {
     let command = "/usr/bin/top"
     let arguments = ["-o", "power", "-l", "2", "-n", "5", "-stats", "pid,command,state,power"]
     
+    //TODO: Refactor the process logic into a reusable method
     // Create a process instance
     let process = Process()
     process.executableURL = URL(fileURLWithPath: command)

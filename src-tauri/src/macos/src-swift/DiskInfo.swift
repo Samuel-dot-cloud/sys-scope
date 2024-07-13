@@ -1,4 +1,4 @@
-import Foundation
+import Cocoa
 import IOKit
 import IOKit.storage
 import DiskArbitration
@@ -15,6 +15,87 @@ class DiskStats: NSObject {
         self.bytesRead = bytesRead
         self.bytesWritten = bytesWritten
     }
+}
+
+class DiskProcess: NSObject {
+    let pid: Int32
+    let name: String
+    var bytesRead: Int
+    var bytesWritten: Int
+    
+    init(pid: Int32, name: String, bytesRead: Int, bytesWritten: Int) {
+        self.pid = pid
+        self.name = name
+        self.bytesRead = bytesRead
+        self.bytesWritten = bytesWritten
+    }
+}
+
+func getTopDiskIOprocesses(topN: Int = 5) -> [DiskProcess]? {
+    var processes: [DiskProcess] = []
+    
+    guard let output = runProcess(path: "/bin/ps", args: ["-Aceo pid,args", "-r"]) else {
+        return nil
+    }
+    
+    output.enumerateLines { (line, _) -> Void in
+        let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+        if components.count == 2, let pid = Int32(components[0]) {
+            var name = String(components[1])
+            
+            if let lastComponent = URL(string: name)?.lastPathComponent {
+                name = lastComponent
+            }
+            
+            if let ioStats = getProcessDiskIOStats(pid: pid) {
+                processes.append(DiskProcess(
+                    pid: pid,
+                    name: name,
+                    bytesRead: ioStats.read,
+                    bytesWritten: ioStats.write)
+                )
+            }
+        }
+    }
+    
+    processes.sort { max($0.bytesRead, $0.bytesWritten) > max($1.bytesRead, $1.bytesWritten)}
+    
+    return Array(processes.prefix(topN))
+}
+
+private func runProcess(path: String, args: [String]) -> String? {
+    let task = Process()
+    task.executableURL = URL(fileURLWithPath: path)
+    task.arguments = args
+    
+    let outputPipe = Pipe()
+    task.standardOutput = outputPipe
+    
+    do {
+        try task.run()
+        
+    } catch {
+        return nil
+    }
+    
+    let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+    return String(decoding: outputData, as: UTF8.self)
+}
+
+private func getProcessDiskIOStats(pid: Int32) -> (read: Int, write: Int)? {
+    var usage = rusage_info_current()
+    let result = withUnsafeMutablePointer(to: &usage) {
+        $0.withMemoryRebound(to: (rusage_info_t?.self), capacity: 1) {
+            proc_pid_rusage(pid, RUSAGE_INFO_CURRENT, $0)
+        }
+    }
+    guard result == 0 else {
+        return nil
+    }
+    let bytesRead = Int(usage.ri_diskio_bytesread)
+    let bytesWritten = Int(usage.ri_diskio_byteswritten)
+    
+    return (read: bytesRead, write: bytesWritten)
 }
 
 class DiskUtility {
