@@ -31,36 +31,62 @@ class DiskProcess: NSObject {
     }
 }
 
-func getTopDiskIOprocesses(topN: Int = 5) -> [DiskProcess]? {
-    var processes: [DiskProcess] = []
+class DiskMonitor {
+    private var processList: [Int32: DiskProcess] = [:]
     
-    guard let output = runProcess(path: "/bin/ps", args: ["-Aceo pid,args", "-r"]) else {
-        return nil
-    }
-    
-    output.enumerateLines { (line, _) -> Void in
-        let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
-        if components.count == 2, let pid = Int32(components[0]) {
-            var name = String(components[1])
-            
-            if let lastComponent = URL(string: name)?.lastPathComponent {
-                name = lastComponent
-            }
-            
-            if let ioStats = getProcessDiskIOStats(pid: pid) {
-                processes.append(DiskProcess(
-                    pid: pid,
-                    name: name,
-                    bytesRead: ioStats.read,
-                    bytesWritten: ioStats.write)
-                )
+    func updateProcessDiskIOStats() -> [DiskProcess] {
+        guard let output = runProcess(path: "/bin/ps", args: ["-eo", "pid=,comm=", "-r"]) else {
+            return []
+        }
+        
+        var newProcesses: [DiskProcess] = []
+        
+        output.enumerateLines { (line, _) -> Void in
+            let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+            if components.count == 2, let pid = Int32(components[0]) {
+                var pathComponent = String(components[1])
+                let name = URL(fileURLWithPath: pathComponent).lastPathComponent
+                
+                if let ioStats = getProcessDiskIOStats(pid: pid) {
+                    if let existingProcess = self.processList[pid] {
+                        let readDiff = ioStats.read - existingProcess.bytesRead
+                        let writeDiff = ioStats.write - existingProcess.bytesWritten
+                        
+                        if readDiff != 0 || writeDiff != 0 {
+                            newProcesses.append(DiskProcess(
+                                pid: pid,
+                                name: name,
+                                bytesRead: readDiff,
+                                bytesWritten: writeDiff)
+                            )
+                        }
+                        existingProcess.bytesRead = ioStats.read
+                        existingProcess.bytesWritten = ioStats.write
+                    } else {
+                        let newProcess = DiskProcess(
+                            pid: pid,
+                            name: name,
+                            bytesRead: ioStats.read,
+                            bytesWritten: ioStats.write)
+                        self.processList[pid] = newProcess
+                    }
+                }
             }
         }
+        newProcesses.sort { max($0.bytesRead, $0.bytesWritten) > max($1.bytesRead, $1.bytesWritten)}
+        return Array(newProcesses.prefix(5))
     }
     
-    processes.sort { max($0.bytesRead, $0.bytesWritten) > max($1.bytesRead, $1.bytesWritten)}
-    
-    return Array(processes.prefix(topN))
+    func startMonitoring() {
+        while true {
+            let topProcesses = updateProcessDiskIOStats()
+//            print("Top Processes by Disk I/O:")
+//            for process in topProcesses {
+//                print("PID: \(process.pid), Name: \(process.name), Bytes Read: \(process.bytesRead), Bytes Written: \(process.bytesWritten)")
+//            }
+            sleep(3)
+        }
+    }
 }
 
 private func getProcessDiskIOStats(pid: Int32) -> (read: Int, write: Int)? {

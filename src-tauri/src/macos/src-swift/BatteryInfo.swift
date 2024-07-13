@@ -147,6 +147,9 @@ class BatteryInfoFetcher {
 
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
+//    let diskMonitor = DiskMonitor()
+//    diskMonitor.startMonitoring()
+    
     let fetcher = BatteryInfoFetcher()
     return fetcher.fetchBatteryInfo()
 }
