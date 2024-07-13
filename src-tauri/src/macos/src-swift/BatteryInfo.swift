@@ -156,27 +156,7 @@ func getTopBatteryProcesses() -> SRObjectArray {
     let command = "/usr/bin/top"
     let arguments = ["-o", "power", "-l", "2", "-n", "5", "-stats", "pid,command,state,power"]
     
-    //TODO: Refactor the process logic into a reusable method
-    // Create a process instance
-    let process = Process()
-    process.executableURL = URL(fileURLWithPath: command)
-    process.arguments = arguments
-    
-    // Create a pipe to capture the output
-    let pipe = Pipe()
-    process.standardOutput = pipe
-    process.standardError = pipe
-    
-    do {
-        try process.run()
-    } catch {
-        print("Failed to run top command: \(error)")
-        return SRObjectArray([])
-    }
-    
-    let data = pipe.fileHandleForReading.readDataToEndOfFile()
-    guard let output = String(data: data, encoding: .utf8) else {
-        print("Failed to read output")
+    guard let output = runProcess(path: command, args: arguments) else {
         return SRObjectArray([])
     }
     
