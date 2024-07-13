@@ -10,6 +10,7 @@ use crate::macos::set_transparent_titlebar;
 use crate::helpers::fs::load_settings;
 use crate::state::Settings;
 use crate::ui::tray::{MAIN_WINDOW_LABEL, setup_tray};
+#[allow(unused_imports)]
 use crate::ui::window::decorate_window;
 
 pub type SettingsState = RwLock<Settings>;
