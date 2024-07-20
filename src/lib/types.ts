@@ -78,6 +78,8 @@ export interface Disk {
     fileSystem: string;
     diskType: string;
     isRemovable: boolean;
+    bytesRead: number;
+    bytesWritten: number;
     timestamp: Timestamp;
 }
 
@@ -106,7 +108,7 @@ export interface DeviceBattery {
     voltage: number;
 }
 
-export interface TopProcess {
+export interface BatteryProcess {
     pid: number,
     name: string,
     power: number,

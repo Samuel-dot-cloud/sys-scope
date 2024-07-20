@@ -27,6 +27,8 @@ const DiskComponent = () => {
                 convertBytes(disk?.used ?? 0, Unit.GB).toFixed(2) + ' GB'
         },
         {name: "Location", value: disk?.mountPoint},
+        {name: "Bytes read", value: convertBytes(disk?.bytesRead ?? 0, Unit.GB).toFixed(2) + ' GB' },
+        {name: "Bytes written", value: convertBytes(disk?.bytesWritten ?? 0, Unit.GB).toFixed(2) + ' GB'},
         {name: "Removable", value: disk?.isRemovable ? "✅" : "❌"},
         {name: "File system", value: disk?.fileSystem}
     ];

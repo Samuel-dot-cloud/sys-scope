@@ -1,15 +1,15 @@
 import Cocoa
 import IOKit
 import IOKit.storage
-import DiskArbitration
+import SwiftRs
 
-class DiskStats: NSObject {
-    let totalSpace: Int64
-    let freeSpace: Int64
-    let bytesRead: Int64
-    let bytesWritten: Int64
+class DiskInfo: NSObject {
+    let totalSpace: Int
+    let freeSpace: Int
+    let bytesRead: Int
+    let bytesWritten: Int
     
-    init(totalSpace: Int64, freeSpace: Int64, bytesRead: Int64, bytesWritten: Int64) {
+    init(totalSpace: Int, freeSpace: Int, bytesRead: Int, bytesWritten: Int) {
         self.totalSpace = totalSpace
         self.freeSpace = freeSpace
         self.bytesRead = bytesRead
@@ -18,12 +18,12 @@ class DiskStats: NSObject {
 }
 
 class DiskProcess: NSObject {
-    let pid: Int32
-    let name: String
+    let pid: Int
+    let name: SRString
     var bytesRead: Int
     var bytesWritten: Int
     
-    init(pid: Int32, name: String, bytesRead: Int, bytesWritten: Int) {
+    init(pid: Int, name: SRString, bytesRead: Int, bytesWritten: Int) {
         self.pid = pid
         self.name = name
         self.bytesRead = bytesRead
@@ -34,7 +34,7 @@ class DiskProcess: NSObject {
 class DiskMonitor {
     private var processList: [Int32: DiskProcess] = [:]
     
-    func updateProcessDiskIOStats() -> [DiskProcess] {
+    func getDiskProcessIOStats() -> [DiskProcess] {
         guard let output = runProcess(path: "/bin/ps", args: ["-eo", "pid=,comm=", "-r"]) else {
             return []
         }
@@ -53,21 +53,24 @@ class DiskMonitor {
                         let writeDiff = ioStats.write - existingProcess.bytesWritten
                         
                         if readDiff != 0 || writeDiff != 0 {
-                            newProcesses.append(DiskProcess(
-                                pid: pid,
-                                name: name,
-                                bytesRead: readDiff,
-                                bytesWritten: writeDiff)
+                            newProcesses.append(
+                                DiskProcess(
+                                    pid: Int(pid),
+                                    name: SRString(name),
+                                    bytesRead: readDiff,
+                                    bytesWritten: writeDiff
+                                )
                             )
                         }
                         existingProcess.bytesRead = ioStats.read
                         existingProcess.bytesWritten = ioStats.write
                     } else {
                         let newProcess = DiskProcess(
-                            pid: pid,
-                            name: name,
+                            pid: Int(pid),
+                            name: SRString(name),
                             bytesRead: ioStats.read,
-                            bytesWritten: ioStats.write)
+                            bytesWritten: ioStats.write
+                        )
                         self.processList[pid] = newProcess
                     }
                 }
@@ -75,17 +78,6 @@ class DiskMonitor {
         }
         newProcesses.sort { max($0.bytesRead, $0.bytesWritten) > max($1.bytesRead, $1.bytesWritten)}
         return Array(newProcesses.prefix(5))
-    }
-    
-    func startMonitoring() {
-        while true {
-            let topProcesses = updateProcessDiskIOStats()
-//            print("Top Processes by Disk I/O:")
-//            for process in topProcesses {
-//                print("PID: \(process.pid), Name: \(process.name), Bytes Read: \(process.bytesRead), Bytes Written: \(process.bytesWritten)")
-//            }
-            sleep(3)
-        }
     }
 }
 
@@ -106,7 +98,8 @@ private func getProcessDiskIOStats(pid: Int32) -> (read: Int, write: Int)? {
 }
 
 class DiskUtility {
-    static func getDiskStats(forBSDName bsdName: String) -> DiskStats? {
+    static func getDiskInfo() -> DiskInfo? {
+        let bsdName = findMainMacintoshHDBSDName() ?? ""
         guard let mountPoint = getMountPoint(forBSDName: bsdName),
               let totalSpace = getTotalDiskSpace(at: mountPoint),
               let freeSpace = getFreeDiskSpace(at: mountPoint),
@@ -114,7 +107,7 @@ class DiskUtility {
             return nil
         }
         
-        return DiskStats(totalSpace: totalSpace, freeSpace: freeSpace, bytesRead: ioStats.read, bytesWritten: ioStats.write)
+        return DiskInfo(totalSpace: Int(totalSpace), freeSpace: Int(freeSpace), bytesRead: Int(ioStats.read), bytesWritten: Int(ioStats.write))
     }
     
     private static func getMountPoint(forBSDName bsdName: String) -> String? {
@@ -194,6 +187,14 @@ func findMainMacintoshHDBSDName() -> String? {
     return nil
 }
 
-func getDiskStats(forBSDName bsdName: String) -> DiskStats? {
-    return DiskUtility.getDiskStats(forBSDName: bsdName)
+@_cdecl("get_disk_info")
+func getDiskInfo() -> DiskInfo? {
+    return DiskUtility.getDiskInfo()
+}
+
+@_cdecl("get_disk_processes")
+func getDiskProcesses() -> SRObjectArray {
+    let diskMonitor = DiskMonitor()
+    let topProcesses = diskMonitor.getDiskProcessIOStats()
+    return SRObjectArray(topProcesses)
 }

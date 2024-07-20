@@ -31,14 +31,32 @@ pub struct BatteryInfo {
 }
 
 #[repr(C)]
-pub struct TopProcess {
+pub struct BatteryProcess {
     pub pid: Int,
     pub name: SRString,
     pub power: Double,
     pub icon_base_64: SRString,
 }
 
+#[repr(C)]
+pub struct DiskInfo {
+    pub total_space: Int,
+    pub free_space: Int,
+    pub bytes_read: Int,
+    pub bytes_written: Int,
+}
+
+#[repr(C)]
+pub struct DiskProcess {
+    pub pid: Int,
+    pub name: SRString,
+    pub bytes_read: Int,
+    pub bytes_written: Int,
+}
+
 swift!(pub fn set_transparent_titlebar(window: &NSObject));
 swift!(pub fn fetch_battery_info() -> SRObject<BatteryInfo>);
-swift!(pub fn get_top_battery_processes() -> SRObjectArray<TopProcess>);
+swift!(pub fn get_top_battery_processes() -> SRObjectArray<BatteryProcess>);
+swift!(pub fn get_disk_info() -> Option<SRObject<DiskInfo>>);
+swift!(pub fn get_disk_processes() -> SRObjectArray<DiskProcess>);
 

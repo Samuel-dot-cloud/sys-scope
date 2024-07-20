@@ -11,7 +11,7 @@ use crate::models::{
     convert_processes, BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage, Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait, TopProcess
 };
 use crate::utils::{current_time, get_percentage, round};
-use crate::macos::{fetch_battery_info, get_top_battery_processes};
+use crate::macos::{fetch_battery_info, get_top_battery_processes, get_disk_info};
 
 pub struct Metrics {
     sys: System,
@@ -119,6 +119,22 @@ impl CpuTrait for Metrics {
 
 impl DiskTrait for Metrics {
     fn get_disks(&mut self) -> Vec<Disk> {
+        let swift_disk_info = unsafe { get_disk_info() };
+
+        let (total_space, free_space, bytes_read, bytes_written) = match swift_disk_info {
+            Some(info) => {
+                (
+                    info.total_space as u64,
+                    info.free_space as u64,
+                    info.bytes_read as u64,
+                    info.bytes_written as u64,
+                )
+            },
+            None => {
+                (0, 0, 0, 0)
+            }
+        };
+
         let disks: Vec<Disk> = self
             .disks
             .iter()
@@ -137,8 +153,8 @@ impl DiskTrait for Metrics {
 
                 let file_system = disk.file_system().to_string_lossy().to_ascii_uppercase();
 
-                let total = disk.total_space();
-                let free = disk.available_space();
+                let total = total_space;
+                let free = free_space;
                 let used = total - free;
                 let is_removable = disk.is_removable();
                 let mount_point = disk.mount_point().to_owned();
@@ -152,6 +168,8 @@ impl DiskTrait for Metrics {
                     file_system,
                     is_removable,
                     disk_type,
+                    bytes_read,
+                    bytes_written,
                     timestamp: current_time(),
                 }
             })

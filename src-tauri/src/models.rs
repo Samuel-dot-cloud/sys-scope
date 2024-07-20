@@ -107,6 +107,8 @@ pub struct Disk {
     pub file_system: String,
     pub disk_type: String,
     pub is_removable: bool,
+    pub bytes_read: u64,
+    pub bytes_written: u64,
     pub timestamp: Timestamp,
 }
 
@@ -133,7 +135,7 @@ pub struct TopProcess {
     pub icon_base_64: String,
 }
 
-fn convert_top_process(source: &crate::macos::TopProcess) -> TopProcess {
+fn convert_top_process(source: &crate::macos::BatteryProcess) -> TopProcess {
     TopProcess {
          pid: source.pid as u64,
           name: source.name.parse().unwrap(),
@@ -142,7 +144,7 @@ fn convert_top_process(source: &crate::macos::TopProcess) -> TopProcess {
          }
 }
 
-pub fn convert_processes(source: SRObjectArray<crate::macos::TopProcess>) -> Vec<TopProcess> {
+pub fn convert_processes(source: SRObjectArray<crate::macos::BatteryProcess>) -> Vec<TopProcess> {
     source.into_iter().map(|value| convert_top_process(value.as_ref())).collect()
 }
 

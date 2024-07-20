@@ -10,7 +10,7 @@ import {
     ServerEvent,
     Swap,
     SysInfo,
-    TopProcess
+    BatteryProcess
 } from "../lib/types.ts";
 import useServerEventsEnumerableStore, {Enumerable} from "../hooks/useServerEventsEnumerableStore.tsx";
 import useServerEventsStore from "../hooks/useServerEventsStore.tsx";
@@ -30,7 +30,7 @@ interface ServerEventsContext {
     cpus: Enumerable<Cpu>[];
     disks: Enumerable<Disk>[];
     batteries: DeviceBattery[];
-    batteryProcesses: TopProcess[];
+    batteryProcesses: BatteryProcess[];
 }
 
 const load: LoadAverage = {
@@ -75,7 +75,7 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({ children })
     const [cpus] = useServerEventsEnumerableStore<Cpu>(ServerEvent.Cpus, { maxSize: 1});
     const [disks] = useServerEventsEnumerableStore<Disk>(ServerEvent.Disks, { maxSize: 1 });
     const [batteries] = useServerEventsStore<DeviceBattery[]>(ServerEvent.Batteries, { maxSize: 1 });
-    const [batteryProcesses] = useServerEventsStore<TopProcess[]>(ServerEvent.BatteryProcesses, { maxSize });
+    const [batteryProcesses] = useServerEventsStore<BatteryProcess[]>(ServerEvent.BatteryProcesses, { maxSize });
 
     return (
         <ServerEventsContext.Provider

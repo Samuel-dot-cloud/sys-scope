@@ -40,5 +40,6 @@
   },
   "resolutions": {
     "styled-components": "^5"
-  }
+  },
+  "packageManager": "yarn@4.3.1"
 }

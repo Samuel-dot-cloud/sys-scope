@@ -47,7 +47,7 @@ public class BatteryInfo: NSObject {
     }
 }
 
-class TopProcess: NSObject {
+class BatteryProcess: NSObject {
     let pid: Int
     let name: SRString
     let power: Double
@@ -148,7 +148,8 @@ class BatteryInfoFetcher {
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
 //    let diskMonitor = DiskMonitor()
-//    diskMonitor.startMonitoring()
+//    let array = diskMonitor.getDiskProcessIOStats()
+//    print("The array: \(array)")
     
     let fetcher = BatteryInfoFetcher()
     return fetcher.fetchBatteryInfo()
@@ -164,7 +165,7 @@ func getTopBatteryProcesses() -> SRObjectArray {
     }
     
     // Parse the output
-    var processInfo: [TopProcess] = []
+    var processInfo: [BatteryProcess] = []
     let lines = output.split(separator: "\n")
     for line in lines {
         let regex = try! NSRegularExpression(pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#, options: [])
@@ -176,7 +177,7 @@ func getTopBatteryProcesses() -> SRObjectArray {
             
             if power > 0 {
                 let iconBase64 = getProcessIconBase64(for: processName) ?? ""
-                let topProcess = TopProcess(pid: pid, name: SRString(processName), power: power, iconBase64: SRString(iconBase64))
+                let topProcess = BatteryProcess(pid: pid, name: SRString(processName), power: power, iconBase64: SRString(iconBase64))
                 processInfo.append(topProcess)
             }
         }
