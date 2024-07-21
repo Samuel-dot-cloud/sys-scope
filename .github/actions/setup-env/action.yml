@@ -5,8 +5,8 @@ runs:
   using: 'composite'
   steps:
    - name: Enable corepack
-      shell: bash
-      run: corepack enable
+     shell: bash
+     run: corepack enable
 
     - name: Setup node
       uses: actions/setup-node@v4
