@@ -44,7 +44,9 @@ const DiskComponent = () => {
                 ))}
             </StatList>
 
-            <Section>
+            {/* TODO: Bring back processes list when retrival logic is fixed */}
+            
+            {/* <Section>
                 <SectionTitle>Processes</SectionTitle>
                 <HeaderItem>
                     <Label>Process</Label>
@@ -66,7 +68,7 @@ const DiskComponent = () => {
                         </StatItem>
                     ))}
                 </StatList>
-            </Section>
+            </Section> */}
         </Container>
     );
 }
