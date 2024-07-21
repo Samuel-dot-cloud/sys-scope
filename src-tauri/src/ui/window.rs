@@ -1,7 +1,9 @@
 use anyhow::Result;
+#[allow(unused_imports)]
 use tauri::{AppHandle, Runtime, Theme, TitleBarStyle, Window, WindowBuilder, WindowUrl};
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+#[allow(unused_imports)]
 use crate::macos::set_transparent_titlebar;
 
 pub fn decorate_window<R: Runtime>(window: &Window<R>) {

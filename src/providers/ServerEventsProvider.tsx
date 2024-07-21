@@ -10,7 +10,8 @@ import {
     ServerEvent,
     Swap,
     SysInfo,
-    TopProcess
+    BatteryProcess,
+    DiskProcess
 } from "../lib/types.ts";
 import useServerEventsEnumerableStore, {Enumerable} from "../hooks/useServerEventsEnumerableStore.tsx";
 import useServerEventsStore from "../hooks/useServerEventsStore.tsx";
@@ -30,7 +31,8 @@ interface ServerEventsContext {
     cpus: Enumerable<Cpu>[];
     disks: Enumerable<Disk>[];
     batteries: DeviceBattery[];
-    batteryProcesses: TopProcess[];
+    batteryProcesses: BatteryProcess[];
+    diskProcesses: DiskProcess[];
 }
 
 const load: LoadAverage = {
@@ -55,6 +57,7 @@ export const ServerEventsContext = createContext<ServerEventsContext>({
     batteryProcesses: [],
     cpus: [],
     disks: [],
+    diskProcesses: [],
     globalCpu: [],
     memory: [],
     networks: [],
@@ -75,7 +78,8 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({ children })
     const [cpus] = useServerEventsEnumerableStore<Cpu>(ServerEvent.Cpus, { maxSize: 1});
     const [disks] = useServerEventsEnumerableStore<Disk>(ServerEvent.Disks, { maxSize: 1 });
     const [batteries] = useServerEventsStore<DeviceBattery[]>(ServerEvent.Batteries, { maxSize: 1 });
-    const [batteryProcesses] = useServerEventsStore<TopProcess[]>(ServerEvent.BatteryProcesses, { maxSize });
+    const [batteryProcesses] = useServerEventsStore<BatteryProcess[]>(ServerEvent.BatteryProcesses, { maxSize });
+    const [diskProcesses] = useServerEventsStore<DiskProcess[]>(ServerEvent.DiskProcesses, { maxSize });
 
     return (
         <ServerEventsContext.Provider
@@ -90,6 +94,7 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({ children })
                 disks,
                 batteries: batteries[batteries.length - 1] ?? [],
                 batteryProcesses: batteryProcesses[batteryProcesses.length - 1] ?? [],
+                diskProcesses: diskProcesses[diskProcesses.length - 1] ?? [],
             }}
             >
             {children}

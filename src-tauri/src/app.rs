@@ -66,4 +66,9 @@ impl AppState {
         let processes = self.0.lock().unwrap().metrics.get_battery_processes();
         window.emit("emit_battery_processes", &processes).unwrap();
     }
+
+    pub fn emit_disk_processes<R: Runtime>(&self, window: &Window<R>) {
+        let processes = self.0.lock().unwrap().metrics.get_disk_processes();
+        window.emit("emit_disk_processes", &processes).unwrap();
+    }
 }

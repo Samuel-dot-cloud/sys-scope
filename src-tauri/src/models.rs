@@ -107,11 +107,24 @@ pub struct Disk {
     pub file_system: String,
     pub disk_type: String,
     pub is_removable: bool,
+    pub bytes_read: u64,
+    pub bytes_written: u64,
     pub timestamp: Timestamp,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DiskProcess {
+    pub pid: u32,
+    pub name: String,
+    pub bytes_read: u64,
+    pub bytes_written: u64,
+    pub icon_base_64: String,
 }
 
 pub trait DiskTrait {
     fn get_disks(&mut self) -> Vec<Disk>;
+    fn get_disk_processes(&mut self) -> Vec<DiskProcess>;
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -131,19 +144,6 @@ pub struct TopProcess {
     pub name: String,
     pub power: f64,
     pub icon_base_64: String,
-}
-
-fn convert_top_process(source: &crate::macos::TopProcess) -> TopProcess {
-    TopProcess {
-         pid: source.pid as u64,
-          name: source.name.parse().unwrap(),
-           power: source.power,
-            icon_base_64: source.icon_base_64.parse().unwrap(),
-         }
-}
-
-pub fn convert_processes(source: SRObjectArray<crate::macos::TopProcess>) -> Vec<TopProcess> {
-    source.into_iter().map(|value| convert_top_process(value.as_ref())).collect()
 }
 
 pub trait ProcessTrait {

@@ -8,7 +8,8 @@ export enum ServerEvent {
     Disks = "emit_disks",
     Processes = "emit_processes",
     Batteries = "emit_batteries",
-    BatteryProcesses = "emit_battery_processes"
+    BatteryProcesses = "emit_battery_processes",
+    DiskProcesses = "emit_disk_processes"
 }
 
 // Typescript interfaces/types from models.rs
@@ -78,7 +79,17 @@ export interface Disk {
     fileSystem: string;
     diskType: string;
     isRemovable: boolean;
+    bytesRead: number;
+    bytesWritten: number;
     timestamp: Timestamp;
+}
+
+export interface DiskProcess {
+    pid: number;
+    name: string;
+    bytesRead: number;
+    bytesWritten: number;
+    iconBase64: string;
 }
 
 export interface Process {
@@ -106,7 +117,7 @@ export interface DeviceBattery {
     voltage: number;
 }
 
-export interface TopProcess {
+export interface BatteryProcess {
     pid: number,
     name: string,
     power: number,

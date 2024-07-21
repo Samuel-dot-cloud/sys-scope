@@ -8,6 +8,7 @@ import {
   StatList,
   Value,
   SmallImage,
+  Section,
 } from "../../styles/globals.ts";
 
 interface BatteryDetail {
@@ -57,6 +58,7 @@ const BatteryComponent = () => {
         ))}
       </StatList>
 
+<Section>
       <SectionTitle>Processes</SectionTitle>
       <StatList>
         {[...batteryProcesses].slice(0, 5).map((process, index) => (
@@ -70,6 +72,7 @@ const BatteryComponent = () => {
           </StatItem>
         ))}
       </StatList>
+      </Section>
     </Container>
   );
 };

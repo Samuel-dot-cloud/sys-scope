@@ -10,6 +10,7 @@ use crate::macos::set_transparent_titlebar;
 use crate::helpers::fs::load_settings;
 use crate::state::Settings;
 use crate::ui::tray::{MAIN_WINDOW_LABEL, setup_tray};
+#[allow(unused_imports)]
 use crate::ui::window::decorate_window;
 
 pub type SettingsState = RwLock<Settings>;
@@ -71,6 +72,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
                     state.emit_processes(&win);
                     state.emit_batteries(&win);
                     state.emit_battery_processes(&win);
+                    // state.emit_disk_processes(&win);
                     tokio::time::sleep(Duration::from_secs(5)).await;
                 }
             });

@@ -1,4 +1,4 @@
-import Cocoa
+import Foundation
 import SwiftRs
 import IOKit.ps
 
@@ -47,7 +47,7 @@ public class BatteryInfo: NSObject {
     }
 }
 
-class TopProcess: NSObject {
+class BatteryProcess: NSObject {
     let pid: Int
     let name: SRString
     let power: Double
@@ -147,6 +147,13 @@ class BatteryInfoFetcher {
 
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
+//    let diskMonitor = DiskMonitor()
+//    let array = DiskMonitor.getDiskProcessIOStats()
+//    print("The array: \(array)")
+    
+//        let diskMonitor = DiskMonitor()
+//        diskMonitor.startMonitoring()
+    
     let fetcher = BatteryInfoFetcher()
     return fetcher.fetchBatteryInfo()
 }
@@ -156,31 +163,12 @@ func getTopBatteryProcesses() -> SRObjectArray {
     let command = "/usr/bin/top"
     let arguments = ["-o", "power", "-l", "2", "-n", "5", "-stats", "pid,command,state,power"]
     
-    // Create a process instance
-    let process = Process()
-    process.executableURL = URL(fileURLWithPath: command)
-    process.arguments = arguments
-    
-    // Create a pipe to capture the output
-    let pipe = Pipe()
-    process.standardOutput = pipe
-    process.standardError = pipe
-    
-    do {
-        try process.run()
-    } catch {
-        print("Failed to run top command: \(error)")
-        return SRObjectArray([])
-    }
-    
-    let data = pipe.fileHandleForReading.readDataToEndOfFile()
-    guard let output = String(data: data, encoding: .utf8) else {
-        print("Failed to read output")
+    guard let output = runProcess(path: command, args: arguments) else {
         return SRObjectArray([])
     }
     
     // Parse the output
-    var processInfo: [TopProcess] = []
+    var processInfo: [BatteryProcess] = []
     let lines = output.split(separator: "\n")
     for line in lines {
         let regex = try! NSRegularExpression(pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#, options: [])
@@ -192,7 +180,7 @@ func getTopBatteryProcesses() -> SRObjectArray {
             
             if power > 0 {
                 let iconBase64 = getProcessIconBase64(for: processName) ?? ""
-                let topProcess = TopProcess(pid: pid, name: SRString(processName), power: power, iconBase64: SRString(iconBase64))
+                let topProcess = BatteryProcess(pid: pid, name: SRString(processName), power: power, iconBase64: SRString(iconBase64))
                 processInfo.append(topProcess)
             }
         }
@@ -200,25 +188,6 @@ func getTopBatteryProcesses() -> SRObjectArray {
     
     processInfo.sort { $0.power > $1.power}
     return SRObjectArray(processInfo)
-}
-
-//TODO: Investigate replacing for-loop with NSRunningApplication check
-private func getProcessIconBase64(for processName: String) -> String? {
-    let workspace = NSWorkspace.shared
-    let applications = workspace.runningApplications
-    for app in applications {
-        if app.localizedName == processName, let icon = app.icon {
-            return convertImageToBase64(icon)
-        }
-    }
-    return convertImageToBase64(workspace.icon(forFile: "/bin/bash"))
-}
-
-private func convertImageToBase64(_ image: NSImage) -> String? {
-    guard let tiffData = image.tiffRepresentation else { return nil }
-    guard let bitmap = NSBitmapImageRep(data: tiffData) else { return nil }
-    guard let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
-    return pngData.base64EncodedString()
 }
 
 
