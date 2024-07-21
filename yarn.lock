@@ -4864,7 +4864,7 @@ __metadata:
     react-dom: "npm:^18.2.0"
     react-hot-toast: "npm:^2.4.1"
     react-router-dom: "npm:^6.21.1"
-    styled-components: "npm:^6.1.6"
+    styled-components: "npm:^6.1.12"
     styled-icons: "npm:^10.47.0"
     tauri-plugin-autostart-api: "https://github.com/tauri-apps/tauri-plugin-autostart#v1"
     typescript: "npm:^5.2.2"

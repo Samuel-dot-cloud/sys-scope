@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime, State};
-use tokio::io::AsyncReadExt;
 use crate::display::SettingsState;
 use crate::helpers::fs::save_settings;
 use crate::helpers::shortcut::{register_toggle_shortcut, unregister_global_shortcut};

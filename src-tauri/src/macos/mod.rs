@@ -52,6 +52,7 @@ pub struct DiskProcess {
     pub name: SRString,
     pub bytes_read: Int,
     pub bytes_written: Int,
+    pub icon_base_64: SRString,
 }
 
 swift!(pub fn set_transparent_titlebar(window: &NSObject));

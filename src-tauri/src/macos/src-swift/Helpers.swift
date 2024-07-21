@@ -30,7 +30,7 @@ public func getProcessIconBase64(for processName: String) -> String? {
     return convertImageToBase64(workspace.icon(forFile: "/bin/bash"))
 }
 
-public func convertImageToBase64(_ image: NSImage) -> String? {
+private func convertImageToBase64(_ image: NSImage) -> String? {
     guard let tiffData = image.tiffRepresentation else { return nil}
     guard let bitmap = NSBitmapImageRep(data: tiffData) else { return nil}
     guard let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }

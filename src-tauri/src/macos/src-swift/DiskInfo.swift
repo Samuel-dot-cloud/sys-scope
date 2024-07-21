@@ -22,17 +22,29 @@ class DiskProcess: NSObject {
     let name: SRString
     var bytesRead: Int
     var bytesWritten: Int
+    var iconBase64: SRString
     
-    init(pid: Int, name: SRString, bytesRead: Int, bytesWritten: Int) {
+    init(pid: Int, name: SRString, bytesRead: Int, bytesWritten: Int, iconBase64: SRString) {
         self.pid = pid
         self.name = name
+        self.bytesRead = bytesRead
+        self.bytesWritten = bytesWritten
+        self.iconBase64 = iconBase64
+    }
+}
+
+class IO: NSObject {
+    var bytesRead: Int
+    var bytesWritten: Int
+    
+    init(bytesRead: Int, bytesWritten: Int) {
         self.bytesRead = bytesRead
         self.bytesWritten = bytesWritten
     }
 }
 
 class DiskMonitor {
-    private var processList: [Int32: DiskProcess] = [:]
+    private var processList: [Int: IO] = [:]
     
     func getDiskProcessIOStats() -> [DiskProcess] {
         guard let output = runProcess(path: "/bin/ps", args: ["-eo", "pid=,comm=", "-r"]) else {
@@ -46,11 +58,13 @@ class DiskMonitor {
             if components.count == 2, let pid = Int32(components[0]) {
                 var pathComponent = String(components[1])
                 let name = URL(fileURLWithPath: pathComponent).lastPathComponent
+                let icon = getProcessIconBase64(for: name) ?? ""
                 
                 if let ioStats = getProcessDiskIOStats(pid: pid) {
-                    if let existingProcess = self.processList[pid] {
-                        let readDiff = ioStats.read - existingProcess.bytesRead
-                        let writeDiff = ioStats.write - existingProcess.bytesWritten
+                    if let existingIO = self.processList[Int(pid)] {
+                        print("The existing io: \(existingIO)")
+                        let readDiff: Int = ioStats.read - existingIO.bytesRead
+                        let writeDiff: Int = ioStats.write - existingIO.bytesWritten
                         
                         if readDiff != 0 || writeDiff != 0 {
                             newProcesses.append(
@@ -58,24 +72,27 @@ class DiskMonitor {
                                     pid: Int(pid),
                                     name: SRString(name),
                                     bytesRead: readDiff,
-                                    bytesWritten: writeDiff
+                                    bytesWritten: writeDiff,
+                                    iconBase64: SRString(icon)
                                 )
                             )
                         }
-                        existingProcess.bytesRead = ioStats.read
-                        existingProcess.bytesWritten = ioStats.write
+                        existingIO.bytesRead = ioStats.read
+                        existingIO.bytesWritten = ioStats.write
                     } else {
                         let newProcess = DiskProcess(
                             pid: Int(pid),
                             name: SRString(name),
                             bytesRead: ioStats.read,
-                            bytesWritten: ioStats.write
+                            bytesWritten: ioStats.write,
+                            iconBase64: SRString(icon)
                         )
-                        self.processList[pid] = newProcess
+                        self.processList[Int(pid)] = IO(bytesRead: Int(ioStats.read), bytesWritten: Int(ioStats.write))
                     }
                 }
             }
         }
+        print("--- Down here ---")
         newProcesses.sort { max($0.bytesRead, $0.bytesWritten) > max($1.bytesRead, $1.bytesWritten)}
         return Array(newProcesses.prefix(5))
     }
@@ -196,5 +213,6 @@ func getDiskInfo() -> DiskInfo? {
 func getDiskProcesses() -> SRObjectArray {
     let diskMonitor = DiskMonitor()
     let topProcesses = diskMonitor.getDiskProcessIOStats()
+    print("The top processes: \(topProcesses)")
     return SRObjectArray(topProcesses)
 }

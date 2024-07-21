@@ -40,6 +40,7 @@ export const StatItem = styled.ul`
     display: flex;
     justify-content: space-between;
     margin-bottom: 5px;
+    align-items: center;
 `;
 
 export const SmallImage = styled.img`
@@ -89,4 +90,11 @@ export const Title = styled.h3`
     padding-bottom: 5px;
     border-bottom: 1px solid ${props => `rgba(${ props.theme.borderRgba})`};
     margin: 0 0 10px;
+`;
+
+export const HeaderItem = styled.div`
+display: flex;
+justify-content: space-between;
+font-weight: bold;
+margin-bottom: 5px;
 `;
