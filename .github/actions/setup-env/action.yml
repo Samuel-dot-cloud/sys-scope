@@ -4,19 +4,15 @@ description: 'Sets up local action environment with the necessary components'
 runs:
   using: 'composite'
   steps:
+   - name: Enable corepack
+      shell: bash
+      run: corepack enable
+
     - name: Setup node
       uses: actions/setup-node@v4
       with:
         node-version: 20
         cache: 'yarn'
-
-    - name: Enable corepack
-      shell: bash
-      run: corepack enable
-
-    - name: Prepare yarn
-      shell: bash
-      run: corepack prepare yarn@4.3.1 --activate
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@1.75.0
