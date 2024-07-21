@@ -45,7 +45,7 @@ class IO: NSObject {
 
 class DiskMonitor {
     private var processList: [Int: IO] = [:]
-    
+    //TODO: Fix disk process retrieval logic
     func getDiskProcessIOStats() -> [DiskProcess] {
         guard let output = runProcess(path: "/bin/ps", args: ["-eo", "pid=,comm=", "-r"]) else {
             return []
@@ -92,7 +92,6 @@ class DiskMonitor {
                 }
             }
         }
-        print("--- Down here ---")
         newProcesses.sort { max($0.bytesRead, $0.bytesWritten) > max($1.bytesRead, $1.bytesWritten)}
         return Array(newProcesses.prefix(5))
     }
@@ -115,6 +114,7 @@ private func getProcessDiskIOStats(pid: Int32) -> (read: Int, write: Int)? {
 }
 
 class DiskUtility {
+    //TODO: Fix erroneous free and total disk space value
     static func getDiskInfo() -> DiskInfo? {
         let bsdName = findMainMacintoshHDBSDName() ?? ""
         guard let mountPoint = getMountPoint(forBSDName: bsdName),
