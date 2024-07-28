@@ -27,6 +27,76 @@ class MemoryUsage: NSObject {
     }
 }
 
+class MemoryProcess: NSObject {
+    var pid: Int
+    var name: SRString
+    var memory: Int
+    var iconBase64: SRString
+    
+    init(pid: Int, name: SRString, memory: Int, iconBase64: SRString) {
+        self.pid = pid
+        self.name = name
+        self.memory = memory
+        self.iconBase64 = iconBase64
+    }
+}
+
+//struct ProcessInfo {
+//    let pid: Int32
+//    let name: String
+//    let memory: UInt64
+//}
+//
+//func getMemoryUsageForProcess(pid: Int32) -> UInt64? {
+//    var info = proc_taskinfo()
+//    let result = withUnsafeMutablePointer(to: &info) {
+//        $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout<proc_taskinfo>.size) {
+//            proc_pidinfo(pid, PROC_PIDTASKINFO, 0, $0, Int32(MemoryLayout<proc_taskinfo>.size))
+//        }
+//    }
+//
+//    if result == Int32(MemoryLayout<proc_taskinfo>.size) {
+//        return info.pti_resident_size
+//    }
+//
+//    return nil
+//}
+//
+//func getProcessName(for pid: Int32) -> String? {
+//    let nameLength = 1024
+//    var name = [CChar](repeating: 0, count: nameLength)
+//    let result = proc_name(pid, &name, UInt32(nameLength))
+//
+//    if result > 0 {
+//        return String(cString: name)
+//    }
+//
+//    return nil
+//}
+
+//func getTopMemoryProcesses() -> [ProcessInfo] {
+//    var processes = [ProcessInfo]()
+//
+//    var pids = [Int32](repeating: 0, count: 1024)
+//    let numberOfProcesses = proc_listallpids(&pids, Int32(MemoryLayout<Int32>.size * pids.count))
+//
+//    if numberOfProcesses > 0 {
+//        for i in 0..<numberOfProcesses {
+//            let pid = pids[Int(i)]
+//            if let residentMemory = getMemoryUsageForProcess(pid: pid),
+//               let name = getProcessName(for: pid) {
+//               let processInfo = ProcessInfo(pid: pid, name: name, memory: residentMemory)
+//                processes.append(processInfo)
+//            }
+//        }
+//        processes.sort { $0.memory > $1.memory }
+//        return Array(processes.prefix(5))
+//
+//    }
+//
+//    return []
+//}
+
 @_cdecl("get_memory_usage_info")
 func getMemoryUsageInfo() -> MemoryUsage? {
     var stats = vm_statistics64()
@@ -64,4 +134,47 @@ func getMemoryUsageInfo() -> MemoryUsage? {
         used: Int(used),
         app: Int(app)
     )
+}
+
+@_cdecl("get_top_memory_processes")
+func getTopMemoryProcesses() -> [MemoryProcess]? {
+    let command = "/usr/bin/top"
+    let arguments = ["-l", "1", "-o", "mem", "-n", "5", "-stats", "pid,command,mem"]
+    
+    guard let output = runProcess(path: command, args: arguments) else {
+        return nil
+    }
+    
+    var processes = [MemoryProcess]()
+    let lines = output.split(separator: "\n")
+    var processLinesStarted = false
+    for line in lines {
+        let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+        if trimmedLine.starts(with: "PID") {
+            processLinesStarted = true
+            continue
+        }
+        
+        if processLinesStarted {
+            let columns = trimmedLine.split(separator: " ", omittingEmptySubsequences: true)
+            if columns.count >= 3 {
+                let pid = Int(columns[0]) ?? 0
+                let command = String(columns[1..<columns.count - 1].joined(separator: " "))
+                let processName = URL(fileURLWithPath: command).lastPathComponent
+                let memory = Int(columns.last!)
+                let iconBase64 = getProcessIconBase64(for: processName) ?? ""
+                let processInfo = MemoryProcess(
+                    pid: pid,
+                    name: SRString(processName),
+                    memory: memory ?? Int(0),
+                    iconBase64: SRString(iconBase64)
+                )
+                processes.append(processInfo)
+                if processes.count == 5 {
+                    break
+                }
+            }
+        }
+    }
+    return processes
 }
