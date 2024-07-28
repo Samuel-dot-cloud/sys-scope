@@ -1,24 +1,34 @@
 import Foundation
 import IOKit
 import MachO
+import SwiftRs
 
 let HOST_VM_INFO64_COUNT: mach_msg_type_number_t = UInt32(MemoryLayout<vm_statistics64_data_t>.size / MemoryLayout<integer_t>.size)
 
-struct MemoryUsage {
-    var active: UInt64
-    var inactive: UInt64
-    var wired: UInt64
-    var compressed: UInt64
-    var free: UInt64
-    var total: UInt64
-    var used: UInt64
+class MemoryUsage: NSObject {
+    var active: Int
+    var inactive: Int
+    var wired: Int
+    var compressed: Int
+    var free: Int
+    var total: Int
+    var used: Int
+    var app: Int
+    
+    init(active: Int, inactive: Int, wired: Int, compressed: Int, free: Int, total: Int, used: Int, app: Int) {
+        self.active = active
+        self.inactive = inactive
+        self.wired = wired
+        self.compressed = compressed
+        self.free = free
+        self.total = total
+        self.used = used
+        self.app = app
+    }
 }
 
-enum MemoryStatsError: Error {
-    case hostStatisticsFailed(kern_return_t)
-}
-
-func getMemoryUsage() throws -> MemoryUsage {
+@_cdecl("get_memory_usage_info")
+func getMemoryUsageInfo() -> MemoryUsage? {
     var stats = vm_statistics64()
     var size = HOST_VM_INFO64_COUNT
     let hostPort: mach_port_t = mach_host_self()
@@ -30,7 +40,8 @@ func getMemoryUsage() throws -> MemoryUsage {
     }
     
     guard kern == KERN_SUCCESS else {
-        throw MemoryStatsError.hostStatisticsFailed(kern)
+        print("Error with host_statistics64(): \(kern)")
+        return nil
     }
     
     let pageSize = UInt64(vm_kernel_page_size)
@@ -41,14 +52,16 @@ func getMemoryUsage() throws -> MemoryUsage {
     let free = UInt64(stats.free_count) * pageSize
     let total = (active + inactive + wired + compressed + free)
     let used = total - free
+    let app = used - wired - compressed
     
     return MemoryUsage(
-        active: active,
-        inactive: inactive,
-        wired: wired,
-        compressed: compressed,
-        free: free,
-        total: total,
-        used: used
+        active: Int(active),
+        inactive: Int(inactive),
+        wired: Int(wired),
+        compressed: Int(compressed),
+        free: Int(free),
+        total: Int(total),
+        used: Int(used),
+        app: Int(app)
     )
 }

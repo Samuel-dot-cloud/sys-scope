@@ -1,5 +1,5 @@
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
-import { formatTime } from "../../utils/FrontendUtils.ts";
+import { formatTime, ListDetail } from "../../utils/FrontendUtils.ts";
 import {
   Container,
   Label,
@@ -11,16 +11,11 @@ import {
   Section,
 } from "../../styles/globals.ts";
 
-interface BatteryDetail {
-  label: string;
-  value: string | number | undefined;
-}
-
 const BatteryComponent = () => {
   const { batteries, batteryProcesses } = useServerEventsContext();
   const battery = batteries.at(-1);
 
-  const powerDetails: BatteryDetail[] = [
+  const powerDetails: ListDetail[] = [
     { label: "Power source", value: battery?.vendor },
     { label: "Percentage", value: `${battery?.chargePercent.toFixed(0)}%` },
     // {label: 'State', value: battery?.state},

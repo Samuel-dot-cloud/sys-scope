@@ -1,6 +1,6 @@
 use crate::helpers::process::convert_processes;
 use crate::macos::{
-    fetch_battery_info, get_disk_info, get_disk_processes, get_top_battery_processes,
+    fetch_battery_info, get_disk_info, get_disk_processes, get_memory_usage_info, get_top_battery_processes
 };
 use crate::models::{
     BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait,
@@ -204,14 +204,31 @@ impl SwapTrait for Metrics {
 
 impl MemoryTrait for Metrics {
     fn get_memory(&mut self) -> Memory {
-        self.sys.refresh_memory();
+        let swift_memory_info = unsafe { get_memory_usage_info() };
+
+        let (active, inactive, wired, compressed, free, total, used, app) = match swift_memory_info {
+            Some(info) => (
+                info.active as u64,
+                info.inactive as u64,
+                info.wired as u64,
+                info.compressed as u64,
+                info.free as u64,
+                info.total as u64,
+                info.used as u64,
+                info.app as u64,
+            ),
+            None => (0, 0, 0, 0, 0, 0, 0, 0)
+        };
 
         Memory {
-            free: self.sys.free_memory(),
-            total: self.sys.total_memory(),
-            used: self.sys.used_memory(),
-            used_percentage: get_percentage(&self.sys.used_memory(), &self.sys.total_memory()),
-            timestamp: current_time(),
+            free,
+            total,
+            used,
+            wired,
+            compressed,
+            active,
+            inactive,
+            app,
         }
     }
 }

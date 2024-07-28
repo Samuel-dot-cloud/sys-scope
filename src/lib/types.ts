@@ -36,8 +36,11 @@ export interface Memory {
     free: number;
     total: number;
     used: number;
-    usedPercentage: number;
-    timestamp: Timestamp;
+    wired: number;
+    compressed: number;
+    active: number;
+    inactive: number;
+    app: number;
 }
 
 export interface GlobalCpu {

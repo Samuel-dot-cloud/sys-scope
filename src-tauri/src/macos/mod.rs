@@ -55,9 +55,22 @@ pub struct DiskProcess {
     pub icon_base_64: SRString,
 }
 
+#[repr(C)]
+pub struct Memory {
+    pub active: Int,
+    pub inactive: Int,
+    pub wired: Int,
+    pub compressed: Int,
+    pub free: Int,
+    pub total: Int,
+    pub used: Int,
+    pub app: Int,
+}
+
 swift!(pub fn set_transparent_titlebar(window: &NSObject));
 swift!(pub fn fetch_battery_info() -> SRObject<BatteryInfo>);
 swift!(pub fn get_top_battery_processes() -> SRObjectArray<BatteryProcess>);
 swift!(pub fn get_disk_info() -> Option<SRObject<DiskInfo>>);
 swift!(pub fn get_disk_processes() -> SRObjectArray<DiskProcess>);
+swift!(pub fn get_memory_usage_info() -> Option<SRObject<Memory>>);
 

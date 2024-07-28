@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 use serde::{Serialize, Deserialize};
-use swift_rs::SRObjectArray;
 
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -18,8 +17,11 @@ pub struct Memory {
     pub free: u64,
     pub total: u64,
     pub used: u64,
-    pub used_percentage: f64,
-    pub timestamp: Timestamp,
+    pub wired: u64,
+    pub compressed: u64,
+    pub active: u64,
+    pub inactive: u64,
+    pub app: u64,
 }
 
 pub trait MemoryTrait {

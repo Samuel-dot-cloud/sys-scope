@@ -71,7 +71,7 @@ const maxSize = 60 * 10;
 const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({ children }) => {
     const [sysInfo] = useServerEventsStore<SysInfo>(ServerEvent.SysInfo, { maxSize: 1});
     const [globalCpu] = useServerEventsStore<GlobalCpu[]>(ServerEvent.GlobalCpu, { maxSize: 1 });
-    const [memory] = useServerEventsStore<Memory>(ServerEvent.Memory, { maxSize });
+    const [memory] = useServerEventsStore<Memory>(ServerEvent.Memory, { maxSize: 1 });
     const [swap] = useServerEventsStore<Swap>(ServerEvent.Swap, { maxSize });
     const [processes] = useServerEventsStore<Process[]>(ServerEvent.Processes, { maxSize: 1 });
     const [networks] = useServerEventsEnumerableStore<Network>(ServerEvent.Networks, { maxSize });

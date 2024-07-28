@@ -1,36 +1,32 @@
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
-import {convertBytes, Unit} from "../../utils/FrontendUtils.ts";
+import {convertBytes, ListDetail, Unit} from "../../utils/FrontendUtils.ts";
 import {Container, HeaderItem, Label, Section, SectionTitle, SmallImage, StatItem, StatList, Value} from "../../styles/globals.ts";
 
-interface DiskDetail {
-    name: string;
-    value: string | number | undefined;
-}
 
 const DiskComponent = () => {
     const {disks, diskProcesses} = useServerEventsContext();
     const disk = disks.at(-1)?.data[0];
 
-    const diskDetails: DiskDetail[] = [
-        {name: "Name", value: disk?.name},
-        {name: "Type", value: disk?.diskType},
+    const diskDetails: ListDetail[] = [
+        {label: "Name", value: disk?.name},
+        {label: "Type", value: disk?.diskType},
         {
-            name: "Total storage", value:
+            label: "Total storage", value:
                 convertBytes(disk?.total ?? 0, Unit.GB).toFixed(2) + ' GB'
         },
         {
-            name: "Available storage", value:
+            label: "Available storage", value:
                 convertBytes(disk?.free ?? 0, Unit.GB).toFixed(2) + ' GB'
         },
         {
-            name: "Used storage", value:
+            label: "Used storage", value:
                 convertBytes(disk?.used ?? 0, Unit.GB).toFixed(2) + ' GB'
         },
-        {name: "Location", value: disk?.mountPoint},
-        {name: "Bytes read", value: convertBytes(disk?.bytesRead ?? 0, Unit.GB).toFixed(2) + ' GB' },
-        {name: "Bytes written", value: convertBytes(disk?.bytesWritten ?? 0, Unit.GB).toFixed(2) + ' GB'},
-        {name: "Removable", value: disk?.isRemovable ? "✅" : "❌"},
-        {name: "File system", value: disk?.fileSystem}
+        {label: "Location", value: disk?.mountPoint},
+        {label: "Bytes read", value: convertBytes(disk?.bytesRead ?? 0, Unit.GB).toFixed(2) + ' GB' },
+        {label: "Bytes written", value: convertBytes(disk?.bytesWritten ?? 0, Unit.GB).toFixed(2) + ' GB'},
+        {label: "Removable", value: disk?.isRemovable ? "✅" : "❌"},
+        {label: "File system", value: disk?.fileSystem}
     ];
 
     return (
@@ -38,14 +34,14 @@ const DiskComponent = () => {
             <StatList>
                 {diskDetails.map((detail, index) => (
                     <StatItem key={index}>
-                        <Label>{detail.name}</Label>
+                        <Label>{detail.label}</Label>
                         <Value>{detail.value}</Value>
                     </StatItem>
                 ))}
             </StatList>
 
             {/* TODO: Bring back processes list when retrival logic is fixed */}
-            
+
             {/* <Section>
                 <SectionTitle>Processes</SectionTitle>
                 <HeaderItem>
