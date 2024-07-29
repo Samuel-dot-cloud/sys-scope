@@ -2,7 +2,7 @@ use swift_rs::SRObjectArray;
 
 use crate::{
     macos::BatteryProcess,
-    models::{DiskProcess, TopProcess},
+    models::{DiskProcess, MemoryProcess, TopProcess},
 };
 
 pub trait ConvertTo<T> {
@@ -27,6 +27,17 @@ impl ConvertTo<crate::models::DiskProcess> for crate::macos::DiskProcess {
             name: self.name.parse().unwrap_or_default(),
             bytes_read: self.bytes_read as u64,
             bytes_written: self.bytes_written as u64,
+            icon_base_64: self.icon_base_64.parse().unwrap_or_default(),
+        }
+    }
+}
+
+impl ConvertTo<crate::models::MemoryProcess> for crate::macos::MemoryProcess {
+    fn convert(&self) -> crate::models::MemoryProcess {
+        MemoryProcess {
+            pid: self.pid as u32,
+            name: self.name.parse().unwrap_or_default(),
+            memory: self.memory.parse().unwrap_or_default(),
             icon_base_64: self.icon_base_64.parse().unwrap_or_default(),
         }
     }

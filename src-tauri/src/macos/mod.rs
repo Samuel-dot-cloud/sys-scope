@@ -67,10 +67,19 @@ pub struct Memory {
     pub app: Int,
 }
 
+#[repr(C)]
+pub struct MemoryProcess {
+    pub pid: Int,
+    pub name: SRString,
+    pub memory: SRString,
+    pub icon_base_64: SRString,
+}
+
 swift!(pub fn set_transparent_titlebar(window: &NSObject));
 swift!(pub fn fetch_battery_info() -> SRObject<BatteryInfo>);
 swift!(pub fn get_top_battery_processes() -> SRObjectArray<BatteryProcess>);
 swift!(pub fn get_disk_info() -> Option<SRObject<DiskInfo>>);
 swift!(pub fn get_disk_processes() -> SRObjectArray<DiskProcess>);
 swift!(pub fn get_memory_usage_info() -> Option<SRObject<Memory>>);
+swift!(pub fn get_top_memory_processes() -> SRObjectArray<MemoryProcess>);
 

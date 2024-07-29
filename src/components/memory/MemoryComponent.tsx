@@ -1,9 +1,9 @@
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import {convertBytes, ListDetail, Unit} from "../../utils/FrontendUtils.ts";
-import {Container, Label, Section, StatItem, StatList, Title, Value} from "../../styles/globals.ts";
+import {Container, Label, Section, SectionTitle, SmallImage, StatItem, StatList, Value} from "../../styles/globals.ts";
 
 const MemoryComponent = () => {
-    const { memory, processes } = useServerEventsContext();
+    const { memory, memoryProcesses } = useServerEventsContext();
     const memoryDetail = memory.at(-1);
 
     const memoryDetails: ListDetail[] = [
@@ -28,15 +28,17 @@ const MemoryComponent = () => {
             </Section>
 
             <Section>
-                <Title>Process name</Title>
+                <SectionTitle>Processes</SectionTitle>
                 <StatList>
-                    {[...processes]
-                        .sort((a, b) => b.memoryUsage - a.memoryUsage)
-                        .slice(0, 5)
+                    {[...memoryProcesses]
                         .map((process, index) => (
                         <StatItem key={index}>
-                            <Label>{index + 1}. {process.name}</Label>
-                            <Value>{convertBytes(process.memoryUsage, Unit.MB).toFixed(0) + " MB"}</Value>
+                            <Label>
+                                {index + 1}.{" "}
+                                <SmallImage src={`data:image/png;base64,${process.iconBase64}`} />{" "}
+                                {process.name}
+                            </Label>
+                            <Value>{process.memory}</Value>
                         </StatItem>
                     ))}
                 </StatList>

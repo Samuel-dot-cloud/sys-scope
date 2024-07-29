@@ -1,11 +1,9 @@
 use crate::helpers::process::convert_processes;
 use crate::macos::{
-    fetch_battery_info, get_disk_info, get_disk_processes, get_memory_usage_info, get_top_battery_processes
+    fetch_battery_info, get_disk_info, get_disk_processes, get_memory_usage_info, get_top_battery_processes, get_top_memory_processes
 };
 use crate::models::{
-    BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait,
-    LoadAverage, Memory, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap,
-    SwapTrait, SysInfo, SystemInformationTrait, TopProcess,
+    BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage, Memory, MemoryProcess, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait, TopProcess
 };
 use crate::utils::{current_time, get_percentage, round};
 use starship_battery::units::electric_potential::volt;
@@ -230,6 +228,13 @@ impl MemoryTrait for Metrics {
             inactive,
             app,
         }
+    }
+
+    fn get_memory_processes(&mut self) -> Vec<MemoryProcess> {
+        let top_processes_swift = unsafe { get_top_memory_processes() };
+        let top_processes_rust: Vec<MemoryProcess> = convert_processes(top_processes_swift);
+
+        top_processes_rust
     }
 }
 

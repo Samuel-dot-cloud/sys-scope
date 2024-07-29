@@ -30,10 +30,10 @@ class MemoryUsage: NSObject {
 class MemoryProcess: NSObject {
     var pid: Int
     var name: SRString
-    var memory: Int
+    var memory: SRString
     var iconBase64: SRString
     
-    init(pid: Int, name: SRString, memory: Int, iconBase64: SRString) {
+    init(pid: Int, name: SRString, memory: SRString, iconBase64: SRString) {
         self.pid = pid
         self.name = name
         self.memory = memory
@@ -136,13 +136,43 @@ func getMemoryUsageInfo() -> MemoryUsage? {
     )
 }
 
+private func formatMemory(_ bytes: Int) -> String {
+    if bytes > 1000 * 1024 * 1024 {
+        return String(format: "%.2f GB", Double(bytes) / (1024 * 1024 * 1024))
+    } else if bytes > 1000 * 1024 {
+        return String(format: "%.1f MB", Double(bytes) / (1024 * 1024))
+    } else {
+        return String(format: "%.1f KB", Double(bytes) / 1024)
+    }
+}
+
+private func parseMemory(_ memory: String) -> Int {
+    let unit = memory.suffix(1)
+    let value = memory.dropLast()
+    
+    guard let numericalValue = Int(value) else {
+        return 0
+    }
+    
+    switch unit {
+    case "K":
+        return numericalValue * 1024
+    case "M":
+        return numericalValue * (1024 * 1024)
+    case "G":
+        return numericalValue * (1024 * 1024 * 1024)
+    default:
+        return numericalValue
+    }
+}
+
 @_cdecl("get_top_memory_processes")
-func getTopMemoryProcesses() -> [MemoryProcess]? {
+func getTopMemoryProcesses() -> SRObjectArray {
     let command = "/usr/bin/top"
     let arguments = ["-l", "1", "-o", "mem", "-n", "5", "-stats", "pid,command,mem"]
     
     guard let output = runProcess(path: command, args: arguments) else {
-        return nil
+        return SRObjectArray([])
     }
     
     var processes = [MemoryProcess]()
@@ -161,12 +191,14 @@ func getTopMemoryProcesses() -> [MemoryProcess]? {
                 let pid = Int(columns[0]) ?? 0
                 let command = String(columns[1..<columns.count - 1].joined(separator: " "))
                 let processName = URL(fileURLWithPath: command).lastPathComponent
-                let memory = Int(columns.last!)
+                let memoryString = String(columns.last!)
+                let memoryInBytes = parseMemory(memoryString)
+                let formattedMemory = formatMemory(memoryInBytes)
                 let iconBase64 = getProcessIconBase64(for: processName) ?? ""
                 let processInfo = MemoryProcess(
                     pid: pid,
                     name: SRString(processName),
-                    memory: memory ?? Int(0),
+                    memory: SRString(formattedMemory),
                     iconBase64: SRString(iconBase64)
                 )
                 processes.append(processInfo)
@@ -176,5 +208,5 @@ func getTopMemoryProcesses() -> [MemoryProcess]? {
             }
         }
     }
-    return processes
+    return SRObjectArray(processes)
 }
