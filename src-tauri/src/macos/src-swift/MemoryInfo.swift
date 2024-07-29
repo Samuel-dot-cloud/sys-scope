@@ -41,62 +41,6 @@ class MemoryProcess: NSObject {
     }
 }
 
-//struct ProcessInfo {
-//    let pid: Int32
-//    let name: String
-//    let memory: UInt64
-//}
-//
-//func getMemoryUsageForProcess(pid: Int32) -> UInt64? {
-//    var info = proc_taskinfo()
-//    let result = withUnsafeMutablePointer(to: &info) {
-//        $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout<proc_taskinfo>.size) {
-//            proc_pidinfo(pid, PROC_PIDTASKINFO, 0, $0, Int32(MemoryLayout<proc_taskinfo>.size))
-//        }
-//    }
-//
-//    if result == Int32(MemoryLayout<proc_taskinfo>.size) {
-//        return info.pti_resident_size
-//    }
-//
-//    return nil
-//}
-//
-//func getProcessName(for pid: Int32) -> String? {
-//    let nameLength = 1024
-//    var name = [CChar](repeating: 0, count: nameLength)
-//    let result = proc_name(pid, &name, UInt32(nameLength))
-//
-//    if result > 0 {
-//        return String(cString: name)
-//    }
-//
-//    return nil
-//}
-
-//func getTopMemoryProcesses() -> [ProcessInfo] {
-//    var processes = [ProcessInfo]()
-//
-//    var pids = [Int32](repeating: 0, count: 1024)
-//    let numberOfProcesses = proc_listallpids(&pids, Int32(MemoryLayout<Int32>.size * pids.count))
-//
-//    if numberOfProcesses > 0 {
-//        for i in 0..<numberOfProcesses {
-//            let pid = pids[Int(i)]
-//            if let residentMemory = getMemoryUsageForProcess(pid: pid),
-//               let name = getProcessName(for: pid) {
-//               let processInfo = ProcessInfo(pid: pid, name: name, memory: residentMemory)
-//                processes.append(processInfo)
-//            }
-//        }
-//        processes.sort { $0.memory > $1.memory }
-//        return Array(processes.prefix(5))
-//
-//    }
-//
-//    return []
-//}
-
 @_cdecl("get_memory_usage_info")
 func getMemoryUsageInfo() -> MemoryUsage? {
     var stats = vm_statistics64()
