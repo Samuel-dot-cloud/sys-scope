@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 use serde::{Serialize, Deserialize};
-use swift_rs::SRObjectArray;
 
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -18,12 +17,25 @@ pub struct Memory {
     pub free: u64,
     pub total: u64,
     pub used: u64,
-    pub used_percentage: f64,
-    pub timestamp: Timestamp,
+    pub wired: u64,
+    pub compressed: u64,
+    pub active: u64,
+    pub inactive: u64,
+    pub app: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MemoryProcess {
+    pub pid: u32,
+    pub name: String,
+    pub memory: String,
+    pub icon_base_64: String,
 }
 
 pub trait MemoryTrait {
     fn get_memory(&mut self) -> Memory;
+    fn get_memory_processes(&mut self) -> Vec<MemoryProcess>;
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -42,3 +42,8 @@ export const formatTime = (seconds: number): string => {
 }
 
 export type AppTheme = 'light' | 'dark' | 'auto';
+
+export interface ListDetail {
+    label: string;
+    value: string | number | undefined;
+}

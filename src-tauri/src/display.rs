@@ -73,6 +73,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
                     state.emit_batteries(&win);
                     state.emit_battery_processes(&win);
                     // state.emit_disk_processes(&win);
+                    state.emit_memory_processes(&win);
                     tokio::time::sleep(Duration::from_secs(5)).await;
                 }
             });

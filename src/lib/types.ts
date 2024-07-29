@@ -9,7 +9,8 @@ export enum ServerEvent {
     Processes = "emit_processes",
     Batteries = "emit_batteries",
     BatteryProcesses = "emit_battery_processes",
-    DiskProcesses = "emit_disk_processes"
+    DiskProcesses = "emit_disk_processes",
+    MemoryProcesses = "emit_memory_processes"
 }
 
 // Typescript interfaces/types from models.rs
@@ -36,8 +37,18 @@ export interface Memory {
     free: number;
     total: number;
     used: number;
-    usedPercentage: number;
-    timestamp: Timestamp;
+    wired: number;
+    compressed: number;
+    active: number;
+    inactive: number;
+    app: number;
+}
+
+export interface MemoryProcess {
+    pid: number;
+    name: string;
+    memory: string;
+    iconBase64: string;
 }
 
 export interface GlobalCpu {
