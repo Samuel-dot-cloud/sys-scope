@@ -82,6 +82,14 @@ pub struct CPUInfo {
     pub idle: Int,
 }
 
+#[repr(C)]
+pub struct CPUProcess {
+    pub pid: Int,
+    pub name: SRString,
+    pub cpu: Int,
+    pub icon_base_64: SRString,
+}
+
 swift!(pub fn set_transparent_titlebar(window: &NSObject));
 swift!(pub fn fetch_battery_info() -> SRObject<BatteryInfo>);
 swift!(pub fn get_top_battery_processes() -> SRObjectArray<BatteryProcess>);
@@ -90,4 +98,5 @@ swift!(pub fn get_disk_processes() -> SRObjectArray<DiskProcess>);
 swift!(pub fn get_memory_info() -> Option<SRObject<MemoryInfo>>);
 swift!(pub fn get_top_memory_processes() -> SRObjectArray<MemoryProcess>);
 swift!(pub fn get_cpu_info() -> Option<SRObject<CPUInfo>>);
+swift!(pub fn get_top_cpu_processes() -> SRObjectArray<CPUProcess>);
 

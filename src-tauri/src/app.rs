@@ -22,14 +22,14 @@ impl AppState {
         window.emit("emit_sysinfo", &sys_info).unwrap();
     }
 
-    pub fn emit_global_cpus<R: Runtime>(&self, window: &Window<R>) {
-        let global_cpu = self.0.lock().unwrap().metrics.get_global_cpus();
-        window.emit("emit_global_cpus", &global_cpu).unwrap();
+    pub fn emit_cpu<R: Runtime>(&self, window: &Window<R>) {
+        let cpu = self.0.lock().unwrap().metrics.get_cpu();
+        window.emit("emit_cpu", &cpu).unwrap();
     }
 
-    pub fn emit_cpus<R: Runtime>(&self, window: &Window<R>) {
-        let cpus = self.0.lock().unwrap().metrics.get_cpus();
-        window.emit("emit_cpus", &cpus).unwrap();
+    pub fn emit_cpu_processes<R: Runtime>(&self, window: &Window<R>) {
+        let processes = self.0.lock().unwrap().metrics.get_cpu_processes();
+        window.emit("emit_cpu_processes", &processes).unwrap();
     }
 
     pub fn emit_memory<R: Runtime>(&self, window: &Window<R>) {

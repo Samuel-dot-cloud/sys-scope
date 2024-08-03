@@ -63,8 +63,8 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
             tauri::async_runtime::spawn(async move {
                 loop {
                     state.emit_sysinfo(&win);
-                    state.emit_global_cpus(&win);
-                    state.emit_cpus(&win);
+                    state.emit_cpu(&win);
+                    state.emit_cpu_processes(&win);
                     state.emit_memory(&win);
                     state.emit_swap(&win);
                     state.emit_networks(&win);

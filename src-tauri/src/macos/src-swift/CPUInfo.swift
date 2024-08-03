@@ -1,6 +1,4 @@
 import Foundation
-import IOKit
-import MachO
 import SwiftRs
 
 class CPUInfo: NSObject {
@@ -15,7 +13,21 @@ class CPUInfo: NSObject {
     }
 }
 
+class CPUProcess: NSObject {
+    var pid: Int
+    var name: SRString
+    var cpu: Int
+    var iconBase64: SRString
+    
+    init(pid: Int, name: SRString, cpu: Int, iconBase64: SRString) {
+        self.pid = pid
+        self.name = name
+        self.cpu = cpu
+        self.iconBase64 = iconBase64
+    }
+}
 
+@_cdecl("get_cpu_info")
 func getCPUInfo() -> CPUInfo? {
     var count = UInt32(MemoryLayout<host_cpu_load_info_data_t>.stride / MemoryLayout<integer_t>.stride)
     var cpuInfo = host_cpu_load_info()
@@ -46,4 +58,37 @@ func getCPUInfo() -> CPUInfo? {
         system: Int(systemPercent),
         idle: Int(idlePercent)
     )
+}
+
+@_cdecl("get_top_cpu_processes")
+func getTopCPUProcesses() -> SRObjectArray {
+    let command = "/bin/ps"
+    let arguments = ["-Aceo", "pid,pcpu,comm", "-r"]
+    
+    guard let output = runProcess(path: command, args: arguments) else {
+        return SRObjectArray([])
+    }
+    
+    var processes: [CPUProcess] = []
+    
+    let lines = output.split(separator: "\n")
+    for line in lines {
+        let components = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: true)
+        if components.count == 3, let pid = Int(components[0]), let cpu = Double(components[1]) {
+            let command = String(components[2])
+            let iconBase64 = getProcessIconBase64(for: command) ?? ""
+            let processInfo = CPUProcess(
+                pid: pid,
+                name: SRString(command),
+                cpu: Int(cpu),
+                iconBase64: SRString(iconBase64)
+            )
+            processes.append(processInfo)
+        }
+    }
+    
+    processes.sort { $0.cpu > $1.cpu }
+    
+    
+    return SRObjectArray(Array(processes.prefix(5)))
 }

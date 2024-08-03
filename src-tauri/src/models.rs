@@ -40,29 +40,24 @@ pub trait MemoryTrait {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GlobalCpu {
-    pub usage: f32,
-    pub brand: String,
-    pub frequency: u64,
-    pub name: String,
-    pub vendor: String,
-    pub timestamp: Timestamp,
-}
-
-pub trait GlobalCpuTrait {
-    fn get_global_cpus(&mut self) -> Vec<GlobalCpu>;
+pub struct Cpu {
+    pub user: f32,
+    pub system: f32,
+    pub idle: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Cpu {
+pub struct CpuProcess {
+    pub pid: u32,
     pub name: String,
-    pub usage: f64,
-    pub timestamp: Timestamp,
+    pub cpu: f32,
+    pub icon_base_64: String,
 }
 
 pub trait CpuTrait {
-    fn get_cpus(&mut self) -> Vec<Cpu>;
+    fn get_cpu(&mut self) -> Cpu;
+    fn get_cpu_processes(&mut self) -> Vec<CpuProcess>;
 }
 
 #[derive(Debug, Serialize, Deserialize)]
