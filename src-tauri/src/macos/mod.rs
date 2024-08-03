@@ -56,7 +56,7 @@ pub struct DiskProcess {
 }
 
 #[repr(C)]
-pub struct Memory {
+pub struct MemoryInfo {
     pub active: Int,
     pub inactive: Int,
     pub wired: Int,
@@ -75,11 +75,19 @@ pub struct MemoryProcess {
     pub icon_base_64: SRString,
 }
 
+#[repr(C)]
+pub struct CPUInfo {
+    pub user: Int,
+    pub system: Int,
+    pub idle: Int,
+}
+
 swift!(pub fn set_transparent_titlebar(window: &NSObject));
 swift!(pub fn fetch_battery_info() -> SRObject<BatteryInfo>);
 swift!(pub fn get_top_battery_processes() -> SRObjectArray<BatteryProcess>);
 swift!(pub fn get_disk_info() -> Option<SRObject<DiskInfo>>);
 swift!(pub fn get_disk_processes() -> SRObjectArray<DiskProcess>);
-swift!(pub fn get_memory_usage_info() -> Option<SRObject<Memory>>);
+swift!(pub fn get_memory_info() -> Option<SRObject<MemoryInfo>>);
 swift!(pub fn get_top_memory_processes() -> SRObjectArray<MemoryProcess>);
+swift!(pub fn get_cpu_info() -> Option<SRObject<CPUInfo>>);
 
