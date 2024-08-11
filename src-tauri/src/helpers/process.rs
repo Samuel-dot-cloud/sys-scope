@@ -58,5 +58,8 @@ pub fn convert_processes<S, T>(source: SRObjectArray<S>) -> Vec<T>
 where
     S: ConvertTo<T>,
 {
-    source.into_iter().map(|value| value.as_ref().convert()).collect()
+    source
+        .into_iter()
+        .map(|value| value.as_ref().convert())
+        .collect()
 }

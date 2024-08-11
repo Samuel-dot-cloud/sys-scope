@@ -1,7 +1,7 @@
+use crate::state::Settings;
+use anyhow::{Context, Result};
 use std::fs;
 use tauri::{AppHandle, Runtime};
-use anyhow::{Context, Result};
-use crate::state::Settings;
 
 const SETTINGS_FILENAME: &str = "settings.json";
 
@@ -31,8 +31,8 @@ pub fn save_settings<R: Runtime>(handle: &AppHandle<R>, new_settings: &Settings)
     let settings_path = app_data_dir.join(SETTINGS_FILENAME);
     println!("The settings path: {:?}", settings_path.clone());
     println!("The new settings: {:?}", new_settings.clone());
-    let file_contents = serde_json::to_string::<Settings>(new_settings)
-        .context("Failed to serialize settings")?;
+    let file_contents =
+        serde_json::to_string::<Settings>(new_settings).context("Failed to serialize settings")?;
 
     println!("The file contents after saving: {}", &file_contents);
 
@@ -51,8 +51,7 @@ mod tests {
     use super::*;
     use anyhow::Result;
     use serial_test::serial;
-    use tauri::{Manager, test};
-
+    use tauri::{test, Manager};
 
     #[serial(fs)]
     #[test]
@@ -65,7 +64,7 @@ mod tests {
                 toggle_app_shortcut: Some("Ctrl + S".to_string())
             },
         )
-            .is_ok())
+        .is_ok())
     }
 
     #[serial(fs)]

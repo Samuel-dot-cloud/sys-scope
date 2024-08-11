@@ -1,8 +1,8 @@
+use crate::ui::window::setup_about_window;
 use tauri::{
     api::dialog, App, AppHandle, CustomMenuItem, Manager, PhysicalPosition, Position, Runtime,
     SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent,
 };
-use crate::ui::window::setup_about_window;
 
 pub const MAIN_WINDOW_LABEL: &str = "main";
 pub const ABOUT_WINDOW_LABEL: &str = "about";
@@ -15,7 +15,11 @@ fn create_window_event_handler<R: Runtime>(app_handle: AppHandle<R>) -> impl Fn(
     let main_window = app_handle.get_window(MAIN_WINDOW_LABEL).unwrap();
 
     move |event| match event {
-        SystemTrayEvent::LeftClick { position: _position, size: _size, .. } => {
+        SystemTrayEvent::LeftClick {
+            position: _position,
+            size: _size,
+            ..
+        } => {
             if main_window.is_visible().unwrap() {
                 main_window.hide().unwrap();
             } else {
@@ -41,9 +45,9 @@ fn create_window_event_handler<R: Runtime>(app_handle: AppHandle<R>) -> impl Fn(
             SETTINGS_MENU_ITEM_ID => {
                 main_window.show().unwrap();
                 main_window.emit("settings-clicked", "show").unwrap();
-            },
+            }
             ABOUT_MENU_ITEM_ID => {
-                let handle =  app_handle.clone();
+                let handle = app_handle.clone();
                 show_about_window(handle);
             }
             CHECK_UPDATES_MENU_ITEM_ID => {
@@ -72,7 +76,7 @@ fn create_window_event_handler<R: Runtime>(app_handle: AppHandle<R>) -> impl Fn(
                     }
                 });
             }
-            id=> eprintln!("Unsupported menu item clicked {:?}", id),
+            id => eprintln!("Unsupported menu item clicked {:?}", id),
         },
         _ => {}
     }
@@ -93,7 +97,8 @@ pub fn show_about_window<R: Runtime>(app_handle: AppHandle<R>) {
 
 pub fn setup_tray<R: Runtime>(app: &mut App<R>) {
     let settings_menu_item = CustomMenuItem::new(SETTINGS_MENU_ITEM_ID, "Settings...");
-    let check_updates_menu_item = CustomMenuItem::new(CHECK_UPDATES_MENU_ITEM_ID, "Check for Updates...");
+    let check_updates_menu_item =
+        CustomMenuItem::new(CHECK_UPDATES_MENU_ITEM_ID, "Check for Updates...");
     let about_menu_item = CustomMenuItem::new(ABOUT_MENU_ITEM_ID, "About");
     let quit_menu_item = CustomMenuItem::new(QUIT_MENU_ITEM_ID, "Quit");
     let system_tray = SystemTray::new().with_menu(

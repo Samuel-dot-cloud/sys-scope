@@ -133,7 +133,7 @@ func getTopMemoryProcesses() -> SRObjectArray {
             let columns = trimmedLine.split(separator: " ", omittingEmptySubsequences: true)
             if columns.count >= 3 {
                 let pid = Int(columns[0]) ?? 0
-                let command = String(columns[1..<columns.count - 1].joined(separator: " "))
+                let command = String(columns[1 ..< columns.count - 1].joined(separator: " "))
                 let memoryString = String(columns.last!)
                 let memoryInBytes = parseMemory(memoryString)
                 let formattedMemory = formatMemory(memoryInBytes)

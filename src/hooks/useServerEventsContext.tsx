@@ -1,6 +1,5 @@
-import {useContext} from "react";
-import {ServerEventsContext} from "../providers/ServerEventsProvider.tsx";
-
+import { useContext } from "react";
+import { ServerEventsContext } from "../providers/ServerEventsProvider.tsx";
 
 const useServerEventsContext = () => useContext(ServerEventsContext);
 

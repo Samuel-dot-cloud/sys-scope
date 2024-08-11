@@ -1,4 +1,4 @@
-name: 'Build release artifacts'
+name: "Build release artifacts"
 on:
   push:
     branches:
@@ -12,10 +12,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
-            args: 'x86_64-apple-darwin'
-          - platform: 'macos-latest'
-            args: 'aarch64-apple-darwin'
+          - platform: "macos-latest"
+            args: "x86_64-apple-darwin"
+          - platform: "macos-latest"
+            args: "aarch64-apple-darwin"
     runs-on: ${{matrix.platform}}
     steps:
       - name: Checkout repository
@@ -31,8 +31,8 @@ jobs:
         uses: tauri-apps/tauri-action@v0.4.5
         with:
           tagName: desktop-v__VERSION__
-          releaseName: 'SysScope v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
+          releaseName: "SysScope v__VERSION__"
+          releaseBody: "See the assets to download this version and install."
           args: --target ${{matrix.args}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,8 +44,3 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_UPDATER_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-
-
-
-
-

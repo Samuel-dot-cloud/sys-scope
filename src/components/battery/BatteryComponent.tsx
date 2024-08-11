@@ -53,20 +53,22 @@ const BatteryComponent = () => {
         ))}
       </StatList>
 
-<Section>
-      <SectionTitle>Processes</SectionTitle>
-      <StatList>
-        {[...batteryProcesses].slice(0, 5).map((process, index) => (
-          <StatItem key={index}>
-            <Label>
-              {index + 1}.{" "}
-              <SmallImage src={`data:image/png;base64,${process.iconBase64}`} />{" "}
-              {process.name}
-            </Label>
-            <Value>{process.power}%</Value>
-          </StatItem>
-        ))}
-      </StatList>
+      <Section>
+        <SectionTitle>Processes</SectionTitle>
+        <StatList>
+          {[...batteryProcesses].slice(0, 5).map((process, index) => (
+            <StatItem key={index}>
+              <Label>
+                {index + 1}.{" "}
+                <SmallImage
+                  src={`data:image/png;base64,${process.iconBase64}`}
+                />{" "}
+                {process.name}
+              </Label>
+              <Value>{process.power}%</Value>
+            </StatItem>
+          ))}
+        </StatList>
       </Section>
     </Container>
   );

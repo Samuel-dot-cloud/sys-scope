@@ -1,15 +1,15 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import CpuComponent from "../../components/cpu/CpuComponent.tsx";
 import {
-    AppContainer,
-    AppWindow,
-    BatteryIcon,
-    Content,
-    CpuIcon,
-    DiskIcon,
-    MemoryIcon,
-    Sidebar,
-    SidebarItem
+  AppContainer,
+  AppWindow,
+  BatteryIcon,
+  Content,
+  CpuIcon,
+  DiskIcon,
+  MemoryIcon,
+  Sidebar,
+  SidebarItem,
 } from "./styles.ts";
 import MemoryComponent from "../../components/memory/MemoryComponent.tsx";
 import BatteryComponent from "../../components/battery/BatteryComponent.tsx";
@@ -17,95 +17,92 @@ import NetworkComponent from "../../components/network/NetworkComponent.tsx";
 import FooterComponent from "../../components/footer/FooterComponent.tsx";
 import DiskComponent from "../../components/disk/DiskComponent.tsx";
 import SettingsDialog from "../../components/settings/SettingsDialog.tsx";
-import {Toaster} from "react-hot-toast";
-import {listen} from "@tauri-apps/api/event";
+import { Toaster } from "react-hot-toast";
+import { listen } from "@tauri-apps/api/event";
 
-type SidebarItemType = 'cpu' | 'memory' | 'disk' | 'battery' | 'network';
+type SidebarItemType = "cpu" | "memory" | "disk" | "battery" | "network";
 
 const SystemMonitor: React.FC = () => {
-    const [activeItem, setActiveItem] = useState<SidebarItemType>('cpu');
-    const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+  const [activeItem, setActiveItem] = useState<SidebarItemType>("cpu");
+  const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
 
-    useEffect(() => {
-        listen("settings-clicked", ({ payload } : { payload: string }) => {
-            if (payload === "show") {
-                setIsDialogVisible(true);
-            }
-        })
-    }, [])
-
-    const showSettingsDialog = () => {
+  useEffect(() => {
+    listen("settings-clicked", ({ payload }: { payload: string }) => {
+      if (payload === "show") {
         setIsDialogVisible(true);
+      }
+    });
+  }, []);
+
+  const showSettingsDialog = () => {
+    setIsDialogVisible(true);
+  };
+
+  const hideSettingsDialog = () => {
+    setIsDialogVisible(false);
+  };
+
+  const renderActiveComponent = () => {
+    switch (activeItem) {
+      case "cpu":
+        return <CpuComponent />;
+      case "memory":
+        return <MemoryComponent />;
+      case "disk":
+        return <DiskComponent />;
+      case "battery":
+        return <BatteryComponent />;
+      case "network":
+        return <NetworkComponent />;
+      default:
+        return null;
     }
+  };
 
-    const hideSettingsDialog = () => {
-        setIsDialogVisible(false);
-    }
-
-
-    const renderActiveComponent = () => {
-        switch (activeItem) {
-            case "cpu":
-                return <CpuComponent/>;
-            case "memory":
-                return <MemoryComponent />;
-            case "disk":
-                return <DiskComponent />;
-            case "battery":
-                return <BatteryComponent />;
-            case "network":
-                return <NetworkComponent/>
-            default:
-                return null;
-        }
-    };
-
-    return (
-        <AppWindow>
-            <Toaster
-                position={"bottom-right"}
-                reverseOrder={false}
-            />
-            <AppContainer>
-                <Sidebar>
-                    <SidebarItem
-                        className={activeItem == 'cpu' ? 'active' : ''}
-                        onClick={() => setActiveItem('cpu')}
-                    >
-                       <CpuIcon/> CPU
-                    </SidebarItem>
-                    <SidebarItem
-                        className={activeItem == 'memory' ? 'active' : ''}
-                        onClick={() => setActiveItem('memory')}
-                    >
-                        <MemoryIcon/> Memory
-                    </SidebarItem>
-                    <SidebarItem
-                        className={activeItem == 'disk' ? 'active' : ''}
-                        onClick={() => setActiveItem('disk')}
-                    >
-                        <DiskIcon/> Disk
-                    </SidebarItem>
-                    <SidebarItem
-                        className={activeItem == 'battery' ? 'active' : ''}
-                        onClick={() => setActiveItem('battery')}
-                    >
-                        <BatteryIcon/> Battery
-                    </SidebarItem>
-                    {/*<SidebarItem*/}
-                    {/*    className={activeItem == 'network' ? 'active' : ''}*/}
-                    {/*    onClick={() => setActiveItem('network')}*/}
-                    {/*>Network*/}
-                    {/*</SidebarItem>*/}
-                </Sidebar>
-                <Content>
-                    {renderActiveComponent()}
-                </Content>
-                <SettingsDialog isVisible={isDialogVisible} onClose={hideSettingsDialog}/>
-            </AppContainer>
-            <FooterComponent openSettings={showSettingsDialog}/>
-        </AppWindow>
-    );
-}
+  return (
+    <AppWindow>
+      <Toaster position={"bottom-right"} reverseOrder={false} />
+      <AppContainer>
+        <Sidebar>
+          <SidebarItem
+            className={activeItem == "cpu" ? "active" : ""}
+            onClick={() => setActiveItem("cpu")}
+          >
+            <CpuIcon /> CPU
+          </SidebarItem>
+          <SidebarItem
+            className={activeItem == "memory" ? "active" : ""}
+            onClick={() => setActiveItem("memory")}
+          >
+            <MemoryIcon /> Memory
+          </SidebarItem>
+          <SidebarItem
+            className={activeItem == "disk" ? "active" : ""}
+            onClick={() => setActiveItem("disk")}
+          >
+            <DiskIcon /> Disk
+          </SidebarItem>
+          <SidebarItem
+            className={activeItem == "battery" ? "active" : ""}
+            onClick={() => setActiveItem("battery")}
+          >
+            <BatteryIcon /> Battery
+          </SidebarItem>
+          {/*<SidebarItem*/}
+          {/*    className={activeItem == 'network' ? 'active' : ''}*/}
+          {/*    onClick={() => setActiveItem('network')}*/}
+          {/*>Network*/}
+          {/*</SidebarItem>*/}
+        </Sidebar>
+        <Content>{renderActiveComponent()}</Content>
+        <SettingsDialog
+          isVisible={isDialogVisible}
+          onClose={hideSettingsDialog}
+        />
+      </AppContainer>
+      <FooterComponent openSettings={showSettingsDialog} />
+    </AppWindow>
+  );
+};
 
 export default SystemMonitor;

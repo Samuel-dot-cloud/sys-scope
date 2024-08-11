@@ -1,7 +1,7 @@
-use tauri::{AppHandle, GlobalShortcutManager, Manager, Runtime};
 use crate::display::SettingsState;
-use anyhow::Result;
 use crate::ui::tray::MAIN_WINDOW_LABEL;
+use anyhow::Result;
+use tauri::{AppHandle, GlobalShortcutManager, Manager, Runtime};
 
 pub fn setup_shortcut<R: Runtime>(app_handle: &AppHandle<R>) {
     let settings_state = app_handle.state::<SettingsState>();
@@ -23,7 +23,8 @@ pub fn register_toggle_shortcut<R: Runtime>(
 ) -> Result<()> {
     if !app_handle
         .global_shortcut_manager()
-        .is_registered(shortcut)? {
+        .is_registered(shortcut)?
+    {
         app_handle.global_shortcut_manager().register(shortcut, {
             let app_handle = app_handle.clone();
             move || {
@@ -56,8 +57,8 @@ pub fn unregister_global_shortcut<R: Runtime>(
 
 #[cfg(test)]
 mod tests {
-    use std::sync::RwLock;
     use crate::state::Settings;
+    use std::sync::RwLock;
 
     use super::*;
     use tauri::test;
@@ -100,11 +101,9 @@ mod tests {
 
         register_toggle_shortcut(&app_handle, ACCELERATOR).unwrap();
 
-        assert!(
-            app_handle
-                .global_shortcut_manager()
-                .is_registered(ACCELERATOR)?
-        );
+        assert!(app_handle
+            .global_shortcut_manager()
+            .is_registered(ACCELERATOR)?);
 
         Ok(())
     }
@@ -116,11 +115,9 @@ mod tests {
         register_toggle_shortcut(&app_handle, ACCELERATOR)?;
         register_toggle_shortcut(&app_handle, ACCELERATOR)?;
 
-        assert!(
-            app_handle
-                .global_shortcut_manager()
-                .is_registered(ACCELERATOR)?
-        );
+        assert!(app_handle
+            .global_shortcut_manager()
+            .is_registered(ACCELERATOR)?);
 
         Ok(())
     }
@@ -135,11 +132,9 @@ mod tests {
 
         unregister_global_shortcut(&app_handle, ACCELERATOR)?;
 
-        assert!(
-            !app_handle
-                .global_shortcut_manager()
-                .is_registered(ACCELERATOR)?
-        );
+        assert!(!app_handle
+            .global_shortcut_manager()
+            .is_registered(ACCELERATOR)?);
 
         Ok(())
     }
@@ -155,11 +150,9 @@ mod tests {
         unregister_global_shortcut(&app_handle, ACCELERATOR)?;
         unregister_global_shortcut(&app_handle, ACCELERATOR)?;
 
-        assert!(
-            !app_handle
-                .global_shortcut_manager()
-                .is_registered(ACCELERATOR)?
-        );
+        assert!(!app_handle
+            .global_shortcut_manager()
+            .is_registered(ACCELERATOR)?);
 
         Ok(())
     }

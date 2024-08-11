@@ -1,5 +1,5 @@
 import styled, { createGlobalStyle } from "styled-components";
-import '@fontsource-variable/rubik';
+import "@fontsource-variable/rubik";
 
 export const GlabalStyles = createGlobalStyle`
     :root {
@@ -25,76 +25,76 @@ export const GlabalStyles = createGlobalStyle`
 `;
 
 export const Container = styled.div`
-    background-color: transparent;
-    border-radius: 10px;
-    padding: 3px;
+  background-color: transparent;
+  border-radius: 10px;
+  padding: 3px;
 `;
 
 export const StatList = styled.ul`
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 `;
 
 export const StatItem = styled.ul`
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  align-items: center;
 `;
 
 export const SmallImage = styled.img`
-    height: 18px;
-    width: 18px;
-    object-fit: cover;
-    margin-right: 5px;
-    margin-left: 3px;
+  height: 18px;
+  width: 18px;
+  object-fit: cover;
+  margin-right: 5px;
+  margin-left: 3px;
 `;
 
 export const Label = styled.span`
-    display: flex;
-    align-items: center;
-    color: ${props => props.theme.text};
-    font-weight: normal;
-    font-size: 15px;
+  display: flex;
+  align-items: center;
+  color: ${(props) => props.theme.text};
+  font-weight: normal;
+  font-size: 15px;
 `;
 
 export const Value = styled.span`
-    color: ${props => props.theme.text};
-    font-weight: lighter;
-    font-size: 15px;
+  color: ${(props) => props.theme.text};
+  font-weight: lighter;
+  font-size: 15px;
 `;
 
 export const Section = styled.div`
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 `;
 
 export const HorizontalSection = styled.div`
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid ${props => `rgba(${ props.theme.borderRgba})`};
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid ${(props) => `rgba(${props.theme.borderRgba})`};
 `;
 
 export const SectionTitle = styled.h3`
-    color: ${props => props.theme.text};
-    font-size: 15px;
-    margin: 0;
-    padding-bottom: 5px;
-    border-bottom: 1px solid ${props => `rgba(${ props.theme.borderRgba})`};
+  color: ${(props) => props.theme.text};
+  font-size: 15px;
+  margin: 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid ${(props) => `rgba(${props.theme.borderRgba})`};
 `;
 
 export const Title = styled.h3`
-    color: ${props => props.theme.text};
-    padding-bottom: 5px;
-    border-bottom: 1px solid ${props => `rgba(${ props.theme.borderRgba})`};
-    margin: 0 0 10px;
+  color: ${(props) => props.theme.text};
+  padding-bottom: 5px;
+  border-bottom: 1px solid ${(props) => `rgba(${props.theme.borderRgba})`};
+  margin: 0 0 10px;
 `;
 
 export const HeaderItem = styled.div`
-display: flex;
-justify-content: space-between;
-font-weight: bold;
-margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  margin-bottom: 5px;
 `;

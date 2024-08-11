@@ -99,4 +99,3 @@ swift!(pub fn get_memory_info() -> Option<SRObject<MemoryInfo>>);
 swift!(pub fn get_top_memory_processes() -> SRObjectArray<MemoryProcess>);
 swift!(pub fn get_cpu_info() -> Option<SRObject<CPUInfo>>);
 swift!(pub fn get_top_cpu_processes() -> SRObjectArray<CPUProcess>);
-

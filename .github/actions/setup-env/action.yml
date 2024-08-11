@@ -1,8 +1,8 @@
-name: 'Setup environment'
-description: 'Sets up local action environment with the necessary components'
+name: "Setup environment"
+description: "Sets up local action environment with the necessary components"
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Enable corepack
       shell: bash
@@ -12,7 +12,7 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: 20
-        cache: 'yarn'
+        cache: "yarn"
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@1.75.0
