@@ -1,7 +1,7 @@
 import {StatList} from "./styles.ts";
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import {convertTime, ListDetail} from "../../utils/FrontendUtils.ts";
-import {Container, HorizontalSection, Label, Section, SectionTitle, StatItem, Value} from "../../styles/globals.ts";
+import {Container, HorizontalSection, Label, Section, SectionTitle, SmallImage, StatItem, Value} from "../../styles/globals.ts";
 
 
 const CpuComponent = () => {
@@ -69,7 +69,10 @@ const CpuComponent = () => {
                     {[...cpuProcesses]
                         .map((process, index) => (
                             <StatItem key={index}>
-                                <Label>{index + 1}. {process.name}</Label>
+                                <Label>{index + 1}.{" "}
+                                    <SmallImage src={`data:image/png;base64,${process.iconBase64}`} />{" "}
+                                    {process.name}
+                                </Label>
                                 <Value>{process.cpu}%</Value>
                             </StatItem>
                         ))}

@@ -97,6 +97,10 @@ func getTopCPUProcesses() -> SRObjectArray {
                 iconBase64: SRString(iconBase64)
             )
             processes.append(processInfo)
+            
+            if processes.count == 5 {
+                break
+            }
         }
     }
     
