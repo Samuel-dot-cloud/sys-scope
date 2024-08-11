@@ -37,7 +37,7 @@ private func convertImageToBase64(_ image: NSImage) -> String? {
     return pngData.base64EncodedString()
 }
 
-public extension DiskUtility {
+extension DiskUtility {
     static func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int) -> io_registry_entry_t? {
         var parent: io_registry_entry_t = 0
 

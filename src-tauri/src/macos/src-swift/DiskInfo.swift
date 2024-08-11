@@ -56,7 +56,7 @@ class DiskMonitor {
         output.enumerateLines { line, _ in
             let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
             if components.count == 2, let pid = Int32(components[0]) {
-                var pathComponent = String(components[1])
+                let pathComponent = String(components[1])
                 let name = URL(fileURLWithPath: pathComponent).lastPathComponent
                 let icon = getProcessIconBase64(for: name) ?? ""
 
@@ -80,7 +80,7 @@ class DiskMonitor {
                         existingIO.bytesRead = ioStats.read
                         existingIO.bytesWritten = ioStats.write
                     } else {
-                        let newProcess = DiskProcess(
+                        let _ = DiskProcess(
                             pid: Int(pid),
                             name: SRString(name),
                             bytesRead: ioStats.read,
