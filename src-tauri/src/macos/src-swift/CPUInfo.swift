@@ -2,11 +2,11 @@ import Foundation
 import SwiftRs
 
 class CPUInfo: NSObject {
-    var user: Int
-    var system: Int
-    var idle: Int
+    var user: Double
+    var system: Double
+    var idle: Double
     
-    init(user: Int, system: Int, idle: Int) {
+    init(user: Double, system: Double, idle: Double) {
         self.user = user
         self.system = system
         self.idle = idle
@@ -16,10 +16,10 @@ class CPUInfo: NSObject {
 class CPUProcess: NSObject {
     var pid: Int
     var name: SRString
-    var cpu: Int
+    var cpu: Double
     var iconBase64: SRString
     
-    init(pid: Int, name: SRString, cpu: Int, iconBase64: SRString) {
+    init(pid: Int, name: SRString, cpu: Double, iconBase64: SRString) {
         self.pid = pid
         self.name = name
         self.cpu = cpu
@@ -29,41 +29,54 @@ class CPUProcess: NSObject {
 
 @_cdecl("get_cpu_info")
 func getCPUInfo() -> CPUInfo? {
+    var cpuInfo1 = host_cpu_load_info()
+    var cpuInfo2 = host_cpu_load_info()
     var count = UInt32(MemoryLayout<host_cpu_load_info_data_t>.stride / MemoryLayout<integer_t>.stride)
-    var cpuInfo = host_cpu_load_info()
-    let result = withUnsafeMutablePointer(to: &cpuInfo) {
+    
+    let result1 = withUnsafeMutablePointer(to: &cpuInfo1) {
         $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
             host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, $0, &count)
         }
     }
     
-    guard result == KERN_SUCCESS else {
+    guard result1 == KERN_SUCCESS else {
         return nil
     }
     
-    let user = Double(cpuInfo.cpu_ticks.0)
-    let system = Double(cpuInfo.cpu_ticks.1)
-    let idle = Double(cpuInfo.cpu_ticks.2)
-    let nice = Double(cpuInfo.cpu_ticks.3)
+    Thread.sleep(forTimeInterval: 0.1)
     
-    let totalTicks = user + system + idle + nice
+    let result2 = withUnsafeMutablePointer(to: &cpuInfo2) {
+        $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+            host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, $0, &count)
+        }
+    }
     
-    let userPercent = (user / totalTicks) * 100.0
-    let systemPercent = (system / totalTicks) * 100.0
-    let idlePercent = (idle / totalTicks) * 100.0
-    let nicePercent = (nice / totalTicks) * 100.0
+    guard result2 == KERN_SUCCESS else {
+        return nil
+    }
+    
+    let userDelta = Double(cpuInfo2.cpu_ticks.0 - cpuInfo1.cpu_ticks.0)
+    let systemDelta = Double(cpuInfo2.cpu_ticks.1 - cpuInfo1.cpu_ticks.1)
+    let idleDelta = Double(cpuInfo2.cpu_ticks.2 - cpuInfo1.cpu_ticks.2)
+    let niceDelta = Double(cpuInfo2.cpu_ticks.3 - cpuInfo1.cpu_ticks.3)
+    
+    let totalTicks = userDelta + systemDelta + idleDelta + niceDelta
+    
+    let userPercent = (userDelta / totalTicks) * 100.0
+    let systemPercent = (systemDelta / totalTicks) * 100.0
+    let idlePercent = (idleDelta / totalTicks) * 100.0
     
     return CPUInfo(
-        user: Int(userPercent),
-        system: Int(systemPercent),
-        idle: Int(idlePercent)
+        user: userPercent,
+        system: systemPercent,
+        idle: idlePercent
     )
 }
 
 @_cdecl("get_top_cpu_processes")
 func getTopCPUProcesses() -> SRObjectArray {
     let command = "/bin/ps"
-    let arguments = ["-Aceo", "pid,pcpu,comm", "-r"]
+    let arguments = ["-Aceo pid,pcpu,comm", "-r"]
     
     guard let output = runProcess(path: command, args: arguments) else {
         return SRObjectArray([])
@@ -80,7 +93,7 @@ func getTopCPUProcesses() -> SRObjectArray {
             let processInfo = CPUProcess(
                 pid: pid,
                 name: SRString(command),
-                cpu: Int(cpu),
+                cpu: cpu,
                 iconBase64: SRString(iconBase64)
             )
             processes.append(processInfo)
@@ -89,6 +102,7 @@ func getTopCPUProcesses() -> SRObjectArray {
     
     processes.sort { $0.cpu > $1.cpu }
     
+    let topProcesses = Array(processes.prefix(5))
     
-    return SRObjectArray(Array(processes.prefix(5)))
+    return SRObjectArray(topProcesses)
 }

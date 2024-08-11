@@ -77,16 +77,16 @@ pub struct MemoryProcess {
 
 #[repr(C)]
 pub struct CPUInfo {
-    pub user: Int,
-    pub system: Int,
-    pub idle: Int,
+    pub user: Double,
+    pub system: Double,
+    pub idle: Double,
 }
 
 #[repr(C)]
 pub struct CPUProcess {
     pub pid: Int,
     pub name: SRString,
-    pub cpu: Int,
+    pub cpu: Double,
     pub icon_base_64: SRString,
 }
 
