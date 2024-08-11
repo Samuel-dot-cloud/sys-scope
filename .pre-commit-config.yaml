@@ -1,0 +1,30 @@
+repos:
+  # Swift format
+  - repo: https://github.com/nicklockwood/SwiftFormat
+    rev: 0.54.3
+    hooks:
+      - id: swiftformat
+        entry: swiftformat --swiftversion 5.8
+
+  # Typescript format
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier
+        entry: prettier --write
+        language: node
+        types: [javascript, jsx, tsx, ts, css, json, markdown, yaml, html]
+        files: src/
+
+  # Rust format
+  - repo: local
+    hooks:
+      - id: fmt
+        name: fmt
+        description: Format rust files within the project
+        entry: cargo fmt --manifest path src-tauri/Cargo.toml
+        language: system
+        types: [rust]
+        args: ["--"]
+
+

@@ -1,7 +1,7 @@
 export enum ServerEvent {
     SysInfo = "emit_sysinfo",
-    GlobalCpu = "emit_global_cpus",
-    Cpus = "emit_cpus",
+    Cpu = "emit_cpu",
+    CpuProcesses = "emit_cpu_processes",
     Memory = "emit_memory",
     Swap = "emit_swap",
     Networks = "emit_networks",
@@ -51,19 +51,17 @@ export interface MemoryProcess {
     iconBase64: string;
 }
 
-export interface GlobalCpu {
-    usage: number;
-    brand: string;
-    frequency: number;
+export interface CpuProcess {
+    pid: number;
     name: string;
-    vendor: string;
-    timestamp: Timestamp;
+    cpu: number;
+    iconBase64: string;
 }
 
 export interface Cpu {
-    name: string;
-    usage: number;
-    timestamp: Timestamp;
+    user: number;
+    system: number;
+    idle: number;
 }
 
 export interface Swap {

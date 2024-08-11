@@ -5,7 +5,7 @@ import SwiftRs
 
 let HOST_VM_INFO64_COUNT: mach_msg_type_number_t = UInt32(MemoryLayout<vm_statistics64_data_t>.size / MemoryLayout<integer_t>.size)
 
-class MemoryUsage: NSObject {
+class MemoryInfo: NSObject {
     var active: Int
     var inactive: Int
     var wired: Int
@@ -14,7 +14,7 @@ class MemoryUsage: NSObject {
     var total: Int
     var used: Int
     var app: Int
-    
+
     init(active: Int, inactive: Int, wired: Int, compressed: Int, free: Int, total: Int, used: Int, app: Int) {
         self.active = active
         self.inactive = inactive
@@ -32,7 +32,7 @@ class MemoryProcess: NSObject {
     var name: SRString
     var memory: SRString
     var iconBase64: SRString
-    
+
     init(pid: Int, name: SRString, memory: SRString, iconBase64: SRString) {
         self.pid = pid
         self.name = name
@@ -41,23 +41,23 @@ class MemoryProcess: NSObject {
     }
 }
 
-@_cdecl("get_memory_usage_info")
-func getMemoryUsageInfo() -> MemoryUsage? {
+@_cdecl("get_memory_info")
+func getMemoryInfo() -> MemoryInfo? {
     var stats = vm_statistics64()
     var size = HOST_VM_INFO64_COUNT
     let hostPort: mach_port_t = mach_host_self()
-    
+
     let kern: kern_return_t = withUnsafeMutablePointer(to: &stats) {
         $0.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
             host_statistics64(hostPort, HOST_VM_INFO64, $0, &size)
         }
     }
-    
+
     guard kern == KERN_SUCCESS else {
         print("Error with host_statistics64(): \(kern)")
         return nil
     }
-    
+
     let pageSize = UInt64(vm_kernel_page_size)
     let active = UInt64(stats.active_count) * pageSize
     let inactive = UInt64(stats.inactive_count) * pageSize
@@ -67,8 +67,8 @@ func getMemoryUsageInfo() -> MemoryUsage? {
     let total = (active + inactive + wired + compressed + free)
     let used = total - free
     let app = used - wired - compressed
-    
-    return MemoryUsage(
+
+    return MemoryInfo(
         active: Int(active),
         inactive: Int(inactive),
         wired: Int(wired),
@@ -93,11 +93,11 @@ private func formatMemory(_ bytes: Int) -> String {
 private func parseMemory(_ memory: String) -> Int {
     let unit = memory.suffix(1)
     let value = memory.dropLast()
-    
+
     guard let numericalValue = Int(value) else {
         return 0
     }
-    
+
     switch unit {
     case "K":
         return numericalValue * 1024
@@ -114,11 +114,11 @@ private func parseMemory(_ memory: String) -> Int {
 func getTopMemoryProcesses() -> SRObjectArray {
     let command = "/usr/bin/top"
     let arguments = ["-l", "1", "-o", "mem", "-n", "5", "-stats", "pid,command,mem"]
-    
+
     guard let output = runProcess(path: command, args: arguments) else {
         return SRObjectArray([])
     }
-    
+
     var processes = [MemoryProcess]()
     let lines = output.split(separator: "\n")
     var processLinesStarted = false
@@ -128,7 +128,7 @@ func getTopMemoryProcesses() -> SRObjectArray {
             processLinesStarted = true
             continue
         }
-        
+
         if processLinesStarted {
             let columns = trimmedLine.split(separator: " ", omittingEmptySubsequences: true)
             if columns.count >= 3 {

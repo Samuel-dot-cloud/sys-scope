@@ -1,9 +1,10 @@
 use crate::helpers::process::convert_processes;
 use crate::macos::{
-    fetch_battery_info, get_disk_info, get_disk_processes, get_memory_usage_info, get_top_battery_processes, get_top_memory_processes
+    fetch_battery_info, get_disk_info, get_disk_processes, get_memory_info, get_top_battery_processes, get_top_memory_processes, get_cpu_info,
+    get_top_cpu_processes,
 };
 use crate::models::{
-    BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, GlobalCpu, GlobalCpuTrait, LoadAverage, Memory, MemoryProcess, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait, TopProcess
+    BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, LoadAverage, Memory, MemoryProcess, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait, TopProcess
 };
 use crate::utils::{current_time, get_percentage, round};
 use starship_battery::units::electric_potential::volt;
@@ -13,7 +14,6 @@ use starship_battery::units::ratio::percent;
 use starship_battery::units::thermodynamic_temperature::degree_celsius;
 use starship_battery::units::time::second;
 use starship_battery::Manager;
-use std::thread;
 use sysinfo::{Disks, Networks, System};
 
 pub struct Metrics {
@@ -61,62 +61,31 @@ impl SystemInformationTrait for Metrics {
     }
 }
 
-impl GlobalCpuTrait for Metrics {
-    fn get_global_cpus(&mut self) -> Vec<GlobalCpu> {
-        self.sys.refresh_cpu();
-        thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
-        self.sys.refresh_cpu();
-
-        let mut global_cpus: Vec<GlobalCpu> = Vec::new();
-
-        for cpu in self.sys.cpus() {
-            let usage = if cpu.cpu_usage().is_nan() {
-                0.0
-            } else {
-                cpu.cpu_usage()
-            };
-            let brand = cpu.brand().to_owned();
-            let frequency = cpu.frequency().to_owned();
-            let name = cpu.name().to_owned();
-            let vendor = cpu.vendor_id().to_owned();
-
-            global_cpus.push(GlobalCpu {
-                usage,
-                brand,
-                frequency,
-                name,
-                vendor,
-                timestamp: current_time(),
-            });
-        }
-        global_cpus
-    }
-}
-
 impl CpuTrait for Metrics {
-    fn get_cpus(&mut self) -> Vec<Cpu> {
-        self.sys.refresh_cpu();
-        thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
-        self.sys.refresh_cpu();
+    fn get_cpu(&mut self) -> Cpu {
+        let swift_cpu_info = unsafe { get_cpu_info() };
 
-        let cpus: Vec<Cpu> = self
-            .sys
-            .cpus()
-            .iter()
-            .map(|cpu| {
-                let name = cpu.name().to_owned();
-                let usage = cpu.cpu_usage().to_owned() as u64;
-                let total = 100;
+        let (user, system, idle) = match swift_cpu_info {
+            Some(info) => (
+                info.user as f32,
+                info.system as f32,
+                info.idle as f32,
+            ),
+            None => (0.0, 0.0, 0.0)
+        };
 
-                Cpu {
-                    name,
-                    usage: get_percentage(&usage, &total),
-                    timestamp: current_time(),
-                }
-            })
-            .collect();
+        Cpu {
+            user,
+            system,
+            idle,
+        }
+    }
 
-        cpus
+    fn get_cpu_processes(&mut self) -> Vec<crate::models::CpuProcess> {
+        let top_processes_swift = unsafe { get_top_cpu_processes() };
+        let top_processes_rust = convert_processes(top_processes_swift);
+
+        top_processes_rust
     }
 }
 
@@ -202,7 +171,7 @@ impl SwapTrait for Metrics {
 
 impl MemoryTrait for Metrics {
     fn get_memory(&mut self) -> Memory {
-        let swift_memory_info = unsafe { get_memory_usage_info() };
+        let swift_memory_info = unsafe { get_memory_info() };
 
         let (active, inactive, wired, compressed, free, total, used, app) = match swift_memory_info {
             Some(info) => (
