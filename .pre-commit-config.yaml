@@ -14,7 +14,7 @@ repos:
         entry: prettier --write
         language: node
         types: [javascript, jsx, tsx, ts, css, json, markdown, yaml, html]
-        files: .
+        files: src/
 
   # Rust format
   - repo: local
