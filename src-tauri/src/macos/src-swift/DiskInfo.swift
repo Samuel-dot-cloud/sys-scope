@@ -44,7 +44,6 @@ class IO: NSObject {
 }
 
 class DiskMonitor {
-    // TODO: Fix disk process retrieval logic
     func getDiskProcessIOStats() -> [DiskProcess] {
         guard let output = runProcess(path: "/bin/ps", args: ["-eo", "pid=,comm=", "-r"]) else {
             return []
@@ -77,7 +76,6 @@ class DiskMonitor {
                 break
             }
         }
-//        newProcesses.sort { max($0.bytesRead, $0.bytesWritten) > max($1.bytesRead, $1.bytesWritten) }
         return newProcesses
     }
 }

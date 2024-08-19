@@ -147,16 +147,6 @@ class BatteryInfoFetcher {
 
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
-//    let diskMonitor = DiskMonitor()
-//    let topDiskProcesses = diskMonitor.getDiskProcessIOStats()
-//
-//    // Print the processes
-//    for process in topDiskProcesses {
-//        print("PID: \(process.pid), Name: \(process.name), Bytes Read: \(process.bytesRead), Bytes Written: \(process.bytesWritten)")
-//    }
-//
-//    print("----------------------")
-
     let fetcher = BatteryInfoFetcher()
     return fetcher.fetchBatteryInfo()
 }
