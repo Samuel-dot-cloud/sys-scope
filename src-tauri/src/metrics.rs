@@ -1,10 +1,12 @@
 use crate::helpers::process::convert_processes;
 use crate::macos::{
-    fetch_battery_info, get_disk_info, get_disk_processes, get_memory_info, get_top_battery_processes, get_top_memory_processes, get_cpu_info,
-    get_top_cpu_processes,
+    fetch_battery_info, get_cpu_info, get_disk_info, get_disk_processes, get_memory_info,
+    get_top_battery_processes, get_top_cpu_processes, get_top_memory_processes,
 };
 use crate::models::{
-    BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, LoadAverage, Memory, MemoryProcess, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait, SysInfo, SystemInformationTrait, TopProcess
+    BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, LoadAverage, Memory,
+    MemoryProcess, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait,
+    SysInfo, SystemInformationTrait, TopProcess,
 };
 use crate::utils::{current_time, get_percentage, round};
 use starship_battery::units::electric_potential::volt;
@@ -66,19 +68,11 @@ impl CpuTrait for Metrics {
         let swift_cpu_info = unsafe { get_cpu_info() };
 
         let (user, system, idle) = match swift_cpu_info {
-            Some(info) => (
-                info.user as f32,
-                info.system as f32,
-                info.idle as f32,
-            ),
-            None => (0.0, 0.0, 0.0)
+            Some(info) => (info.user as f32, info.system as f32, info.idle as f32),
+            None => (0.0, 0.0, 0.0),
         };
 
-        Cpu {
-            user,
-            system,
-            idle,
-        }
+        Cpu { user, system, idle }
     }
 
     fn get_cpu_processes(&mut self) -> Vec<crate::models::CpuProcess> {
@@ -173,7 +167,8 @@ impl MemoryTrait for Metrics {
     fn get_memory(&mut self) -> Memory {
         let swift_memory_info = unsafe { get_memory_info() };
 
-        let (active, inactive, wired, compressed, free, total, used, app) = match swift_memory_info {
+        let (active, inactive, wired, compressed, free, total, used, app) = match swift_memory_info
+        {
             Some(info) => (
                 info.active as u64,
                 info.inactive as u64,
@@ -184,7 +179,7 @@ impl MemoryTrait for Metrics {
                 info.used as u64,
                 info.app as u64,
             ),
-            None => (0, 0, 0, 0, 0, 0, 0, 0)
+            None => (0, 0, 0, 0, 0, 0, 0, 0),
         };
 
         Memory {

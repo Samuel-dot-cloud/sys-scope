@@ -50,8 +50,8 @@ pub struct DiskInfo {
 pub struct DiskProcess {
     pub pid: Int,
     pub name: SRString,
-    pub bytes_read: Int,
-    pub bytes_written: Int,
+    pub bytes_read: SRString,
+    pub bytes_written: SRString,
     pub icon_base_64: SRString,
 }
 
@@ -99,4 +99,3 @@ swift!(pub fn get_memory_info() -> Option<SRObject<MemoryInfo>>);
 swift!(pub fn get_top_memory_processes() -> SRObjectArray<MemoryProcess>);
 swift!(pub fn get_cpu_info() -> Option<SRObject<CPUInfo>>);
 swift!(pub fn get_top_cpu_processes() -> SRObjectArray<CPUProcess>);
-

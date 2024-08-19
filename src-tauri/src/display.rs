@@ -1,15 +1,15 @@
 use std::sync::RwLock;
 use std::time::Duration;
 use tauri::{Manager, Runtime};
-use window_shadows::set_shadow;
-use tauri_plugin_theme::ThemePlugin;
 use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_theme::ThemePlugin;
+use window_shadows::set_shadow;
 
 use crate::app::AppState;
-use crate::macos::set_transparent_titlebar;
 use crate::helpers::fs::load_settings;
+use crate::macos::set_transparent_titlebar;
 use crate::state::Settings;
-use crate::ui::tray::{MAIN_WINDOW_LABEL, setup_tray};
+use crate::ui::tray::{setup_tray, MAIN_WINDOW_LABEL};
 #[allow(unused_imports)]
 use crate::ui::window::decorate_window;
 
@@ -20,16 +20,16 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
 
     let auto_start_plugin = tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None);
 
-   builder
-       .menu(tauri::Menu::new())
-       .on_window_event(|event| {
-           if let tauri::WindowEvent::CloseRequested {api, .. } = event.event() {
-               event.window().hide().unwrap();
-               api.prevent_close();
-           }
-       })
-       .manage(app)
-       .manage::<SettingsState>(RwLock::new(Settings::default()))
+    builder
+        .menu(tauri::Menu::new())
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
+                event.window().hide().unwrap();
+                api.prevent_close();
+            }
+        })
+        .manage(app)
+        .manage::<SettingsState>(RwLock::new(Settings::default()))
         .setup(|app| {
             let app_handle = app.app_handle();
             let win = app.get_window(MAIN_WINDOW_LABEL).unwrap();
@@ -46,7 +46,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
 
                 let nswindow = win.ns_window().unwrap();
 
-                unsafe { set_transparent_titlebar(&nswindow)};
+                unsafe { set_transparent_titlebar(&nswindow) };
             }
 
             {
@@ -72,7 +72,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
                     state.emit_processes(&win);
                     state.emit_batteries(&win);
                     state.emit_battery_processes(&win);
-                    // state.emit_disk_processes(&win);
+                    state.emit_disk_processes(&win);
                     state.emit_memory_processes(&win);
                     tokio::time::sleep(Duration::from_secs(5)).await;
                 }

@@ -1,7 +1,7 @@
-use std::sync::{Arc, Mutex};
-use tauri::{Runtime, Window};
 use crate::metrics::Metrics;
 use crate::models::*;
+use std::sync::{Arc, Mutex};
+use tauri::{Runtime, Window};
 
 pub struct AppState(Arc<Mutex<App>>);
 

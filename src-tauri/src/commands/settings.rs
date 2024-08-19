@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Runtime, State};
 use crate::display::SettingsState;
 use crate::helpers::fs::save_settings;
 use crate::helpers::shortcut::{register_toggle_shortcut, unregister_global_shortcut};
 use crate::state::Settings;
+use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Runtime, State};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SettingsPayload {

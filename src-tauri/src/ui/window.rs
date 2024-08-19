@@ -1,10 +1,10 @@
+#[allow(unused_imports)]
+use crate::macos::set_transparent_titlebar;
 use anyhow::Result;
 #[allow(unused_imports)]
 use tauri::{AppHandle, Runtime, Theme, TitleBarStyle, Window, WindowBuilder, WindowUrl};
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
-#[allow(unused_imports)]
-use crate::macos::set_transparent_titlebar;
 
 pub fn decorate_window<R: Runtime>(window: &Window<R>) {
     #[cfg(target_os = "macos")]
@@ -14,7 +14,7 @@ pub fn decorate_window<R: Runtime>(window: &Window<R>) {
         Some(window_vibrancy::NSVisualEffectState::FollowsWindowActiveState),
         Some(8.0),
     )
-        .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+    .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 
     #[cfg(target_os = "windows")]
     {
@@ -27,7 +27,7 @@ pub fn decorate_window<R: Runtime>(window: &Window<R>) {
                     .expect("Unsupported platform! 'apply_acrylic' is only supported on Windows"),
                 Theme::Dark => apply_acrylic(window, Some((0, 0, 0, 50)))
                     .expect("Unsupported platform! 'apply_acrylic' is only supported on Windows"),
-                _ => {},
+                _ => {}
             }
         }
 
@@ -50,18 +50,17 @@ pub fn setup_about_window<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Windo
         crate::ui::tray::ABOUT_WINDOW_LABEL,
         WindowUrl::App("src/pages/about/about.html".into()),
     )
-        .title("")
-        .resizable(false)
-        .minimizable(false)
-        .inner_size(350., 265.)
-        .focused(true)
-        .skip_taskbar(true);
+    .title("")
+    .resizable(false)
+    .minimizable(false)
+    .inner_size(350., 265.)
+    .focused(true)
+    .skip_taskbar(true);
 
     #[cfg(target_os = "macos")]
     let about_window = about_window.title_bar_style(TitleBarStyle::Overlay);
 
     let about_window = about_window.build().unwrap();
-
 
     // Wait for DOM to load to avoid showing empty screen
     about_window.once("window_loaded", {

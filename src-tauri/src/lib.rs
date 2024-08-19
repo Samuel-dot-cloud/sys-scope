@@ -1,10 +1,10 @@
-pub mod display;
-pub mod models;
-pub mod utils;
-pub mod metrics;
 pub mod app;
-pub mod ui;
-pub mod macos;
 pub mod commands;
-pub mod state;
+pub mod display;
 pub mod helpers;
+pub mod macos;
+pub mod metrics;
+pub mod models;
+pub mod state;
+pub mod ui;
+pub mod utils;

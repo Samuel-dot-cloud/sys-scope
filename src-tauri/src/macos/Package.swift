@@ -13,7 +13,8 @@ let package = Package(
         .library(
             name: "sys-scope-macos",
             type: .static,
-            targets: ["sys-scope-macos"]),
+            targets: ["sys-scope-macos"]
+        ),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -25,7 +26,8 @@ let package = Package(
         .target(
             name: "sys-scope-macos",
             dependencies: [
-                .product(name: "SwiftRs", package: "swift-rs")],
+                .product(name: "SwiftRs", package: "swift-rs"),
+            ],
             path: "src-swift"
         ),
     ]

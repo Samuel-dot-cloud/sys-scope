@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::commands::settings::SettingsPayload;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct Settings {
@@ -21,4 +21,3 @@ impl Default for Settings {
         }
     }
 }
-

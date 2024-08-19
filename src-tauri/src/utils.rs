@@ -1,6 +1,6 @@
+use crate::models::Timestamp;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Runtime};
-use crate::models::Timestamp;
 
 pub fn current_time() -> Timestamp {
     let start = SystemTime::now();

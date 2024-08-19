@@ -1,6 +1,5 @@
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use serde::{Serialize, Deserialize};
-
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Timestamp(pub i64);
@@ -124,8 +123,8 @@ pub struct Disk {
 pub struct DiskProcess {
     pub pid: u32,
     pub name: String,
-    pub bytes_read: u64,
-    pub bytes_written: u64,
+    pub bytes_read: String,
+    pub bytes_written: String,
     pub icon_base_64: String,
 }
 
@@ -180,4 +179,3 @@ pub trait BatteryTrait {
     fn get_batteries(&mut self) -> Vec<DeviceBattery>;
     fn get_battery_processes(&mut self) -> Vec<TopProcess>;
 }
-
