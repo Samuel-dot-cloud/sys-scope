@@ -31,7 +31,7 @@ const DiskComponent = () => {
       label: "Used storage",
       value: convertBytes(disk?.used ?? 0, Unit.GB).toFixed(2) + " GB",
     },
-    { label: "Location", value: disk?.mountPoint },
+    // { label: "Location", value: disk?.mountPoint },
     {
       label: "Bytes read",
       value: convertBytes(disk?.bytesRead ?? 0, Unit.GB).toFixed(2) + " GB",
@@ -40,8 +40,8 @@ const DiskComponent = () => {
       label: "Bytes written",
       value: convertBytes(disk?.bytesWritten ?? 0, Unit.GB).toFixed(2) + " GB",
     },
-    { label: "Removable", value: disk?.isRemovable ? "✅" : "❌" },
-    { label: "File system", value: disk?.fileSystem },
+    // { label: "Removable", value: disk?.isRemovable ? "✅" : "❌" },
+    // { label: "File system", value: disk?.fileSystem },
   ];
 
   return (
@@ -55,31 +55,32 @@ const DiskComponent = () => {
         ))}
       </StatList>
 
-      {/* TODO: Bring back processes list when retrival logic is fixed */}
-
-      {/* <Section>
-                <SectionTitle>Processes</SectionTitle>
-                <HeaderItem>
-                    <Label>Process</Label>
-                    <div>
-                        <Value>Read Bytes</Value>
-                        <Value>Write Bytes</Value>
-                    </div>
-                </HeaderItem>
-                <StatList>
-                    {diskProcesses.map((process, index) => (
-                        <StatItem key={index}>
-                            <Label>
-                                <span>{index + 1}.</span>
-                                <SmallImage src={`data:image/png;base64,${process.iconBase64}`} alt={`${process.name} icon`} />
-                                <span>{process.name}</span>
-                            </Label>
-                            <Value>{convertBytes(process.bytesRead, Unit.MB) + ' MB/s'}</Value>
-                            <Value>{convertBytes(process.bytesWritten, Unit.MB) + ' MB/s'}</Value>
-                        </StatItem>
-                    ))}
-                </StatList>
-            </Section> */}
+      <Section>
+        <SectionTitle>Processes</SectionTitle>
+        <HeaderItem>
+          <Label>Process</Label>
+          <div>
+            <Value>Read</Value>
+            <Value>Write</Value>
+          </div>
+        </HeaderItem>
+        <StatList>
+          {diskProcesses.map((process, index) => (
+            <StatItem key={index}>
+              <Label>
+                <span>{index + 1}.</span>
+                <SmallImage
+                  src={`data:image/png;base64,${process.iconBase64}`}
+                  alt={`${process.name} icon`}
+                />
+                <span>{process.name}</span>
+              </Label>
+              <Value>{process.bytesRead}</Value>
+              <Value>{process.bytesWritten}</Value>
+            </StatItem>
+          ))}
+        </StatList>
+      </Section>
     </Container>
   );
 };

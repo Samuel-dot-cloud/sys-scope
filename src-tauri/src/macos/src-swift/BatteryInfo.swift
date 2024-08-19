@@ -147,12 +147,15 @@ class BatteryInfoFetcher {
 
 @_cdecl("fetch_battery_info")
 public func fetchBatteryInfo() -> BatteryInfo {
-    //    let diskMonitor = DiskMonitor()
-    //    let array = DiskMonitor.getDiskProcessIOStats()
-    //    print("The array: \(array)")
-
-    //        let diskMonitor = DiskMonitor()
-    //        diskMonitor.startMonitoring()
+//    let diskMonitor = DiskMonitor()
+//    let topDiskProcesses = diskMonitor.getDiskProcessIOStats()
+//
+//    // Print the processes
+//    for process in topDiskProcesses {
+//        print("PID: \(process.pid), Name: \(process.name), Bytes Read: \(process.bytesRead), Bytes Written: \(process.bytesWritten)")
+//    }
+//
+//    print("----------------------")
 
     let fetcher = BatteryInfoFetcher()
     return fetcher.fetchBatteryInfo()
@@ -182,6 +185,10 @@ func getTopBatteryProcesses() -> SRObjectArray {
                 let iconBase64 = getProcessIconBase64(for: processName) ?? ""
                 let topProcess = BatteryProcess(pid: pid, name: SRString(processName), power: power, iconBase64: SRString(iconBase64))
                 processInfo.append(topProcess)
+            }
+
+            if processInfo.count >= 5 {
+                break
             }
         }
     }

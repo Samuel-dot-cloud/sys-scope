@@ -20,11 +20,11 @@ class DiskInfo: NSObject {
 class DiskProcess: NSObject {
     let pid: Int
     let name: SRString
-    var bytesRead: Int
-    var bytesWritten: Int
+    var bytesRead: SRString
+    var bytesWritten: SRString
     var iconBase64: SRString
 
-    init(pid: Int, name: SRString, bytesRead: Int, bytesWritten: Int, iconBase64: SRString) {
+    init(pid: Int, name: SRString, bytesRead: SRString, bytesWritten: SRString, iconBase64: SRString) {
         self.pid = pid
         self.name = name
         self.bytesRead = bytesRead
@@ -44,7 +44,6 @@ class IO: NSObject {
 }
 
 class DiskMonitor {
-    private var processList: [Int: IO] = [:]
     // TODO: Fix disk process retrieval logic
     func getDiskProcessIOStats() -> [DiskProcess] {
         guard let output = runProcess(path: "/bin/ps", args: ["-eo", "pid=,comm=", "-r"]) else {
@@ -53,7 +52,8 @@ class DiskMonitor {
 
         var newProcesses: [DiskProcess] = []
 
-        output.enumerateLines { line, _ in
+        let lines = output.split(separator: "\n")
+        for line in lines {
             let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
             if components.count == 2, let pid = Int32(components[0]) {
                 let pathComponent = String(components[1])
@@ -61,43 +61,28 @@ class DiskMonitor {
                 let icon = getProcessIconBase64(for: name) ?? ""
 
                 if let ioStats = getProcessDiskIOStats(pid: pid) {
-                    if let existingIO = self.processList[Int(pid)] {
-                        print("The existing io: \(existingIO)")
-                        let readDiff: Int = ioStats.read - existingIO.bytesRead
-                        let writeDiff: Int = ioStats.write - existingIO.bytesWritten
-
-                        if readDiff != 0 || writeDiff != 0 {
-                            newProcesses.append(
-                                DiskProcess(
-                                    pid: Int(pid),
-                                    name: SRString(name),
-                                    bytesRead: readDiff,
-                                    bytesWritten: writeDiff,
-                                    iconBase64: SRString(icon)
-                                )
-                            )
-                        }
-                        existingIO.bytesRead = ioStats.read
-                        existingIO.bytesWritten = ioStats.write
-                    } else {
-                        let _ = DiskProcess(
+                    newProcesses.append(
+                        DiskProcess(
                             pid: Int(pid),
                             name: SRString(name),
-                            bytesRead: ioStats.read,
-                            bytesWritten: ioStats.write,
+                            bytesRead: SRString(ioStats.read),
+                            bytesWritten: SRString(ioStats.write),
                             iconBase64: SRString(icon)
                         )
-                        self.processList[Int(pid)] = IO(bytesRead: Int(ioStats.read), bytesWritten: Int(ioStats.write))
-                    }
+                    )
                 }
             }
+
+            if newProcesses.count >= 5 {
+                break
+            }
         }
-        newProcesses.sort { max($0.bytesRead, $0.bytesWritten) > max($1.bytesRead, $1.bytesWritten) }
-        return Array(newProcesses.prefix(5))
+//        newProcesses.sort { max($0.bytesRead, $0.bytesWritten) > max($1.bytesRead, $1.bytesWritten) }
+        return newProcesses
     }
 }
 
-private func getProcessDiskIOStats(pid: Int32) -> (read: Int, write: Int)? {
+private func getProcessDiskIOStats(pid: Int32) -> (read: String, write: String)? {
     var usage = rusage_info_current()
     let result = withUnsafeMutablePointer(to: &usage) {
         $0.withMemoryRebound(to: (rusage_info_t?.self), capacity: 1) {
@@ -108,9 +93,21 @@ private func getProcessDiskIOStats(pid: Int32) -> (read: Int, write: Int)? {
         return nil
     }
     let bytesRead = Int(usage.ri_diskio_bytesread)
+    let readString = formatBytes(bytesRead)
     let bytesWritten = Int(usage.ri_diskio_byteswritten)
+    let writtenString = formatBytes(bytesWritten)
 
-    return (read: bytesRead, write: bytesWritten)
+    return (read: readString, write: writtenString)
+}
+
+private func formatBytes(_ bytes: Int) -> String {
+    if bytes > 1000 * 1024 * 1024 {
+        return String(format: "%.1f GB/s", Double(bytes) / (1024 * 1024 * 1024))
+    } else if bytes > 100 * 1024 {
+        return String(format: "%.1f MB/s", Double(bytes) / (1024 * 1024))
+    } else {
+        return String(format: "%.1f KB/s", Double(bytes) / 1024)
+    }
 }
 
 class DiskUtility {
@@ -214,6 +211,5 @@ func getDiskInfo() -> DiskInfo? {
 func getDiskProcesses() -> SRObjectArray {
     let diskMonitor = DiskMonitor()
     let topProcesses = diskMonitor.getDiskProcessIOStats()
-    print("The top processes: \(topProcesses)")
     return SRObjectArray(topProcesses)
 }

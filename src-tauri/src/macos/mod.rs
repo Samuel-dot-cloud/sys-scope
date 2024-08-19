@@ -50,8 +50,8 @@ pub struct DiskInfo {
 pub struct DiskProcess {
     pub pid: Int,
     pub name: SRString,
-    pub bytes_read: Int,
-    pub bytes_written: Int,
+    pub bytes_read: SRString,
+    pub bytes_written: SRString,
     pub icon_base_64: SRString,
 }
 

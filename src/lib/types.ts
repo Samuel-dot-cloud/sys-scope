@@ -96,8 +96,8 @@ export interface Disk {
 export interface DiskProcess {
   pid: number;
   name: string;
-  bytesRead: number;
-  bytesWritten: number;
+  bytesRead: string;
+  bytesWritten: string;
   iconBase64: string;
 }
 

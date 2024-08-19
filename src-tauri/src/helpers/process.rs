@@ -25,8 +25,8 @@ impl ConvertTo<crate::models::DiskProcess> for crate::macos::DiskProcess {
         DiskProcess {
             pid: self.pid as u32,
             name: self.name.parse().unwrap_or_default(),
-            bytes_read: self.bytes_read as u64,
-            bytes_written: self.bytes_written as u64,
+            bytes_read: self.bytes_read.parse().unwrap_or_default(),
+            bytes_written: self.bytes_written.parse().unwrap_or_default(),
             icon_base_64: self.icon_base_64.parse().unwrap_or_default(),
         }
     }

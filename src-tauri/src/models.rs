@@ -123,8 +123,8 @@ pub struct Disk {
 pub struct DiskProcess {
     pub pid: u32,
     pub name: String,
-    pub bytes_read: u64,
-    pub bytes_written: u64,
+    pub bytes_read: String,
+    pub bytes_written: String,
     pub icon_base_64: String,
 }
 
