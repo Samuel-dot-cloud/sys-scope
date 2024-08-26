@@ -44,7 +44,7 @@ const MemoryComponent = () => {
       <Section>
         <StatList>
           {memoryDetails.map((detail, index) => (
-            <StatItem key={index}>
+            <StatItem key={index} columns={2}>
               <Label>{detail.label}</Label>
               <Value>{detail.value}</Value>
             </StatItem>
@@ -56,7 +56,7 @@ const MemoryComponent = () => {
         <SectionTitle>Processes</SectionTitle>
         <StatList>
           {[...memoryProcesses].map((process, index) => (
-            <StatItem key={index}>
+            <StatItem key={index} columns={2}>
               <Label>
                 {index + 1}.{" "}
                 <SmallImage

@@ -36,12 +36,18 @@ const CpuComponent = () => {
     },
   ];
 
+  const loadDetails: ListDetail[] = [
+    { label: "1 min", value: sysInfo.loadAverage.one.toFixed(2) },
+    { label: "5 min", value: sysInfo.loadAverage.five.toFixed(2) },
+    { label: "15 min", value: sysInfo.loadAverage.fifteen.toFixed(2) },
+  ];
+
   return (
     <Container>
       <Section>
         <StatList>
           {cpuDetails.map((detail, index) => (
-            <StatItem key={index}>
+            <StatItem key={index} columns={2}>
               <Label>{detail.label}</Label>
               <Value>{detail.value}%</Value>
             </StatItem>
@@ -57,28 +63,20 @@ const CpuComponent = () => {
       <Section>
         <SectionTitle>Average load</SectionTitle>
         <StatList>
-          <StatItem>
-            <Label>1 min</Label>
-            <Value>{sysInfo?.loadAverage.one.toFixed(2)}</Value>
-          </StatItem>
-
-          <StatItem>
-            <Label>5 min</Label>
-            <Value>{sysInfo?.loadAverage.five.toFixed(2)}</Value>
-          </StatItem>
-
-          <StatItem>
-            <Label>15 min</Label>
-            <Value>{sysInfo?.loadAverage.fifteen.toFixed(2)}</Value>
-          </StatItem>
+          {loadDetails.map((detail, index) => (
+            <StatItem key={index} columns={2}>
+              <Label>{detail.label}</Label>
+              <Value>{detail.value}</Value>
+            </StatItem>
+          ))}
         </StatList>
       </Section>
 
       <Section>
-        <SectionTitle>Process name</SectionTitle>
+        <SectionTitle>Processes</SectionTitle>
         <StatList>
           {[...cpuProcesses].map((process, index) => (
-            <StatItem key={index}>
+            <StatItem key={index} columns={2}>
               <Label>
                 {index + 1}.{" "}
                 <SmallImage

@@ -46,7 +46,7 @@ const BatteryComponent = () => {
     <Container>
       <StatList>
         {powerDetails.map((detail, index) => (
-          <StatItem key={index}>
+          <StatItem key={index} columns={2}>
             <Label>{detail.label}</Label>
             <Value>{detail.value}</Value>
           </StatItem>
@@ -57,7 +57,7 @@ const BatteryComponent = () => {
         <SectionTitle>Processes</SectionTitle>
         <StatList>
           {[...batteryProcesses].slice(0, 5).map((process, index) => (
-            <StatItem key={index}>
+            <StatItem key={index} columns={2}>
               <Label>
                 {index + 1}.{" "}
                 <SmallImage

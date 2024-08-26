@@ -48,7 +48,7 @@ const DiskComponent = () => {
     <Container>
       <StatList>
         {diskDetails.map((detail, index) => (
-          <StatItem key={index}>
+          <StatItem key={index} columns={2}>
             <Label>{detail.label}</Label>
             <Value>{detail.value}</Value>
           </StatItem>
@@ -57,16 +57,14 @@ const DiskComponent = () => {
 
       <Section>
         <SectionTitle>Processes</SectionTitle>
-        <HeaderItem>
+        <HeaderItem columns={3}>
           <Label>Process</Label>
-          <div>
-            <Value>Read</Value>
-            <Value>Write</Value>
-          </div>
+          <Value>Read</Value>
+          <Value>Write</Value>
         </HeaderItem>
         <StatList>
           {diskProcesses.map((process, index) => (
-            <StatItem key={index}>
+            <StatItem key={index} columns={3}>
               <Label>
                 <span>{index + 1}.</span>
                 <SmallImage

@@ -1,6 +1,10 @@
 import styled, { createGlobalStyle } from "styled-components";
 import "@fontsource-variable/rubik";
 
+interface StatItemProps {
+  columns: 2 | 3;
+}
+
 export const GlabalStyles = createGlobalStyle`
     :root {
         font-family: 'Rubik Variable', sans-serif;
@@ -36,9 +40,12 @@ export const StatList = styled.ul`
   margin: 0;
 `;
 
-export const StatItem = styled.ul`
-  display: flex;
-  justify-content: space-between;
+export const StatItem = styled.div<StatItemProps>`
+  display: grid;
+  grid-template-columns: ${({ columns }) =>
+    columns === 3 ? "1fr 1fr 1fr" : "1fr 1fr"};
+  gap: 10px;
+  /* justify-content: space-between; */
   margin-bottom: 5px;
   align-items: center;
 `;
@@ -57,12 +64,14 @@ export const Label = styled.span`
   color: ${(props) => props.theme.text};
   font-weight: normal;
   font-size: 15px;
+  text-align: left;
 `;
 
 export const Value = styled.span`
   color: ${(props) => props.theme.text};
   font-weight: lighter;
   font-size: 15px;
+  text-align: right;
 `;
 
 export const Section = styled.div`
@@ -92,9 +101,11 @@ export const Title = styled.h3`
   margin: 0 0 10px;
 `;
 
-export const HeaderItem = styled.div`
-  display: flex;
-  justify-content: space-between;
+export const HeaderItem = styled.div<StatItemProps>`
+  display: grid;
+  grid-template-columns: ${({ columns }) =>
+    columns === 3 ? "1fr 1fr 1fr" : "1fr 1fr"};
+  /* justify-content: space-between; */
   font-weight: bold;
   margin-bottom: 5px;
 `;
