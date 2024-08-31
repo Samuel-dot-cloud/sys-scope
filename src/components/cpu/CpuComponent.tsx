@@ -3,6 +3,7 @@ import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import { convertTime, ListDetail } from "../../utils/FrontendUtils.ts";
 import {
   Container,
+  HeaderItem,
   HorizontalSection,
   Label,
   Section,
@@ -74,6 +75,10 @@ const CpuComponent = () => {
 
       <Section>
         <SectionTitle>Processes</SectionTitle>
+        <HeaderItem columns={2}>
+          <Label>Process</Label>
+          <Value>%</Value>
+        </HeaderItem>
         <StatList>
           {[...cpuProcesses].map((process, index) => (
             <StatItem key={index} columns={2}>

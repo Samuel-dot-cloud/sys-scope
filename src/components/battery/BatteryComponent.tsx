@@ -9,6 +9,7 @@ import {
   Value,
   SmallImage,
   Section,
+  HeaderItem,
 } from "../../styles/globals.ts";
 
 const BatteryComponent = () => {
@@ -55,6 +56,10 @@ const BatteryComponent = () => {
 
       <Section>
         <SectionTitle>Processes</SectionTitle>
+        <HeaderItem columns={2}>
+          <Label>Process</Label>
+          <Value>Energy Impact</Value>
+        </HeaderItem>
         <StatList>
           {[...batteryProcesses].slice(0, 5).map((process, index) => (
             <StatItem key={index} columns={2}>

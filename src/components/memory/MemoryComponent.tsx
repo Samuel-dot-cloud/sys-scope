@@ -2,6 +2,7 @@ import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import { convertBytes, ListDetail, Unit } from "../../utils/FrontendUtils.ts";
 import {
   Container,
+  HeaderItem,
   Label,
   Section,
   SectionTitle,
@@ -54,6 +55,10 @@ const MemoryComponent = () => {
 
       <Section>
         <SectionTitle>Processes</SectionTitle>
+        <HeaderItem columns={2}>
+          <Label>Process</Label>
+          <Value>Memory</Value>
+        </HeaderItem>
         <StatList>
           {[...memoryProcesses].map((process, index) => (
             <StatItem key={index} columns={2}>
