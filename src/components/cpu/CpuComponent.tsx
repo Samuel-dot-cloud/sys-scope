@@ -58,7 +58,7 @@ const CpuComponent = () => {
 
       <HorizontalSection>
         <Label>Uptime</Label>
-        <Value>{convertTime(sysInfo?.uptime)}</Value>
+        <Value>{convertTime(sysInfo?.uptime ?? 0)}</Value>
       </HorizontalSection>
 
       <Section>

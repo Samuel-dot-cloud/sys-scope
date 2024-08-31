@@ -41,8 +41,6 @@ pub fn save_settings<R: Runtime>(handle: &AppHandle<R>, new_settings: &Settings)
     fs::write(&settings_path, file_contents)
         .with_context(|| format!("Failed to write settings to {}", settings_path.display()))?;
 
-    println!("Think stuff is being saved here");
-
     Ok(())
 }
 

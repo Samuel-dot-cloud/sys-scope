@@ -45,7 +45,6 @@ export const StatItem = styled.div<StatItemProps>`
   grid-template-columns: ${({ columns }) =>
     columns === 3 ? "1fr 1fr 1fr" : "1fr 1fr"};
   gap: 10px;
-  /* justify-content: space-between; */
   margin-bottom: 5px;
   align-items: center;
 `;
@@ -105,7 +104,6 @@ export const HeaderItem = styled.div<StatItemProps>`
   display: grid;
   grid-template-columns: ${({ columns }) =>
     columns === 3 ? "1fr 1fr 1fr" : "1fr 1fr"};
-  /* justify-content: space-between; */
   font-weight: bold;
   margin-bottom: 5px;
 `;

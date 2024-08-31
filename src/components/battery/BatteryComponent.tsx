@@ -18,7 +18,10 @@ const BatteryComponent = () => {
 
   const powerDetails: ListDetail[] = [
     { label: "Power source", value: battery?.vendor },
-    { label: "Percentage", value: `${battery?.chargePercent.toFixed(0)}%` },
+    {
+      label: "Percentage",
+      value: `${battery?.chargePercent.toFixed(0) ?? 0}%`,
+    },
     // {label: 'State', value: battery?.state},
     { label: "Cycle Count", value: battery?.cycleCount },
     // {label: 'Technology', value: battery?.technology},
@@ -34,12 +37,15 @@ const BatteryComponent = () => {
       label: "Time to empty battery",
       value: formatTime(battery?.secsUntilEmpty ?? 0),
     },
-    { label: "Temperature", value: `${battery?.temperature.toFixed(1)} °C` },
+    {
+      label: "Temperature",
+      value: `${battery?.temperature.toFixed(1) ?? 30} °C`,
+    },
     // {label: 'Charge', value: `${battery?.energy.toFixed(3)} MJ / ${batteries.at(-1)?.energyFull.toFixed(3)} MJ`},
-    { label: "Voltage", value: `${battery?.voltage.toFixed(1)} V` },
+    { label: "Voltage", value: `${battery?.voltage.toFixed(1) ?? 0} V` },
     {
       label: "Energy rate",
-      value: `${battery?.powerConsumptionRateWatts.toFixed(1)} W`,
+      value: `${battery?.powerConsumptionRateWatts.toFixed(1) ?? 0} W`,
     },
   ];
 
