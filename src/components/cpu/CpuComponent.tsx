@@ -37,9 +37,9 @@ const CpuComponent = () => {
   ];
 
   const loadDetails: ListDetail[] = [
-    { label: "1 min", value: sysInfo.loadAverage.one.toFixed(2) },
-    { label: "5 min", value: sysInfo.loadAverage.five.toFixed(2) },
-    { label: "15 min", value: sysInfo.loadAverage.fifteen.toFixed(2) },
+    { label: "1 min", value: sysInfo?.loadAverage.one.toFixed(2) },
+    { label: "5 min", value: sysInfo?.loadAverage.five.toFixed(2) },
+    { label: "15 min", value: sysInfo?.loadAverage.fifteen.toFixed(2) },
   ];
 
   return (

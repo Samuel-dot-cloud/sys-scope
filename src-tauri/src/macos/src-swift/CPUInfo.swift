@@ -85,28 +85,33 @@ func getTopCPUProcesses() -> SRObjectArray {
     var processes: [CPUProcess] = []
 
     let lines = output.split(separator: "\n")
-    for line in lines {
-        let components = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: true)
-        if components.count == 3, let pid = Int(components[0]), let cpu = Double(components[1]) {
-            let command = String(components[2])
-            let iconBase64 = getProcessIconBase64(for: command) ?? ""
-            let processInfo = CPUProcess(
-                pid: pid,
-                name: SRString(command),
-                cpu: cpu,
-                iconBase64: SRString(iconBase64)
-            )
-            processes.append(processInfo)
 
-            if processes.count == 5 {
-                break
+    autoreleasepool {
+        for line in lines {
+            let components = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: true)
+            if components.count == 3, let pid = Int(components[0]), let cpu = Double(components[1]) {
+                let command = String(components[2])
+                let iconBase64 = getProcessIconBase64(for: command) ?? ""
+                let processInfo = CPUProcess(
+                    pid: pid,
+                    name: SRString(command),
+                    cpu: cpu,
+                    iconBase64: SRString(iconBase64)
+                )
+                processes.append(processInfo)
+
+                if processes.count == 5 {
+                    break
+                }
             }
         }
     }
 
-    processes.sort { $0.cpu > $1.cpu }
+    if processes.count > 1 {
+        processes.sort { $0.cpu > $1.cpu }
+    }
 
-    let topProcesses = Array(processes.prefix(5))
-
-    return SRObjectArray(topProcesses)
+    let result = SRObjectArray(processes)
+    processes.removeAll(keepingCapacity: false)
+    return result
 }

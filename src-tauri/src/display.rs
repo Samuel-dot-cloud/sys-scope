@@ -67,7 +67,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
                     state.emit_cpu_processes(&win);
                     state.emit_memory(&win);
                     state.emit_swap(&win);
-                    state.emit_networks(&win);
+                    // state.emit_networks(&win);
                     state.emit_disks(&win);
                     state.emit_processes(&win);
                     state.emit_batteries(&win);
