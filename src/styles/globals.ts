@@ -38,6 +38,25 @@ export const StatList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
+  max-height: 220px;
+  overflow-y: auto;
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
 `;
 
 export const StatItem = styled.div<StatItemProps>`
@@ -64,6 +83,10 @@ export const Label = styled.span`
   font-weight: normal;
   font-size: 15px;
   text-align: left;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 export const Value = styled.span`
@@ -71,10 +94,15 @@ export const Value = styled.span`
   font-weight: lighter;
   font-size: 15px;
   text-align: right;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 export const Section = styled.div`
   margin-bottom: 10px;
+  max-width: 100%;
 `;
 
 export const HorizontalSection = styled.div`
@@ -90,6 +118,7 @@ export const SectionTitle = styled.h3`
   font-size: 15px;
   margin: 0;
   padding-bottom: 5px;
+  padding-top: 2px;
   border-bottom: 1px solid ${(props) => `rgba(${props.theme.borderRgba})`};
 `;
 
@@ -105,5 +134,7 @@ export const HeaderItem = styled.div<StatItemProps>`
   grid-template-columns: ${({ columns }) =>
     columns === 3 ? "1fr 1fr 1fr" : "1fr 1fr"};
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
+  /* gap: 10px; */
+  align-items: center;
 `;

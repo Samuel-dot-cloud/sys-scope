@@ -6,8 +6,8 @@ import { BatteryFull } from "@styled-icons/bootstrap/BatteryFull";
 
 export const AppContainer = styled.div`
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  flex: 1;
+  overflow: hidden;
   background: transparent;
 `;
 
@@ -40,7 +40,7 @@ export const Content = styled.div`
   flex-grow: 1;
   background: transparent;
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: hidden;
   min-width: 0;
 `;
 
@@ -48,6 +48,8 @@ export const AppWindow = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 `;
 
 export const CpuIcon = styled(Cpu)`

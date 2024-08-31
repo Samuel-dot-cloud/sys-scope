@@ -1,4 +1,3 @@
-import { StatList } from "./styles.ts";
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import { convertTime, ListDetail } from "../../utils/FrontendUtils.ts";
 import {
@@ -10,6 +9,7 @@ import {
   SectionTitle,
   SmallImage,
   StatItem,
+  StatList,
   Value,
 } from "../../styles/globals.ts";
 
