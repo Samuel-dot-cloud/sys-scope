@@ -16,6 +16,7 @@ export const Sidebar = styled.div`
   background: transparent;
   border-right: 1px solid ${(props) => `rgba(${props.theme.borderRgba})`};
   padding: 40px 20px 20px;
+  flex-shrink: 0;
 `;
 
 export const SidebarItem = styled.div`
@@ -40,6 +41,7 @@ export const Content = styled.div`
   background: transparent;
   padding: 20px;
   overflow-y: auto;
+  min-width: 0;
 `;
 
 export const AppWindow = styled.div`
@@ -49,29 +51,29 @@ export const AppWindow = styled.div`
 `;
 
 export const CpuIcon = styled(Cpu)`
-  color: #ec5020;
   margin-right: 8px;
   width: 20px;
   height: 20px;
+  color: ${(props) => props.theme.text};
 `;
 
 export const MemoryIcon = styled(Memory)`
-  color: bisque;
   margin-right: 8px;
   width: 20px;
   height: 20px;
+  color: ${(props) => props.theme.text};
 `;
 
 export const DiskIcon = styled(Storage)`
-  color: darkkhaki;
   margin-right: 8px;
   width: 20px;
   height: 20px;
+  color: ${(props) => props.theme.text};
 `;
 
 export const BatteryIcon = styled(BatteryFull)`
-  color: greenyellow;
   margin-right: 8px;
   width: 20px;
   height: 20px;
+  color: ${(props) => props.theme.text};
 `;
