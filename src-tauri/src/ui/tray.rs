@@ -1,4 +1,5 @@
 use crate::ui::window::setup_about_window;
+use log::error;
 use tauri::{
     api::dialog, App, AppHandle, CustomMenuItem, Manager, PhysicalPosition, Position, Runtime,
     SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent,
@@ -76,7 +77,7 @@ fn create_window_event_handler<R: Runtime>(app_handle: AppHandle<R>) -> impl Fn(
                     }
                 });
             }
-            id => eprintln!("Unsupported menu item clicked {:?}", id),
+            id => error!("Unsupported menu item clicked {:?}", id),
         },
         _ => {}
     }

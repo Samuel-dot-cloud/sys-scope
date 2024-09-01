@@ -2,6 +2,7 @@ use crate::display::SettingsState;
 use crate::helpers::fs::save_settings;
 use crate::helpers::shortcut::{register_toggle_shortcut, unregister_global_shortcut};
 use crate::state::Settings;
+use log::info;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime, State};
 
@@ -23,7 +24,7 @@ pub fn get_settings(settings: State<'_, SettingsState>) -> Result<SettingsPayloa
     let settings = settings
         .read()
         .map_err(|e| format!("Failed to read settings {}", e))?;
-    println!("{:?}", settings.to_owned().clone());
+    info!("{:?}", settings.to_owned().clone());
     Ok(settings.to_owned().into())
 }
 
@@ -33,7 +34,7 @@ pub fn set_settings<R: Runtime>(
     settings: State<'_, SettingsState>,
     app_handle: AppHandle<R>,
 ) -> Result<(), String> {
-    println!("New settings: {:?}", &new_settings);
+    info!("New settings: {:?}", &new_settings);
     let mut settings = settings.write().unwrap();
     let old_settings = settings.clone();
 

@@ -1,3 +1,4 @@
+use log::error;
 use std::sync::RwLock;
 use std::time::Duration;
 use tauri::{Manager, Runtime};
@@ -56,7 +57,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
                         *app.state::<SettingsState>().write().unwrap() = settings;
                     }
                     Err(error) => {
-                        eprintln!("Failed to load settings with error {:?}", error)
+                        error!("Failed to load settings with error {:?}", error)
                     }
                 }
             }
