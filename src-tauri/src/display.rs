@@ -18,7 +18,8 @@ pub type SettingsState = RwLock<Settings>;
 pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> tauri::App<R> {
     let mut ctx = tauri::generate_context!();
 
-    let auto_start_plugin = tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None);
+    let auto_start_plugin =
+        tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--autostart"]));
 
     builder
         .menu(tauri::Menu::new())
