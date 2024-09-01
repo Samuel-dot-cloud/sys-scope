@@ -1,18 +1,16 @@
 import styled, { css, keyframes } from "styled-components";
-import { Form, Input, Modal, Switch } from "antd";
+import { Form, Input, Modal, Popover, Switch } from "antd";
 import { Sun } from "@styled-icons/bootstrap/Sun";
 import { Moon } from "@styled-icons/bootstrap/Moon";
 import { DarkTheme } from "@styled-icons/fluentui-system-regular/DarkTheme";
 
 export const TranslucentModal = styled(Modal)`
-  //background-color: rgba(255, 255, 255, 0.0);
-
   .ant-modal-content {
     background-color: ${(props) => `rgba(${props.theme.modalRgba})`};
   }
 
   .ant-modal-header {
-    background-color: ${(props) => `rgba(${props.theme.modalRgba})`};
+    background-color: transparent;
     color: ${(props) => props.theme.text};
   }
   .ant-modal-close-x {
@@ -21,17 +19,6 @@ export const TranslucentModal = styled(Modal)`
   .ant-modal-title {
     color: ${(props) => props.theme.text};
   }
-  //
-  //.ant-modal-body {
-  //    background-color: rgba(255, 255, 255, 0.3);
-  //    padding-bottom: 0;
-  //}
-  //
-  //.ant-modal-footer {
-  //    background-color: rgba(255, 255, 255, 0.3);
-  //}
-
-  //    border-bottom: none;
 `;
 
 const iconStyles = css<{ isActive: boolean }>`
@@ -140,4 +127,37 @@ export const StyledInput = styled(Input)`
     color: grey;
     opacity: 1;
   }
+`;
+
+export const StyledPopover = styled(Popover)``;
+
+export const PopoverContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+export const HotkeyDisplay = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+`;
+
+export const KeyBlock = styled.span`
+  background-color: ${(props) => props.theme.hoverRgba};
+  color: ${(props) => props.theme.text};
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+`;
+
+export const PlaceholderText = styled.span`
+  color: ${(props) => props.theme.text};
+  font-size: 16px;
+`;
+
+export const RecordingText = styled.div`
+  color: ${(props) => props.theme.text};
+  font-size: 14px;
 `;

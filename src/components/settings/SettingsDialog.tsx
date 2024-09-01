@@ -1,8 +1,14 @@
 import {
   DarkIcon,
+  HotkeyDisplay,
+  KeyBlock,
   LightIcon,
+  PlaceholderText,
+  PopoverContent,
+  RecordingText,
   StyledForm,
   StyledInput,
+  StyledPopover,
   StyledSwitch,
   SystemIcon,
   ThemeOption,
@@ -29,9 +35,12 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   onClose,
 }) => {
   const [globalHotkey, setGlobalHotkey] = useState("");
+  const [displayHotkey, setDisplayHotkey] = useState("");
+  const [currentInput, setCurrentInput] = useState("");
   const { darkMode, setDarkMode } = useTheme();
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isPopoverVisible, setIsPopoverVisible] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
@@ -49,6 +58,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           const response = await getSettings();
           if (response.toggleAppShortcut) {
             setGlobalHotkey(response.toggleAppShortcut);
+            setDisplayHotkey(mapToSymbols(response.toggleAppShortcut));
           }
         } catch (error) {
           console.error("Failed to fetch settings: ", error);
@@ -71,42 +81,69 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     setDarkMode(newTheme);
   };
 
-  const handleHotkeyChange = async (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const keyToSymbol = (key: string): string => {
+    const keyMap: { [key: string]: string } = {
+      Meta: "⌘",
+      Shift: "⇧",
+      Control: "⌃",
+      Alt: "⌥",
+      ArrowUp: "↑",
+      ArrowDown: "↓",
+      ArrowLeft: "←",
+      ArrowRight: "→",
+    };
+    return keyMap[key] || key;
+  };
+
+  const mapToSymbols = (hotkey: string): string => {
+    return hotkey.split(" + ").map(keyToSymbol).join(" + ");
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    event.preventDefault();
     let hotkeyCombination = "";
 
-    if (event.metaKey) {
-      hotkeyCombination += "Cmd + ";
+    if (event.metaKey) hotkeyCombination += "Meta + ";
+    if (event.shiftKey) hotkeyCombination += "Shift + ";
+    if (event.ctrlKey) hotkeyCombination += "Control + ";
+    if (event.altKey) hotkeyCombination += "Alt + ";
+
+    if (event.key.length === 1 || event.key.startsWith("Arrow")) {
+      hotkeyCombination += event.key.toUpperCase();
     }
 
-    if (event.shiftKey) {
-      hotkeyCombination += "Shift + ";
-    }
+    setCurrentInput(mapToSymbols(hotkeyCombination));
 
-    if (event.ctrlKey) {
-      hotkeyCombination += "Ctrl + ";
-    }
-
-    if (event.altKey) {
-      hotkeyCombination += "Alt + ";
-    }
-
-    if (event.key.length === 1 || event.key === "Backspace") {
-      hotkeyCombination +=
-        event.key === "Backspace" ? "" : event.key.toUpperCase();
-    }
+    console.log("The hotkey combo: ", mapToSymbols(hotkeyCombination));
 
     if (!hotkeyCombination.endsWith("+ ")) {
       setGlobalHotkey(hotkeyCombination);
-      await saveSettings(globalHotkey);
-      toast.success("Global hotkey saved!", { duration: 1000 });
+      setDisplayHotkey(mapToSymbols(hotkeyCombination));
+      saveSettings(hotkeyCombination).then(() => {
+        toast.success("Global hotkey saved!", { duration: 1000 });
+      });
+      setIsPopoverVisible(false);
+      document.removeEventListener("keydown", handleKeyDown);
     } else {
       console.log("Incomplete hotkey combination");
     }
 
     event.preventDefault();
   };
+
+  const startRecordingHotkey = () => {
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  };
+
+  useEffect(() => {
+    if (isPopoverVisible) {
+      startRecordingHotkey();
+    }
+  }, [isPopoverVisible]);
 
   return (
     <TranslucentModal
@@ -126,12 +163,38 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         )}
 
         <Form.Item label="SysScope Hotkey">
-          <StyledInput
-            placeholder="Enter hotkey combination"
-            value={globalHotkey}
-            onKeyDown={handleHotkeyChange}
-            readOnly
-          />
+          <StyledPopover
+            content={
+              <PopoverContent>
+                <HotkeyDisplay>
+                  {currentInput ? (
+                    currentInput
+                      .split(" + ")
+                      .map((key, index) => (
+                        <KeyBlock key={index}>{key}</KeyBlock>
+                      ))
+                  ) : (
+                    <PlaceholderText>e.g. ⌘ + ⇧ + A</PlaceholderText>
+                  )}
+                </HotkeyDisplay>
+                <RecordingText>Recording...</RecordingText>
+              </PopoverContent>
+            }
+            trigger="click"
+            open={isPopoverVisible}
+            onOpenChange={setIsPopoverVisible}
+            overlayClassName="custom-popover"
+          >
+            <StyledInput
+              placeholder="Enter hotkey combination"
+              value={displayHotkey}
+              onClick={() => {
+                setIsPopoverVisible(true);
+                setCurrentInput("");
+              }}
+              readOnly
+            />
+          </StyledPopover>
         </Form.Item>
 
         <Form.Item label="Appearance">

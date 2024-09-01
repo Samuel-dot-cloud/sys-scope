@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
-// TODO: Find a means of code generation to get rid of SettingsPayload and other stuff under types.ts
 export interface Settings {
   toggleAppShortcut?: string;
 }

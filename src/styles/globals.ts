@@ -26,6 +26,28 @@ export const GlabalStyles = createGlobalStyle`
         min-height: 100vh;
     }
 
+    .custom-popover .ant-popover-inner {
+      background-color: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .custom-popover .ant-popover-arrow {
+      color: transparent;
+    }
+
+    .custom-popover .ant-popover-arrow::before {
+      background-color: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+    }
+
+    .custom-popover .ant-popover-arrow::after {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
 `;
 
 export const Container = styled.div`
