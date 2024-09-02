@@ -13,11 +13,12 @@ import {
 } from "../../styles/globals.ts";
 
 const BatteryComponent = () => {
-  const { batteries, batteryProcesses } = useServerEventsContext();
-  const battery = batteries.at(-1);
+  const { battery, batteryProcesses } = useServerEventsContext();
+  console.log("Time to empty: ", battery.secsUntilEmpty);
+  console.log("Time to full battery: ", battery.secsUntilFull);
 
   const powerDetails: ListDetail[] = [
-    { label: "Power source", value: battery?.vendor },
+    { label: "Power source", value: battery?.powerSource ?? "" },
     {
       label: "Percentage",
       value: `${battery?.chargePercent.toFixed(0) ?? 0}%`,
@@ -31,11 +32,11 @@ const BatteryComponent = () => {
     // },
     {
       label: "Time to full battery",
-      value: formatTime(battery?.secsUntilFull ?? 0),
+      value: formatTime(battery?.secsUntilFull ?? 0 * 60),
     },
     {
       label: "Time to empty battery",
-      value: formatTime(battery?.secsUntilEmpty ?? 0),
+      value: formatTime(battery?.secsUntilEmpty ?? 0 * 60),
     },
     {
       label: "Temperature",

@@ -7,7 +7,7 @@ export enum ServerEvent {
   Networks = "emit_networks",
   Disk = "emit_disk",
   Processes = "emit_processes",
-  Batteries = "emit_batteries",
+  Battery = "emit_battery",
   BatteryProcesses = "emit_battery_processes",
   DiskProcesses = "emit_disk_processes",
   MemoryProcesses = "emit_memory_processes",
@@ -114,7 +114,7 @@ export interface DeviceBattery {
   secsUntilEmpty: number;
   powerConsumptionRateWatts: number;
   healthPercent: number;
-  vendor: string;
+  powerSource: string;
   technology: string;
   cycleCount: number;
   model: string;

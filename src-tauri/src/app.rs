@@ -58,8 +58,8 @@ impl AppState {
     }
 
     pub fn emit_batteries<R: Runtime>(&self, window: &Window<R>) {
-        let batteries = self.0.lock().unwrap().metrics.get_batteries();
-        window.emit("emit_batteries", &batteries).unwrap();
+        let battery = self.0.lock().unwrap().metrics.get_battery();
+        window.emit("emit_battery", &battery).unwrap();
     }
 
     pub fn emit_battery_processes<R: Runtime>(&self, window: &Window<R>) {

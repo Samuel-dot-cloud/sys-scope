@@ -33,7 +33,7 @@ interface ServerEventsContext {
   processes: Process[];
   networks: Enumerable<Network>[];
   disk: Disk;
-  batteries: DeviceBattery[];
+  battery: DeviceBattery;
   batteryProcesses: BatteryProcess[];
   diskProcesses: DiskProcess[];
   memoryProcesses: MemoryProcess[];
@@ -79,8 +79,25 @@ const memory: Memory = {
   app: 0,
 };
 
+const battery: DeviceBattery = {
+  chargePercent: 0,
+  secsUntilFull: 0,
+  secsUntilEmpty: 0,
+  powerConsumptionRateWatts: 0,
+  healthPercent: 0,
+  powerSource: "",
+  technology: "",
+  cycleCount: 0,
+  model: "",
+  state: "",
+  temperature: 0,
+  energy: 0,
+  energyFull: 0,
+  voltage: 0,
+};
+
 export const ServerEventsContext = createContext<ServerEventsContext>({
-  batteries: [],
+  battery: battery,
   batteryProcesses: [],
   cpu: [],
   disk: disk,
@@ -119,10 +136,9 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({
     { maxSize },
   );
   const [disk] = useServerEventsStore<Disk>(ServerEvent.Disk, { maxSize });
-  const [batteries] = useServerEventsStore<DeviceBattery[]>(
-    ServerEvent.Batteries,
-    { maxSize: 1 },
-  );
+  const [battery] = useServerEventsStore<DeviceBattery>(ServerEvent.Battery, {
+    maxSize,
+  });
   const [batteryProcesses] = useServerEventsStore<BatteryProcess[]>(
     ServerEvent.BatteryProcesses,
     { maxSize },
@@ -147,7 +163,7 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({
         networks,
         cpuProcesses: cpuProcesses[cpuProcesses.length - 1] ?? [],
         disk: disk[disk.length - 1],
-        batteries: batteries[batteries.length - 1] ?? [],
+        battery: battery[battery.length - 1],
         batteryProcesses: batteryProcesses[batteryProcesses.length - 1] ?? [],
         diskProcesses: diskProcesses[diskProcesses.length - 1] ?? [],
         memoryProcesses: memoryProcesses[memoryProcesses.length - 1] ?? [],

@@ -78,11 +78,11 @@
         "hiddenTitle": true,
         "decorations": true,
         "titleBarStyle": "Visible",
-        "height": 525,
+        "height": 705,
         "resizable": false,
         "minimizable": false,
         "title": "SysScope",
-        "width": 800
+        "width": 1300
       }
     ]
   }
