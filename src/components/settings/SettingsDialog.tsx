@@ -34,9 +34,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   isVisible,
   onClose,
 }) => {
-  const [globalHotkey, setGlobalHotkey] = useState("");
   const [displayHotkey, setDisplayHotkey] = useState("");
-  const [currentInput, setCurrentInput] = useState("");
+  const [currentInput, setCurrentInput] = useState<string[]>([]);
   const { darkMode, setDarkMode } = useTheme();
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -57,8 +56,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         try {
           const response = await getSettings();
           if (response.toggleAppShortcut) {
-            setGlobalHotkey(response.toggleAppShortcut);
-            setDisplayHotkey(mapToSymbols(response.toggleAppShortcut));
+            const hotkeyArray = response.toggleAppShortcut.split(" + ");
+            setDisplayHotkey(mapToSymbols(hotkeyArray));
           }
         } catch (error) {
           console.error("Failed to fetch settings: ", error);
@@ -66,6 +65,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
       };
       fetchSettings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);
 
   const handleLaunchChange = () => {
@@ -91,44 +91,49 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
       ArrowDown: "↓",
       ArrowLeft: "←",
       ArrowRight: "→",
+      " ": "Space",
     };
-    return keyMap[key] || key;
+    return keyMap[key] || key.toUpperCase();
   };
 
-  const mapToSymbols = (hotkey: string): string => {
-    return hotkey.split(" + ").map(keyToSymbol).join(" + ");
+  const mapToSymbols = (hotkey: string[]): string => {
+    return hotkey.map(keyToSymbol).join(" + ");
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
     event.preventDefault();
-    let hotkeyCombination = "";
 
-    if (event.metaKey) hotkeyCombination += "Meta + ";
-    if (event.shiftKey) hotkeyCombination += "Shift + ";
-    if (event.ctrlKey) hotkeyCombination += "Control + ";
-    if (event.altKey) hotkeyCombination += "Alt + ";
+    setCurrentInput((prevKeys) => {
+      const key = event.key;
+      const newKeys = prevKeys.includes(key) ? prevKeys : [...prevKeys, key];
 
-    if (event.key.length === 1 || event.key.startsWith("Arrow")) {
-      hotkeyCombination += event.key.toUpperCase();
-    }
+      const hotkeyString = newKeys.join(" + ");
+      setDisplayHotkey(mapToSymbols(newKeys));
 
-    setCurrentInput(mapToSymbols(hotkeyCombination));
+      console.log("The hotkey string: ", hotkeyString);
 
-    console.log("The hotkey combo: ", mapToSymbols(hotkeyCombination));
+      return newKeys;
+    });
 
-    if (!hotkeyCombination.endsWith("+ ")) {
-      setGlobalHotkey(hotkeyCombination);
-      setDisplayHotkey(mapToSymbols(hotkeyCombination));
-      saveSettings(hotkeyCombination).then(() => {
-        toast.success("Global hotkey saved!", { duration: 1000 });
-      });
+    document.addEventListener("keyup", handleKeyUp);
+  };
+
+  const handleKeyUp = () => {
+    setCurrentInput((prevKeys) => {
+      const hotkeyString = prevKeys.join(" + ");
+      saveSettings(hotkeyString)
+        .then(() => {
+          toast.success("Global hotkey saved!", { duration: 1000 });
+        })
+        .catch((error) =>
+          toast.error(`Something went wrong saving the hotkey: ${error}`),
+        );
       setIsPopoverVisible(false);
-      document.removeEventListener("keydown", handleKeyDown);
-    } else {
-      console.log("Incomplete hotkey combination");
-    }
+      return prevKeys;
+    });
 
-    event.preventDefault();
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("keyup", handleKeyUp);
   };
 
   const startRecordingHotkey = () => {
@@ -143,6 +148,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     if (isPopoverVisible) {
       startRecordingHotkey();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPopoverVisible]);
 
   return (
@@ -167,12 +173,10 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
             content={
               <PopoverContent>
                 <HotkeyDisplay>
-                  {currentInput ? (
-                    currentInput
-                      .split(" + ")
-                      .map((key, index) => (
-                        <KeyBlock key={index}>{key}</KeyBlock>
-                      ))
+                  {currentInput.length ? (
+                    currentInput.map((key, index) => (
+                      <KeyBlock key={index}>{keyToSymbol(key)}</KeyBlock>
+                    ))
                   ) : (
                     <PlaceholderText>e.g. ⌘ + ⇧ + A</PlaceholderText>
                   )}
@@ -190,7 +194,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
               value={displayHotkey}
               onClick={() => {
                 setIsPopoverVisible(true);
-                setCurrentInput("");
+                setCurrentInput([]);
               }}
               readOnly
             />

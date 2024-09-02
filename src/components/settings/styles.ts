@@ -144,7 +144,7 @@ export const HotkeyDisplay = styled.div`
 `;
 
 export const KeyBlock = styled.span`
-  background-color: ${(props) => props.theme.hoverRgba};
+  background-color: ${(props) => `rgba(${props.theme.hoverRgba})`};
   color: ${(props) => props.theme.text};
   padding: 4px 8px;
   border-radius: 4px;
