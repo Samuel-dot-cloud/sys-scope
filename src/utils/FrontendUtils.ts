@@ -34,7 +34,12 @@ export const formatTime = (seconds: number): string => {
   const paddedMinutes = minutes.toString().padStart(2, "0");
   const paddedSeconds = secs.toString().padStart(2, "0");
 
-  if (hours === 0 && minutes === 0 && seconds === 0) {
+  if (
+    (hours === 0 && minutes === 0 && seconds === 0) ||
+    hours < 0 ||
+    minutes < 0 ||
+    seconds < 0
+  ) {
     return "-----";
   }
 
