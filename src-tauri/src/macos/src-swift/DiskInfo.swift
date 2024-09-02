@@ -1,19 +1,26 @@
 import Cocoa
+import DiskArbitration
 import IOKit
 import IOKit.storage
 import SwiftRs
 
 class DiskInfo: NSObject {
+    let mountPoint: SRString
     let totalSpace: Int
     let freeSpace: Int
     let bytesRead: Int
     let bytesWritten: Int
+    let fileSystemType: SRString
+    let isRemovable: Bool
 
-    init(totalSpace: Int, freeSpace: Int, bytesRead: Int, bytesWritten: Int) {
+    init(mountPoint: SRString, totalSpace: Int, freeSpace: Int, bytesRead: Int, bytesWritten: Int, fileSystemType: SRString, isRemovable: Bool) {
+        self.mountPoint = mountPoint
         self.totalSpace = totalSpace
         self.freeSpace = freeSpace
         self.bytesRead = bytesRead
         self.bytesWritten = bytesWritten
+        self.fileSystemType = fileSystemType
+        self.isRemovable = isRemovable
     }
 }
 
@@ -50,33 +57,38 @@ class DiskMonitor {
         }
 
         var newProcesses: [DiskProcess] = []
-
         let lines = output.split(separator: "\n")
-        for line in lines {
-            let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
-            if components.count == 2, let pid = Int32(components[0]) {
-                let pathComponent = String(components[1])
-                let name = URL(fileURLWithPath: pathComponent).lastPathComponent
-                let icon = getProcessIconBase64(for: name) ?? ""
 
-                if let ioStats = getProcessDiskIOStats(pid: pid) {
-                    newProcesses.append(
-                        DiskProcess(
-                            pid: Int(pid),
-                            name: SRString(name),
-                            bytesRead: SRString(ioStats.read),
-                            bytesWritten: SRString(ioStats.write),
-                            iconBase64: SRString(icon)
+        autoreleasepool {
+            for line in lines {
+                let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+                if components.count == 2, let pid = Int32(components[0]) {
+                    let pathComponent = String(components[1])
+                    let name = URL(fileURLWithPath: pathComponent).lastPathComponent
+                    let icon = getProcessIconBase64(for: name) ?? ""
+
+                    if let ioStats = getProcessDiskIOStats(pid: pid) {
+                        newProcesses.append(
+                            DiskProcess(
+                                pid: Int(pid),
+                                name: SRString(name),
+                                bytesRead: SRString(ioStats.read),
+                                bytesWritten: SRString(ioStats.write),
+                                iconBase64: SRString(icon)
+                            )
                         )
-                    )
+                    }
+                }
+
+                if newProcesses.count >= 5 {
+                    break
                 }
             }
-
-            if newProcesses.count >= 5 {
-                break
-            }
         }
-        return newProcesses
+
+        let result = newProcesses
+        newProcesses.removeAll(keepingCapacity: false)
+        return result
     }
 }
 
@@ -111,22 +123,31 @@ private func formatBytes(_ bytes: Int) -> String {
 class DiskUtility {
     // TODO: Fix erroneous free and total disk space value
     static func getDiskInfo() -> DiskInfo? {
-        let bsdName = findMainMacintoshHDBSDName() ?? ""
-        guard let mountPoint = getMountPoint(forBSDName: bsdName),
+        guard let session = DASessionCreate(kCFAllocatorDefault) else { return nil }
+        let bsdName = findMainMacintoshHDBSDName(session: session) ?? ""
+        guard let mountPoint = getMountPoint(forBSDName: bsdName, session: session),
               let totalSpace = getTotalDiskSpace(at: mountPoint),
               let freeSpace = getFreeDiskSpace(at: mountPoint),
-              let ioStats = getDiskIOStats(bsdName: bsdName)
+              let ioStats = getDiskIOStats(bsdName: bsdName),
+              let fileSystemType = getFileSystemType(forBSDName: bsdName, session: session)
         else {
             return nil
         }
 
-        return DiskInfo(totalSpace: Int(totalSpace), freeSpace: Int(freeSpace), bytesRead: Int(ioStats.read), bytesWritten: Int(ioStats.write))
+        let isRemovable = isDiskRemovable(forBSDName: bsdName, session: session)
+
+        return DiskInfo(
+            mountPoint: SRString(mountPoint),
+            totalSpace: Int(totalSpace),
+            freeSpace: Int(freeSpace),
+            bytesRead: Int(ioStats.read),
+            bytesWritten: Int(ioStats.write),
+            fileSystemType: SRString(fileSystemType),
+            isRemovable: isRemovable
+        )
     }
 
-    private static func getMountPoint(forBSDName bsdName: String) -> String? {
-        let session = DASessionCreate(kCFAllocatorDefault)
-        guard let session else { return nil }
-
+    private static func getMountPoint(forBSDName bsdName: String, session: DASession) -> String? {
         if let disk = DADiskCreateFromBSDName(kCFAllocatorDefault, session, bsdName) {
             if let diskDescription = DADiskCopyDescription(disk) as? [CFString: Any] {
                 if let volumePath = diskDescription[kDADiskDescriptionVolumePathKey] as? URL {
@@ -179,25 +200,44 @@ class DiskUtility {
         }
         return nil
     }
-}
 
-func findMainMacintoshHDBSDName() -> String? {
-    let session = DASessionCreate(kCFAllocatorDefault)
-    guard let session else { return nil }
-
-    let mountedVolumes = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil, options: []) ?? []
-
-    for volume in mountedVolumes {
-        if let volumeName = try? volume.resourceValues(forKeys: [.volumeNameKey]).volumeName, volumeName == "Macintosh HD" {
-            if let disk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, volume as CFURL) {
-                let diskDescription = DADiskCopyDescription(disk) as Dictionary?
-                let bsdName = diskDescription?[kDADiskDescriptionMediaBSDNameKey] as? String
-                return bsdName
+    private static func getFileSystemType(forBSDName bsdName: String, session: DASession) -> String? {
+        if let disk = DADiskCreateFromBSDName(kCFAllocatorDefault, session, bsdName) {
+            if let diskDescription = DADiskCopyDescription(disk) as? [CFString: Any] {
+                if let fsType = diskDescription[kDADiskDescriptionVolumeKindKey] as? String {
+                    return fsType
+                }
             }
         }
+        return "Unknown"
     }
 
-    return nil
+    private static func isDiskRemovable(forBSDName bsdName: String, session: DASession) -> Bool {
+        if let disk = DADiskCreateFromBSDName(kCFAllocatorDefault, session, bsdName) {
+            if let diskDescription = DADiskCopyDescription(disk) as? [CFString: Any] {
+                if let removable = diskDescription[kDADiskDescriptionMediaRemovableKey] as? Bool {
+                    return removable
+                }
+            }
+        }
+        return false
+    }
+
+    private static func findMainMacintoshHDBSDName(session: DASession) -> String? {
+        let mountedVolumes = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil, options: []) ?? []
+
+        for volume in mountedVolumes {
+            if let volumeName = try? volume.resourceValues(forKeys: [.volumeNameKey]).volumeName, volumeName == "Macintosh HD" {
+                if let disk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, volume as CFURL) {
+                    let diskDescription = DADiskCopyDescription(disk) as Dictionary?
+                    let bsdName = diskDescription?[kDADiskDescriptionMediaBSDNameKey] as? String
+                    return bsdName
+                }
+            }
+        }
+
+        return nil
+    }
 }
 
 @_cdecl("get_disk_info")

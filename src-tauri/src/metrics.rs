@@ -9,29 +9,18 @@ use crate::models::{
     SysInfo, SystemInformationTrait, TopProcess,
 };
 use crate::utils::{current_time, get_percentage, round};
-use starship_battery::units::electric_potential::volt;
-use starship_battery::units::energy::megajoule;
-use starship_battery::units::power::watt;
-use starship_battery::units::ratio::percent;
-use starship_battery::units::thermodynamic_temperature::degree_celsius;
-use starship_battery::units::time::second;
-use starship_battery::Manager;
-use sysinfo::{Disks, Networks, System};
+use sysinfo::{Networks, System};
 
 pub struct Metrics {
     sys: System,
-    disks: Disks,
     networks: Networks,
-    batteries: Option<Manager>,
 }
 
 impl Default for Metrics {
     fn default() -> Self {
         Metrics {
             sys: System::new_all(),
-            disks: Disks::new_with_refreshed_list(),
             networks: Networks::new_with_refreshed_list(),
-            batteries: Manager::new().ok(),
         }
     }
 }
@@ -84,60 +73,46 @@ impl CpuTrait for Metrics {
 }
 
 impl DiskTrait for Metrics {
-    fn get_disks(&mut self) -> Vec<Disk> {
+    fn get_disk(&mut self) -> Disk {
         let swift_disk_info = unsafe { get_disk_info() };
 
-        let (total_space, free_space, bytes_read, bytes_written) = match swift_disk_info {
+        let (
+            mount_point,
+            total_space,
+            free_space,
+            bytes_read,
+            bytes_written,
+            file_system,
+            is_removable,
+        ) = match swift_disk_info {
             Some(info) => (
+                info.mount_point.parse().unwrap_or_default(),
                 info.total_space as u64,
                 info.free_space as u64,
                 info.bytes_read as u64,
                 info.bytes_written as u64,
+                info.file_system_type.parse().unwrap_or_default(),
+                info.is_removable as bool,
             ),
-            None => (0, 0, 0, 0),
+            None => ("".to_string(), 0, 0, 0, 0, "".to_string(), false),
         };
 
-        let disks: Vec<Disk> = self
-            .disks
-            .iter()
-            .map(|disk| {
-                let name = match disk.name().to_str() {
-                    Some("") => disk.mount_point().to_str().unwrap_or("Unknown").to_owned(),
-                    Some(name) => name.to_owned(),
-                    None => "-----".to_owned(),
-                };
+        let total = total_space;
+        let free = free_space;
+        let used = total - free;
 
-                let disk_type = match disk.kind() {
-                    sysinfo::DiskKind::HDD => "HDD".to_owned(),
-                    sysinfo::DiskKind::SSD => "SSD".to_owned(),
-                    _ => "-----".to_owned(),
-                };
-
-                let file_system = disk.file_system().to_string_lossy().to_ascii_uppercase();
-
-                let total = total_space;
-                let free = free_space;
-                let used = total - free;
-                let is_removable = disk.is_removable();
-                let mount_point = disk.mount_point().to_owned();
-
-                Disk {
-                    name,
-                    free,
-                    used,
-                    total,
-                    mount_point,
-                    file_system,
-                    is_removable,
-                    disk_type,
-                    bytes_read,
-                    bytes_written,
-                    timestamp: current_time(),
-                }
-            })
-            .collect();
-
-        disks
+        Disk {
+            name: String::from("Macintosh HD"),
+            free,
+            used,
+            total,
+            mount_point: mount_point.clone(),
+            file_system,
+            is_removable,
+            disk_type: String::from(""),
+            bytes_read,
+            bytes_written,
+        }
     }
 
     fn get_disk_processes(&mut self) -> Vec<crate::models::DiskProcess> {
@@ -264,85 +239,21 @@ impl NetworkTrait for Metrics {
 }
 
 impl BatteryTrait for Metrics {
-    fn get_batteries(&mut self) -> Vec<DeviceBattery> {
-        let mut device_batteries: Vec<DeviceBattery> = Vec::new();
+    fn get_battery(&mut self) -> DeviceBattery {
         let swift_battery_info = unsafe { fetch_battery_info() };
 
-        if let Some(manager) = &self.batteries {
-            if let Ok(batteries) = manager.batteries() {
-                for battery in batteries {
-                    if let Ok(battery_info) = battery {
-                        let secs_until_full = battery_info
-                            .time_to_full()
-                            .map(|time| f64::from(time.get::<second>()) as i64)
-                            .unwrap_or(0);
-                        let secs_until_empty = battery_info
-                            .time_to_empty()
-                            .map(|time| f64::from(time.get::<second>()) as i64)
-                            .unwrap_or(0);
-                        let power_consumption_rate_watts =
-                            f64::from(battery_info.energy_rate().get::<watt>());
-                        let health_percent =
-                            f64::from(battery_info.state_of_health().get::<percent>());
-                        // let vendor = battery_info.vendor().unwrap_or("-----").to_owned();
-                        let technology = match battery_info.technology() {
-                            starship_battery::Technology::LeadAcid => "Lead Acid".to_string(),
-                            starship_battery::Technology::LithiumIon => "Lithium Ion".to_string(),
-                            starship_battery::Technology::LithiumPolymer => {
-                                "Lithium Polymer".to_string()
-                            }
-                            starship_battery::Technology::NickelMetalHydride => {
-                                "Nickel Metal Hydride".to_string()
-                            }
-                            starship_battery::Technology::NickelCadmium => {
-                                "Nickel Cadmium".to_string()
-                            }
-                            starship_battery::Technology::NickelZinc => "Nickel Zinc".to_string(),
-                            starship_battery::Technology::LithiumIronPhosphate => {
-                                "Lithium Iron Phosphate".to_string()
-                            }
-                            starship_battery::Technology::RechargeableAlkalineManganese => {
-                                "Rechargeable Alkaline Manganese".to_string()
-                            }
-                            _ => "-----".to_string(),
-                        };
-                        let cycle_count = battery_info.cycle_count().unwrap_or(0);
-                        let model = battery_info.model().unwrap_or("Unknown").to_string();
-                        let state = match battery_info.state() {
-                            starship_battery::State::Charging => "Charging".to_string(),
-                            starship_battery::State::Discharging => "Discharging".to_string(),
-                            starship_battery::State::Empty => "Empty".to_string(),
-                            starship_battery::State::Full => "Full".to_string(),
-                            _ => "-----".to_string(),
-                        };
-
-                        let temperature =
-                            f64::from(battery_info.temperature().unwrap().get::<degree_celsius>());
-                        let energy = f64::from(battery_info.energy().get::<megajoule>());
-                        let energy_full = f64::from(battery_info.energy_full().get::<megajoule>());
-                        let voltage = f64::from(battery_info.voltage().get::<volt>());
-
-                        device_batteries.push(DeviceBattery {
-                            charge_percent: swift_battery_info.charge,
-                            secs_until_full,
-                            secs_until_empty,
-                            power_consumption_rate_watts,
-                            health_percent: health_percent,
-                            vendor: swift_battery_info.power_source.parse().unwrap(),
-                            technology,
-                            cycle_count,
-                            model,
-                            state,
-                            temperature,
-                            energy,
-                            energy_full,
-                            voltage,
-                        });
-                    }
-                }
-            }
+        DeviceBattery {
+            charge_percent: swift_battery_info.charge,
+            secs_until_full: swift_battery_info.time_to_full as i64,
+            secs_until_empty: swift_battery_info.time_to_empty as i64,
+            power_consumption_rate_watts: swift_battery_info.watts,
+            health_percent: swift_battery_info.health,
+            power_source: swift_battery_info.power_source.parse().unwrap(),
+            cycle_count: swift_battery_info.cycle_count as u32,
+            temperature: swift_battery_info.temperature,
+            energy: swift_battery_info.amperage as f64,
+            voltage: swift_battery_info.voltage,
         }
-        device_batteries
     }
 
     fn get_battery_processes(&mut self) -> Vec<TopProcess> {

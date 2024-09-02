@@ -160,29 +160,39 @@ func getTopBatteryProcesses() -> SRObjectArray {
         return SRObjectArray([])
     }
 
-    // Parse the output
+    let regex = try! NSRegularExpression(pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#, options: [])
     var processInfo: [BatteryProcess] = []
     let lines = output.split(separator: "\n")
-    for line in lines {
-        let regex = try! NSRegularExpression(pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#, options: [])
-        let nsLine = line as NSString
-        if let match = regex.firstMatch(in: String(line), options: [], range: NSRange(location: 0, length: nsLine.length)) {
-            let pid = Int(nsLine.substring(with: match.range(at: 1)))!
-            let processName = nsLine.substring(with: match.range(at: 2))
-            let power = Double(nsLine.substring(with: match.range(at: 4)))!
 
-            if power > 0 {
-                let iconBase64 = getProcessIconBase64(for: processName) ?? ""
-                let topProcess = BatteryProcess(pid: pid, name: SRString(processName), power: power, iconBase64: SRString(iconBase64))
-                processInfo.append(topProcess)
-            }
+    autoreleasepool {
+        for line in lines {
+            let nsLine = line as NSString
+            if let match = regex.firstMatch(in: String(line), options: [], range: NSRange(location: 0, length: nsLine.length)) {
+                guard let pid = Int(nsLine.substring(with: match.range(at: 1))),
+                      let power = Double(nsLine.substring(with: match.range(at: 4)))
+                else {
+                    continue
+                }
+                let processName = nsLine.substring(with: match.range(at: 2))
 
-            if processInfo.count >= 5 {
-                break
+                if power > 0 {
+                    let iconBase64 = getProcessIconBase64(for: processName) ?? ""
+                    let topProcess = BatteryProcess(pid: pid, name: SRString(processName), power: power, iconBase64: SRString(iconBase64))
+                    processInfo.append(topProcess)
+                }
+
+                if processInfo.count >= 5 {
+                    break
+                }
             }
         }
     }
 
-    processInfo.sort { $0.power > $1.power }
-    return SRObjectArray(processInfo)
+    if processInfo.count > 1 {
+        processInfo.sort { $0.power > $1.power }
+    }
+
+    let result = SRObjectArray(processInfo)
+    processInfo.removeAll(keepingCapacity: false)
+    return result
 }

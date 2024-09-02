@@ -80,7 +80,9 @@ const FooterComponent: React.FC<FooterComponentProps> = ({ openSettings }) => {
   };
 
   const settingsMenu = (
-    <TranslucentMenu onClick={({ key }) => handleMenuClick(key)}>
+    <TranslucentMenu
+      onClick={({ key }: { key: string }) => handleMenuClick(key)}
+    >
       <Menu.Item key="1">
         <MenuItemContent>
           <InfoIcon />

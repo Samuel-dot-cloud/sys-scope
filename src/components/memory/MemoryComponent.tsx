@@ -2,6 +2,7 @@ import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import { convertBytes, ListDetail, Unit } from "../../utils/FrontendUtils.ts";
 import {
   Container,
+  HeaderItem,
   Label,
   Section,
   SectionTitle,
@@ -13,29 +14,27 @@ import {
 
 const MemoryComponent = () => {
   const { memory, memoryProcesses } = useServerEventsContext();
-  const memoryDetail = memory.at(-1);
 
   const memoryDetails: ListDetail[] = [
     {
       label: "Used",
-      value: convertBytes(memoryDetail?.used ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.used ?? 0, Unit.GB).toFixed(1) + " GB",
     },
     {
       label: "App",
-      value: convertBytes(memoryDetail?.app ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.app ?? 0, Unit.GB).toFixed(1) + " GB",
     },
     {
       label: "Wired",
-      value: convertBytes(memoryDetail?.wired ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.wired ?? 0, Unit.GB).toFixed(1) + " GB",
     },
     {
       label: "Compressed",
-      value:
-        convertBytes(memoryDetail?.compressed ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.compressed ?? 0, Unit.GB).toFixed(1) + " GB",
     },
     {
       label: "Free",
-      value: convertBytes(memoryDetail?.free ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.free ?? 0, Unit.GB).toFixed(1) + " GB",
     },
   ];
 
@@ -44,7 +43,7 @@ const MemoryComponent = () => {
       <Section>
         <StatList>
           {memoryDetails.map((detail, index) => (
-            <StatItem key={index}>
+            <StatItem key={index} columns={2}>
               <Label>{detail.label}</Label>
               <Value>{detail.value}</Value>
             </StatItem>
@@ -54,9 +53,13 @@ const MemoryComponent = () => {
 
       <Section>
         <SectionTitle>Processes</SectionTitle>
+        <HeaderItem columns={2}>
+          <Label>Process</Label>
+          <Value>Memory</Value>
+        </HeaderItem>
         <StatList>
           {[...memoryProcesses].map((process, index) => (
-            <StatItem key={index}>
+            <StatItem key={index} columns={2}>
               <Label>
                 {index + 1}.{" "}
                 <SmallImage

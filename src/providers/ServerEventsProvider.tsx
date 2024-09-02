@@ -27,13 +27,13 @@ interface ServerEventsProviderProps {
 interface ServerEventsContext {
   cpu: Cpu[];
   cpuProcesses: CpuProcess[];
-  memory: Memory[];
+  memory: Memory;
   swap: Swap[];
   sysInfo: SysInfo;
   processes: Process[];
   networks: Enumerable<Network>[];
-  disks: Enumerable<Disk>[];
-  batteries: DeviceBattery[];
+  disk: Disk;
+  battery: DeviceBattery;
   batteryProcesses: BatteryProcess[];
   diskProcesses: DiskProcess[];
   memoryProcesses: MemoryProcess[];
@@ -55,14 +55,55 @@ const sysInfo: SysInfo = {
   loadAverage: load,
 };
 
+const disk: Disk = {
+  name: "",
+  free: 0,
+  total: 0,
+  used: 0,
+  mountPoint: "",
+  fileSystem: "",
+  diskType: "",
+  isRemovable: false,
+  bytesRead: 0,
+  bytesWritten: 0,
+};
+
+const memory: Memory = {
+  free: 0,
+  total: 0,
+  used: 0,
+  wired: 0,
+  compressed: 0,
+  active: 0,
+  inactive: 0,
+  app: 0,
+};
+
+const battery: DeviceBattery = {
+  chargePercent: 0,
+  secsUntilFull: 0,
+  secsUntilEmpty: 0,
+  powerConsumptionRateWatts: 0,
+  healthPercent: 0,
+  powerSource: "",
+  technology: "",
+  cycleCount: 0,
+  model: "",
+  state: "",
+  temperature: 0,
+  energy: 0,
+  energyFull: 0,
+  voltage: 0,
+};
+
 export const ServerEventsContext = createContext<ServerEventsContext>({
-  batteries: [],
+  battery: battery,
   batteryProcesses: [],
   cpu: [],
-  disks: [],
+  disk: disk,
   diskProcesses: [],
   cpuProcesses: [],
-  memory: [],
+  memory: memory,
   memoryProcesses: [],
   networks: [],
   processes: [],
@@ -94,13 +135,10 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({
     ServerEvent.CpuProcesses,
     { maxSize },
   );
-  const [disks] = useServerEventsEnumerableStore<Disk>(ServerEvent.Disks, {
-    maxSize: 1,
+  const [disk] = useServerEventsStore<Disk>(ServerEvent.Disk, { maxSize });
+  const [battery] = useServerEventsStore<DeviceBattery>(ServerEvent.Battery, {
+    maxSize,
   });
-  const [batteries] = useServerEventsStore<DeviceBattery[]>(
-    ServerEvent.Batteries,
-    { maxSize: 1 },
-  );
   const [batteryProcesses] = useServerEventsStore<BatteryProcess[]>(
     ServerEvent.BatteryProcesses,
     { maxSize },
@@ -119,13 +157,13 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({
       value={{
         sysInfo: sysInfo[sysInfo.length - 1], // get latest sysInfo
         cpu,
-        memory,
+        memory: memory[memory.length - 1],
         swap,
         processes: processes[processes.length - 1] ?? [], // Get latest processes
         networks,
         cpuProcesses: cpuProcesses[cpuProcesses.length - 1] ?? [],
-        disks,
-        batteries: batteries[batteries.length - 1] ?? [],
+        disk: disk[disk.length - 1],
+        battery: battery[battery.length - 1],
         batteryProcesses: batteryProcesses[batteryProcesses.length - 1] ?? [],
         diskProcesses: diskProcesses[diskProcesses.length - 1] ?? [],
         memoryProcesses: memoryProcesses[memoryProcesses.length - 1] ?? [],

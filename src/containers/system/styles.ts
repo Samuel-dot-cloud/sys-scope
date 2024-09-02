@@ -6,8 +6,8 @@ import { BatteryFull } from "@styled-icons/bootstrap/BatteryFull";
 
 export const AppContainer = styled.div`
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  flex: 1;
+  overflow: hidden;
   background: transparent;
 `;
 
@@ -16,6 +16,7 @@ export const Sidebar = styled.div`
   background: transparent;
   border-right: 1px solid ${(props) => `rgba(${props.theme.borderRgba})`};
   padding: 40px 20px 20px;
+  flex-shrink: 0;
 `;
 
 export const SidebarItem = styled.div`
@@ -39,39 +40,42 @@ export const Content = styled.div`
   flex-grow: 1;
   background: transparent;
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: hidden;
+  min-width: 0;
 `;
 
 export const AppWindow = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 `;
 
 export const CpuIcon = styled(Cpu)`
-  color: #ec5020;
   margin-right: 8px;
   width: 20px;
   height: 20px;
+  color: ${(props) => props.theme.text};
 `;
 
 export const MemoryIcon = styled(Memory)`
-  color: bisque;
   margin-right: 8px;
   width: 20px;
   height: 20px;
+  color: ${(props) => props.theme.text};
 `;
 
 export const DiskIcon = styled(Storage)`
-  color: darkkhaki;
   margin-right: 8px;
   width: 20px;
   height: 20px;
+  color: ${(props) => props.theme.text};
 `;
 
 export const BatteryIcon = styled(BatteryFull)`
-  color: greenyellow;
   margin-right: 8px;
   width: 20px;
   height: 20px;
+  color: ${(props) => props.theme.text};
 `;

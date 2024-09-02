@@ -1,6 +1,7 @@
 use crate::display::SettingsState;
 use crate::ui::tray::MAIN_WINDOW_LABEL;
 use anyhow::Result;
+use log::error;
 use tauri::{AppHandle, GlobalShortcutManager, Manager, Runtime};
 
 pub fn setup_shortcut<R: Runtime>(app_handle: &AppHandle<R>) {
@@ -9,7 +10,7 @@ pub fn setup_shortcut<R: Runtime>(app_handle: &AppHandle<R>) {
 
     if let Some(toggle_app_shortcut) = settings_state.toggle_app_shortcut.clone() {
         if let Err(error) = register_toggle_shortcut(app_handle, &toggle_app_shortcut) {
-            eprintln!(
+            error!(
                 "Failed to register shortcut {} with error {}",
                 toggle_app_shortcut, error
             );
@@ -29,9 +30,11 @@ pub fn register_toggle_shortcut<R: Runtime>(
             let app_handle = app_handle.clone();
             move || {
                 if let Some(window) = app_handle.get_window(MAIN_WINDOW_LABEL) {
-                    match window.is_visible().unwrap() {
-                        true => window.hide().unwrap(),
-                        false => window.show().unwrap(),
+                    if window.is_visible().unwrap() {
+                        window.hide().unwrap_or_default();
+                    } else {
+                        window.show().unwrap_or_default();
+                        window.set_focus().unwrap_or_default();
                     }
                 }
             }

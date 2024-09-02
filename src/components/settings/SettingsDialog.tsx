@@ -1,8 +1,14 @@
 import {
   DarkIcon,
+  HotkeyDisplay,
+  KeyBlock,
   LightIcon,
+  PlaceholderText,
+  PopoverContent,
+  RecordingText,
   StyledForm,
   StyledInput,
+  StyledPopover,
   StyledSwitch,
   SystemIcon,
   ThemeOption,
@@ -28,10 +34,12 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   isVisible,
   onClose,
 }) => {
-  const [globalHotkey, setGlobalHotkey] = useState("");
+  const [displayHotkey, setDisplayHotkey] = useState("");
+  const [currentInput, setCurrentInput] = useState<string[]>([]);
   const { darkMode, setDarkMode } = useTheme();
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isPopoverVisible, setIsPopoverVisible] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
@@ -48,7 +56,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         try {
           const response = await getSettings();
           if (response.toggleAppShortcut) {
-            setGlobalHotkey(response.toggleAppShortcut);
+            const hotkeyArray = response.toggleAppShortcut.split(" + ");
+            setDisplayHotkey(mapToSymbols(hotkeyArray));
           }
         } catch (error) {
           console.error("Failed to fetch settings: ", error);
@@ -56,6 +65,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
       };
       fetchSettings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);
 
   const handleLaunchChange = () => {
@@ -71,42 +81,71 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     setDarkMode(newTheme);
   };
 
-  const handleHotkeyChange = async (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    let hotkeyCombination = "";
-
-    if (event.metaKey) {
-      hotkeyCombination += "Cmd + ";
-    }
-
-    if (event.shiftKey) {
-      hotkeyCombination += "Shift + ";
-    }
-
-    if (event.ctrlKey) {
-      hotkeyCombination += "Ctrl + ";
-    }
-
-    if (event.altKey) {
-      hotkeyCombination += "Alt + ";
-    }
-
-    if (event.key.length === 1 || event.key === "Backspace") {
-      hotkeyCombination +=
-        event.key === "Backspace" ? "" : event.key.toUpperCase();
-    }
-
-    if (!hotkeyCombination.endsWith("+ ")) {
-      setGlobalHotkey(hotkeyCombination);
-      await saveSettings(globalHotkey);
-      toast.success("Global hotkey saved!", { duration: 1000 });
-    } else {
-      console.log("Incomplete hotkey combination");
-    }
-
-    event.preventDefault();
+  const keyToSymbol = (key: string): string => {
+    const keyMap: { [key: string]: string } = {
+      Meta: "⌘",
+      Shift: "⇧",
+      Control: "⌃",
+      Alt: "⌥",
+      ArrowUp: "↑",
+      ArrowDown: "↓",
+      ArrowLeft: "←",
+      ArrowRight: "→",
+      " ": "Space",
+    };
+    return keyMap[key] || key.toUpperCase();
   };
+
+  const mapToSymbols = (hotkey: string[]): string => {
+    return hotkey.map(keyToSymbol).join(" + ");
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    event.preventDefault();
+
+    setCurrentInput((prevKeys) => {
+      const key = event.key;
+      const newKeys = prevKeys.includes(key) ? prevKeys : [...prevKeys, key];
+      setDisplayHotkey(mapToSymbols(newKeys));
+
+      return newKeys;
+    });
+
+    document.addEventListener("keyup", handleKeyUp);
+  };
+
+  const handleKeyUp = () => {
+    setCurrentInput((prevKeys) => {
+      const hotkeyString = prevKeys.join(" + ");
+      saveSettings(hotkeyString)
+        .then(() => {
+          toast.success("Global hotkey saved!", { duration: 1000 });
+        })
+        .catch((error) =>
+          toast.error(`Something went wrong saving the hotkey: ${error}`),
+        );
+      setIsPopoverVisible(false);
+      return prevKeys;
+    });
+
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("keyup", handleKeyUp);
+  };
+
+  const startRecordingHotkey = () => {
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  };
+
+  useEffect(() => {
+    if (isPopoverVisible) {
+      startRecordingHotkey();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPopoverVisible]);
 
   return (
     <TranslucentModal
@@ -126,12 +165,36 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         )}
 
         <Form.Item label="SysScope Hotkey">
-          <StyledInput
-            placeholder="Enter hotkey combination"
-            value={globalHotkey}
-            onKeyDown={handleHotkeyChange}
-            readOnly
-          />
+          <StyledPopover
+            content={
+              <PopoverContent>
+                <HotkeyDisplay>
+                  {currentInput.length ? (
+                    currentInput.map((key, index) => (
+                      <KeyBlock key={index}>{keyToSymbol(key)}</KeyBlock>
+                    ))
+                  ) : (
+                    <PlaceholderText>e.g. ⌘ + ⇧ + A</PlaceholderText>
+                  )}
+                </HotkeyDisplay>
+                <RecordingText>Recording...</RecordingText>
+              </PopoverContent>
+            }
+            trigger="click"
+            open={isPopoverVisible}
+            onOpenChange={setIsPopoverVisible}
+            overlayClassName="custom-popover"
+          >
+            <StyledInput
+              placeholder="Enter hotkey combination"
+              value={displayHotkey}
+              onClick={() => {
+                setIsPopoverVisible(true);
+                setCurrentInput([]);
+              }}
+              readOnly
+            />
+          </StyledPopover>
         </Form.Item>
 
         <Form.Item label="Appearance">

@@ -122,34 +122,40 @@ func getTopMemoryProcesses() -> SRObjectArray {
     var processes = [MemoryProcess]()
     let lines = output.split(separator: "\n")
     var processLinesStarted = false
-    for line in lines {
-        let trimmedLine = line.trimmingCharacters(in: .whitespaces)
-        if trimmedLine.starts(with: "PID") {
-            processLinesStarted = true
-            continue
-        }
 
-        if processLinesStarted {
-            let columns = trimmedLine.split(separator: " ", omittingEmptySubsequences: true)
-            if columns.count >= 3 {
-                let pid = Int(columns[0]) ?? 0
-                let command = String(columns[1 ..< columns.count - 1].joined(separator: " "))
-                let memoryString = String(columns.last!)
-                let memoryInBytes = parseMemory(memoryString)
-                let formattedMemory = formatMemory(memoryInBytes)
-                let iconBase64 = getProcessIconBase64(for: command) ?? ""
-                let processInfo = MemoryProcess(
-                    pid: pid,
-                    name: SRString(command),
-                    memory: SRString(formattedMemory),
-                    iconBase64: SRString(iconBase64)
-                )
-                processes.append(processInfo)
-                if processes.count == 5 {
-                    break
+    autoreleasepool {
+        for line in lines {
+            let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+            if trimmedLine.starts(with: "PID") {
+                processLinesStarted = true
+                continue
+            }
+
+            if processLinesStarted {
+                let columns = trimmedLine.split(separator: " ", omittingEmptySubsequences: true)
+                if columns.count >= 3 {
+                    let pid = Int(columns[0]) ?? 0
+                    let command = String(columns[1 ..< columns.count - 1].joined(separator: " "))
+                    let memoryString = String(columns.last!)
+                    let memoryInBytes = parseMemory(memoryString)
+                    let formattedMemory = formatMemory(memoryInBytes)
+                    let iconBase64 = getProcessIconBase64(for: command) ?? ""
+                    let processInfo = MemoryProcess(
+                        pid: pid,
+                        name: SRString(command),
+                        memory: SRString(formattedMemory),
+                        iconBase64: SRString(iconBase64)
+                    )
+                    processes.append(processInfo)
+                    if processes.count == 5 {
+                        break
+                    }
                 }
             }
         }
     }
-    return SRObjectArray(processes)
+
+    let result = SRObjectArray(processes)
+    processes.removeAll(keepingCapacity: false)
+    return result
 }

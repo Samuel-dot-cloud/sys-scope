@@ -1,3 +1,4 @@
+use log::error;
 use std::sync::RwLock;
 use std::time::Duration;
 use tauri::{Manager, Runtime};
@@ -18,7 +19,8 @@ pub type SettingsState = RwLock<Settings>;
 pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> tauri::App<R> {
     let mut ctx = tauri::generate_context!();
 
-    let auto_start_plugin = tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None);
+    let auto_start_plugin =
+        tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--autostart"]));
 
     builder
         .menu(tauri::Menu::new())
@@ -55,7 +57,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
                         *app.state::<SettingsState>().write().unwrap() = settings;
                     }
                     Err(error) => {
-                        eprintln!("Failed to load settings with error {:?}", error)
+                        error!("Failed to load settings with error {:?}", error)
                     }
                 }
             }
@@ -67,7 +69,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
                     state.emit_cpu_processes(&win);
                     state.emit_memory(&win);
                     state.emit_swap(&win);
-                    state.emit_networks(&win);
+                    // state.emit_networks(&win);
                     state.emit_disks(&win);
                     state.emit_processes(&win);
                     state.emit_batteries(&win);
