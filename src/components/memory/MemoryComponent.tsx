@@ -14,29 +14,27 @@ import {
 
 const MemoryComponent = () => {
   const { memory, memoryProcesses } = useServerEventsContext();
-  const memoryDetail = memory.at(-1);
 
   const memoryDetails: ListDetail[] = [
     {
       label: "Used",
-      value: convertBytes(memoryDetail?.used ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.used ?? 0, Unit.GB).toFixed(1) + " GB",
     },
     {
       label: "App",
-      value: convertBytes(memoryDetail?.app ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.app ?? 0, Unit.GB).toFixed(1) + " GB",
     },
     {
       label: "Wired",
-      value: convertBytes(memoryDetail?.wired ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.wired ?? 0, Unit.GB).toFixed(1) + " GB",
     },
     {
       label: "Compressed",
-      value:
-        convertBytes(memoryDetail?.compressed ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.compressed ?? 0, Unit.GB).toFixed(1) + " GB",
     },
     {
       label: "Free",
-      value: convertBytes(memoryDetail?.free ?? 0, Unit.GB).toFixed(1) + " GB",
+      value: convertBytes(memory?.free ?? 0, Unit.GB).toFixed(1) + " GB",
     },
   ];
 

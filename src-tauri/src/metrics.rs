@@ -16,11 +16,10 @@ use starship_battery::units::ratio::percent;
 use starship_battery::units::thermodynamic_temperature::degree_celsius;
 use starship_battery::units::time::second;
 use starship_battery::Manager;
-use sysinfo::{Disks, Networks, System};
+use sysinfo::{Networks, System};
 
 pub struct Metrics {
     sys: System,
-    disks: Disks,
     networks: Networks,
     batteries: Option<Manager>,
 }
@@ -29,7 +28,6 @@ impl Default for Metrics {
     fn default() -> Self {
         Metrics {
             sys: System::new_all(),
-            disks: Disks::new_with_refreshed_list(),
             networks: Networks::new_with_refreshed_list(),
             batteries: Manager::new().ok(),
         }
@@ -84,60 +82,66 @@ impl CpuTrait for Metrics {
 }
 
 impl DiskTrait for Metrics {
-    fn get_disks(&mut self) -> Vec<Disk> {
+    fn get_disk(&mut self) -> Disk {
         let swift_disk_info = unsafe { get_disk_info() };
 
-        let (total_space, free_space, bytes_read, bytes_written) = match swift_disk_info {
+        let (
+            mount_point,
+            total_space,
+            free_space,
+            bytes_read,
+            bytes_written,
+            file_system,
+            is_removable,
+        ) = match swift_disk_info {
             Some(info) => (
+                info.mount_point.parse().unwrap_or_default(),
                 info.total_space as u64,
                 info.free_space as u64,
                 info.bytes_read as u64,
                 info.bytes_written as u64,
+                info.file_system_type.parse().unwrap_or_default(),
+                info.is_removable as bool,
             ),
-            None => (0, 0, 0, 0),
+            None => ("".to_string(), 0, 0, 0, 0, "".to_string(), false),
         };
 
-        let disks: Vec<Disk> = self
-            .disks
-            .iter()
-            .map(|disk| {
-                let name = match disk.name().to_str() {
-                    Some("") => disk.mount_point().to_str().unwrap_or("Unknown").to_owned(),
-                    Some(name) => name.to_owned(),
-                    None => "-----".to_owned(),
-                };
+        // let disks: Vec<Disk> = self
+        //     .disks
+        //     .iter()
+        //     .map(|disk| {
+        //         let name = match disk.name().to_str() {
+        //             Some("") => disk.mount_point().to_str().unwrap_or("Unknown").to_owned(),
+        //             Some(name) => name.to_owned(),
+        //             None => "-----".to_owned(),
+        //         };
 
-                let disk_type = match disk.kind() {
-                    sysinfo::DiskKind::HDD => "HDD".to_owned(),
-                    sysinfo::DiskKind::SSD => "SSD".to_owned(),
-                    _ => "-----".to_owned(),
-                };
+        //         let disk_type = match disk.kind() {
+        //             sysinfo::DiskKind::HDD => "HDD".to_owned(),
+        //             sysinfo::DiskKind::SSD => "SSD".to_owned(),
+        //             _ => "-----".to_owned(),
+        //         };
 
-                let file_system = disk.file_system().to_string_lossy().to_ascii_uppercase();
+        // let file_system = disk.file_system().to_string_lossy().to_ascii_uppercase();
 
-                let total = total_space;
-                let free = free_space;
-                let used = total - free;
-                let is_removable = disk.is_removable();
-                let mount_point = disk.mount_point().to_owned();
+        let total = total_space;
+        let free = free_space;
+        let used = total - free;
+        // let is_removable = disk.is_removable();
+        // let mount_point = disk.mount_point().to_owned();
 
-                Disk {
-                    name,
-                    free,
-                    used,
-                    total,
-                    mount_point,
-                    file_system,
-                    is_removable,
-                    disk_type,
-                    bytes_read,
-                    bytes_written,
-                    timestamp: current_time(),
-                }
-            })
-            .collect();
-
-        disks
+        Disk {
+            name: String::from("Macintosh HD"),
+            free,
+            used,
+            total,
+            mount_point: mount_point.clone(),
+            file_system,
+            is_removable,
+            disk_type: String::from(""),
+            bytes_read,
+            bytes_written,
+        }
     }
 
     fn get_disk_processes(&mut self) -> Vec<crate::models::DiskProcess> {

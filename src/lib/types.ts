@@ -5,7 +5,7 @@ export enum ServerEvent {
   Memory = "emit_memory",
   Swap = "emit_swap",
   Networks = "emit_networks",
-  Disks = "emit_disks",
+  Disk = "emit_disk",
   Processes = "emit_processes",
   Batteries = "emit_batteries",
   BatteryProcesses = "emit_battery_processes",
@@ -90,7 +90,6 @@ export interface Disk {
   isRemovable: boolean;
   bytesRead: number;
   bytesWritten: number;
-  timestamp: Timestamp;
 }
 
 export interface DiskProcess {

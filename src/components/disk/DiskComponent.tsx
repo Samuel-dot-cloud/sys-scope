@@ -13,12 +13,13 @@ import {
 } from "../../styles/globals.ts";
 
 const DiskComponent = () => {
-  const { disks, diskProcesses } = useServerEventsContext();
-  const disk = disks.at(-1)?.data[0];
+  const { disk, diskProcesses } = useServerEventsContext();
 
   const diskDetails: ListDetail[] = [
-    { label: "Name", value: disk?.name },
-    { label: "Type", value: disk?.diskType },
+    { label: "Name", value: disk?.name ?? "" },
+    { label: "File system", value: disk?.fileSystem.toUpperCase() ?? "" },
+    // { label: "Location", value: disk.mountPoint },
+    // { label: "Type", value: disk.diskType },
     {
       label: "Total storage",
       value: convertBytes(disk?.total ?? 0, Unit.GB).toFixed(2) + " GB",
@@ -31,7 +32,6 @@ const DiskComponent = () => {
       label: "Used storage",
       value: convertBytes(disk?.used ?? 0, Unit.GB).toFixed(2) + " GB",
     },
-    // { label: "Location", value: disk?.mountPoint },
     {
       label: "Bytes read",
       value: convertBytes(disk?.bytesRead ?? 0, Unit.GB).toFixed(2) + " GB",
@@ -41,7 +41,6 @@ const DiskComponent = () => {
       value: convertBytes(disk?.bytesWritten ?? 0, Unit.GB).toFixed(2) + " GB",
     },
     // { label: "Removable", value: disk?.isRemovable ? "✅" : "❌" },
-    // { label: "File system", value: disk?.fileSystem },
   ];
 
   return (

@@ -48,8 +48,8 @@ impl AppState {
     }
 
     pub fn emit_disks<R: Runtime>(&self, window: &Window<R>) {
-        let disks = self.0.lock().unwrap().metrics.get_disks();
-        window.emit("emit_disks", &disks).unwrap();
+        let disk = self.0.lock().unwrap().metrics.get_disk();
+        window.emit("emit_disk", &disk).unwrap();
     }
 
     pub fn emit_processes<R: Runtime>(&self, window: &Window<R>) {

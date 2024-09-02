@@ -40,10 +40,13 @@ pub struct BatteryProcess {
 
 #[repr(C)]
 pub struct DiskInfo {
+    pub mount_point: SRString,
     pub total_space: Int,
     pub free_space: Int,
     pub bytes_read: Int,
     pub bytes_written: Int,
+    pub file_system_type: SRString,
+    pub is_removable: Bool,
 }
 
 #[repr(C)]

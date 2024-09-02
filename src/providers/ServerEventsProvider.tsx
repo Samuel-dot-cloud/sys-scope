@@ -27,12 +27,12 @@ interface ServerEventsProviderProps {
 interface ServerEventsContext {
   cpu: Cpu[];
   cpuProcesses: CpuProcess[];
-  memory: Memory[];
+  memory: Memory;
   swap: Swap[];
   sysInfo: SysInfo;
   processes: Process[];
   networks: Enumerable<Network>[];
-  disks: Enumerable<Disk>[];
+  disk: Disk;
   batteries: DeviceBattery[];
   batteryProcesses: BatteryProcess[];
   diskProcesses: DiskProcess[];
@@ -55,14 +55,38 @@ const sysInfo: SysInfo = {
   loadAverage: load,
 };
 
+const disk: Disk = {
+  name: "",
+  free: 0,
+  total: 0,
+  used: 0,
+  mountPoint: "",
+  fileSystem: "",
+  diskType: "",
+  isRemovable: false,
+  bytesRead: 0,
+  bytesWritten: 0,
+};
+
+const memory: Memory = {
+  free: 0,
+  total: 0,
+  used: 0,
+  wired: 0,
+  compressed: 0,
+  active: 0,
+  inactive: 0,
+  app: 0,
+};
+
 export const ServerEventsContext = createContext<ServerEventsContext>({
   batteries: [],
   batteryProcesses: [],
   cpu: [],
-  disks: [],
+  disk: disk,
   diskProcesses: [],
   cpuProcesses: [],
-  memory: [],
+  memory: memory,
   memoryProcesses: [],
   networks: [],
   processes: [],
@@ -94,9 +118,7 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({
     ServerEvent.CpuProcesses,
     { maxSize },
   );
-  const [disks] = useServerEventsEnumerableStore<Disk>(ServerEvent.Disks, {
-    maxSize: 1,
-  });
+  const [disk] = useServerEventsStore<Disk>(ServerEvent.Disk, { maxSize });
   const [batteries] = useServerEventsStore<DeviceBattery[]>(
     ServerEvent.Batteries,
     { maxSize: 1 },
@@ -119,12 +141,12 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({
       value={{
         sysInfo: sysInfo[sysInfo.length - 1], // get latest sysInfo
         cpu,
-        memory,
+        memory: memory[memory.length - 1],
         swap,
         processes: processes[processes.length - 1] ?? [], // Get latest processes
         networks,
         cpuProcesses: cpuProcesses[cpuProcesses.length - 1] ?? [],
-        disks,
+        disk: disk[disk.length - 1],
         batteries: batteries[batteries.length - 1] ?? [],
         batteryProcesses: batteryProcesses[batteryProcesses.length - 1] ?? [],
         diskProcesses: diskProcesses[diskProcesses.length - 1] ?? [],

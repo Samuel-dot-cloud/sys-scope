@@ -109,13 +109,12 @@ pub struct Disk {
     pub free: u64,
     pub total: u64,
     pub used: u64,
-    pub mount_point: PathBuf,
+    pub mount_point: String,
     pub file_system: String,
     pub disk_type: String,
     pub is_removable: bool,
     pub bytes_read: u64,
     pub bytes_written: u64,
-    pub timestamp: Timestamp,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -129,7 +128,7 @@ pub struct DiskProcess {
 }
 
 pub trait DiskTrait {
-    fn get_disks(&mut self) -> Vec<Disk>;
+    fn get_disk(&mut self) -> Disk;
     fn get_disk_processes(&mut self) -> Vec<DiskProcess>;
 }
 

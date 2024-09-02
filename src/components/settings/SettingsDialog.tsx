@@ -106,11 +106,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     setCurrentInput((prevKeys) => {
       const key = event.key;
       const newKeys = prevKeys.includes(key) ? prevKeys : [...prevKeys, key];
-
-      const hotkeyString = newKeys.join(" + ");
       setDisplayHotkey(mapToSymbols(newKeys));
-
-      console.log("The hotkey string: ", hotkeyString);
 
       return newKeys;
     });
