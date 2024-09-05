@@ -77,3 +77,9 @@ SysScope is released under the [MIT license](./LICENSE).
 
 - Real-time monitoring of battery, CPU, memory and disk info.
 - User friendly interface.
+
+### v2.0.0 - Major Update (2024-08-06)
+
+- Added monitoring of app and system processes in respect to disk, battery, CPU and memory usage.
+- Fixed issue with hotkey not triggering hidden app to show and focus.
+- Fixed bugs when retrieving system stats.
