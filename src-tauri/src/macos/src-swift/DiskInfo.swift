@@ -121,8 +121,9 @@ private func formatBytes(_ bytes: Int) -> String {
 }
 
 class DiskUtility {
+    let logger = OSLogger(tag: "DiskUtility")
     // TODO: Fix erroneous free and total disk space value
-    static func getDiskInfo() -> DiskInfo? {
+    func getDiskInfo() -> DiskInfo? {
         guard let session = DASessionCreate(kCFAllocatorDefault) else { return nil }
         let bsdName = findMainMacintoshHDBSDName(session: session) ?? ""
         guard let mountPoint = getMountPoint(forBSDName: bsdName, session: session),
@@ -147,7 +148,7 @@ class DiskUtility {
         )
     }
 
-    private static func getMountPoint(forBSDName bsdName: String, session: DASession) -> String? {
+    private func getMountPoint(forBSDName bsdName: String, session: DASession) -> String? {
         if let disk = DADiskCreateFromBSDName(kCFAllocatorDefault, session, bsdName) {
             if let diskDescription = DADiskCopyDescription(disk) as? [CFString: Any] {
                 if let volumePath = diskDescription[kDADiskDescriptionVolumePathKey] as? URL {
@@ -158,27 +159,27 @@ class DiskUtility {
         return nil
     }
 
-    private static func getTotalDiskSpace(at path: String) -> Int64? {
+    private func getTotalDiskSpace(at path: String) -> Int64? {
         getDiskSpace(at: path, key: FileAttributeKey.systemSize)
     }
 
-    private static func getFreeDiskSpace(at path: String) -> Int64? {
+    private func getFreeDiskSpace(at path: String) -> Int64? {
         getDiskSpace(at: path, key: FileAttributeKey.systemFreeSize)
     }
 
-    private static func getDiskSpace(at path: String, key: FileAttributeKey) -> Int64? {
+    private func getDiskSpace(at path: String, key: FileAttributeKey) -> Int64? {
         do {
             let attributes = try FileManager.default.attributesOfFileSystem(forPath: path)
             if let space = (attributes[key] as? NSNumber)?.int64Value {
                 return space
             }
         } catch {
-            print("Error retrieving disk space for \(path): \(error.localizedDescription)")
+            logger.error("Error retrieving disk space for \(path): \(error.localizedDescription)")
         }
         return nil
     }
 
-    private static func getDiskIOStats(bsdName: String) -> (read: Int64, write: Int64)? {
+    private func getDiskIOStats(bsdName: String) -> (read: Int64, write: Int64)? {
         var disk = IOServiceGetMatchingService(kIOMasterPortDefault, IOBSDNameMatching(kIOMasterPortDefault, 0, bsdName))
         guard disk != 0 else { return nil }
         defer { IOObjectRelease(disk) }
@@ -201,7 +202,7 @@ class DiskUtility {
         return nil
     }
 
-    private static func getFileSystemType(forBSDName bsdName: String, session: DASession) -> String? {
+    private func getFileSystemType(forBSDName bsdName: String, session: DASession) -> String? {
         if let disk = DADiskCreateFromBSDName(kCFAllocatorDefault, session, bsdName) {
             if let diskDescription = DADiskCopyDescription(disk) as? [CFString: Any] {
                 if let fsType = diskDescription[kDADiskDescriptionVolumeKindKey] as? String {
@@ -212,7 +213,7 @@ class DiskUtility {
         return "Unknown"
     }
 
-    private static func isDiskRemovable(forBSDName bsdName: String, session: DASession) -> Bool {
+    private func isDiskRemovable(forBSDName bsdName: String, session: DASession) -> Bool {
         if let disk = DADiskCreateFromBSDName(kCFAllocatorDefault, session, bsdName) {
             if let diskDescription = DADiskCopyDescription(disk) as? [CFString: Any] {
                 if let removable = diskDescription[kDADiskDescriptionMediaRemovableKey] as? Bool {
@@ -223,7 +224,7 @@ class DiskUtility {
         return false
     }
 
-    private static func findMainMacintoshHDBSDName(session: DASession) -> String? {
+    private func findMainMacintoshHDBSDName(session: DASession) -> String? {
         let mountedVolumes = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil, options: []) ?? []
 
         for volume in mountedVolumes {
@@ -242,7 +243,8 @@ class DiskUtility {
 
 @_cdecl("get_disk_info")
 func getDiskInfo() -> DiskInfo? {
-    DiskUtility.getDiskInfo()
+    let utility = DiskUtility()
+    return utility.getDiskInfo()
 }
 
 @_cdecl("get_disk_processes")

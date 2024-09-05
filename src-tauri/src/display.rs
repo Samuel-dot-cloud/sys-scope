@@ -3,7 +3,6 @@ use std::sync::RwLock;
 use std::time::Duration;
 use tauri::{Manager, Runtime};
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_theme::ThemePlugin;
 use window_shadows::set_shadow;
 
 use crate::app::AppState;
@@ -89,7 +88,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
             crate::utils::quit_app
         ])
         .plugin(auto_start_plugin)
-        .plugin(ThemePlugin::init(ctx.config_mut()))
+        .plugin(tauri_plugin_theme::init(ctx.config_mut()))
         .build(ctx)
         .expect("error while running tauri application")
 }

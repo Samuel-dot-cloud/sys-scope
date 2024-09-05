@@ -43,6 +43,8 @@ class MemoryProcess: NSObject {
 
 @_cdecl("get_memory_info")
 func getMemoryInfo() -> MemoryInfo? {
+    let logger = OSLogger(tag: "getMemoryInfo")
+
     var stats = vm_statistics64()
     var size = HOST_VM_INFO64_COUNT
     let hostPort: mach_port_t = mach_host_self()
@@ -54,7 +56,7 @@ func getMemoryInfo() -> MemoryInfo? {
     }
 
     guard kern == KERN_SUCCESS else {
-        print("Error with host_statistics64(): \(kern)")
+        logger.error("Error with host_statistics64(): \(kern)")
         return nil
     }
 

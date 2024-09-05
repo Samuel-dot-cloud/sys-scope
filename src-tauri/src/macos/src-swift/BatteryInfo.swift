@@ -63,6 +63,7 @@ class BatteryProcess: NSObject {
 
 class BatteryInfoFetcher {
     private let service: io_service_t
+    let logger = OSLogger(tag: "BatteryInfoFetcher")
 
     init() {
         service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("AppleSmartBattery"))
@@ -78,7 +79,7 @@ class BatteryInfoFetcher {
         let batteryInfo = BatteryInfo()
 
         guard service != 0 else {
-            print("No service found for AppleSmartBattery. Exiting function.")
+            logger.error("No service found for AppleSmartBattery. Exiting function.")
             return batteryInfo
         }
 
