@@ -69,7 +69,7 @@ Feel free to submit bug reports and pull requests through [Github Issues](https:
 
 ## License
 
-SysScope is released under the MIT license.
+SysScope is released under the [MIT license](./LICENSE).
 
 ## Changelog
 

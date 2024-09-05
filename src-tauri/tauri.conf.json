@@ -78,7 +78,7 @@
         "hiddenTitle": true,
         "decorations": true,
         "titleBarStyle": "Visible",
-        "height": 525,
+        "height": 527,
         "resizable": false,
         "minimizable": false,
         "title": "SysScope",

@@ -38,7 +38,7 @@ private func convertImageToBase64(_ image: NSImage) -> String? {
 }
 
 extension DiskUtility {
-    static func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int) -> io_registry_entry_t? {
+    func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int) -> io_registry_entry_t? {
         var parent: io_registry_entry_t = 0
 
         if IORegistryEntryGetParentEntry(obj, kIOServicePlane, &parent) != KERN_SUCCESS {
@@ -54,7 +54,7 @@ extension DiskUtility {
         return parent
     }
 
-    static func getIOProperties(_ entry: io_registry_entry_t) -> NSDictionary? {
+    func getIOProperties(_ entry: io_registry_entry_t) -> NSDictionary? {
         var properties: Unmanaged<CFMutableDictionary>?
 
         if IORegistryEntryCreateCFProperties(entry, &properties, kCFAllocatorDefault, 0) != kIOReturnSuccess {
