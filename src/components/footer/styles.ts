@@ -47,6 +47,14 @@ export const AppName = styled.span`
   color: ${(props) => props.theme.text};
 `;
 
+export const VersionName = styled.span`
+  font-weight: lighter;
+  font-size: 11px;
+  margin-top: 6px;
+  margin-left: 2px;
+  color: ${(props) => props.theme.text};
+`;
+
 export const SettingsIcon = styled(Settings2Outline)`
   color: ${(props) => props.theme.text};
   width: 1.5em;

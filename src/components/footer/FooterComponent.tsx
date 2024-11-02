@@ -13,16 +13,18 @@ import {
   SettingsIcon,
   TranslucentMenu,
   UpdateIcon,
+  VersionName,
 } from "./styles.ts";
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import appIconImage from "../../assets/app-icon.png";
 import { Dropdown, Menu } from "antd";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
 import { ask, message } from "@tauri-apps/api/dialog";
 import { relaunch } from "@tauri-apps/api/process";
 import { showAboutWindow, shutDown } from "../../utils/TauriUtils.ts";
+import { getVersion } from "@tauri-apps/api/app";
 
 interface FooterComponentProps {
   openSettings: () => void;
@@ -30,6 +32,20 @@ interface FooterComponentProps {
 
 const FooterComponent: React.FC<FooterComponentProps> = ({ openSettings }) => {
   const { sysInfo } = useServerEventsContext();
+  const [appVersion, setAppVersion] = useState<string>("");
+
+  useEffect(() => {
+    const fetchAppVersion = async () => {
+      try {
+        const version = await getVersion();
+        setAppVersion(version);
+      } catch (error) {
+        console.error("Error fetching app version: ", error);
+      }
+    };
+
+    fetchAppVersion();
+  }, []);
 
   const handleMenuClick = async (menuItem: string) => {
     switch (menuItem) {
@@ -117,6 +133,7 @@ const FooterComponent: React.FC<FooterComponentProps> = ({ openSettings }) => {
         <AppNameContainer>
           <AppIcon src={appIconImage} size="1.1em" alt="App Icon" />
           <AppName>SysScope</AppName>
+          <VersionName>{appVersion}</VersionName>
         </AppNameContainer>
       </Dropdown>
       <OSInfoContainer>
