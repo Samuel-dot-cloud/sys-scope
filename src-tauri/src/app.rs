@@ -17,62 +17,62 @@ pub struct App {
 }
 
 impl AppState {
-    pub fn emit_sysinfo<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_sysinfo<R: Runtime>(&self, window: &Window<R>) {
         let sys_info = self.0.lock().unwrap().metrics.get_system_information();
         window.emit("emit_sysinfo", &sys_info).unwrap();
     }
 
-    pub fn emit_cpu<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_cpu<R: Runtime>(&self, window: &Window<R>) {
         let cpu = self.0.lock().unwrap().metrics.get_cpu();
         window.emit("emit_cpu", &cpu).unwrap();
     }
 
-    pub fn emit_cpu_processes<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_cpu_processes<R: Runtime>(&self, window: &Window<R>) {
         let processes = self.0.lock().unwrap().metrics.get_cpu_processes();
         window.emit("emit_cpu_processes", &processes).unwrap();
     }
 
-    pub fn emit_memory<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_memory<R: Runtime>(&self, window: &Window<R>) {
         let memory = self.0.lock().unwrap().metrics.get_memory();
         window.emit("emit_memory", &memory).unwrap();
     }
 
-    pub fn emit_swap<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_swap<R: Runtime>(&self, window: &Window<R>) {
         let swap = self.0.lock().unwrap().metrics.get_swap();
         window.emit("emit_swap", &swap).unwrap();
     }
 
-    pub fn emit_networks<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_networks<R: Runtime>(&self, window: &Window<R>) {
         let networks = self.0.lock().unwrap().metrics.get_networks();
         window.emit("emit_networks", &networks).unwrap();
     }
 
-    pub fn emit_disks<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_disks<R: Runtime>(&self, window: &Window<R>) {
         let disk = self.0.lock().unwrap().metrics.get_disk();
         window.emit("emit_disk", &disk).unwrap();
     }
 
-    pub fn emit_processes<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_processes<R: Runtime>(&self, window: &Window<R>) {
         let processes = self.0.lock().unwrap().metrics.get_processes();
         window.emit("emit_processes", &processes).unwrap();
     }
 
-    pub fn emit_batteries<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_batteries<R: Runtime>(&self, window: &Window<R>) {
         let battery = self.0.lock().unwrap().metrics.get_battery();
         window.emit("emit_battery", &battery).unwrap();
     }
 
-    pub fn emit_battery_processes<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_battery_processes<R: Runtime>(&self, window: &Window<R>) {
         let processes = self.0.lock().unwrap().metrics.get_battery_processes();
         window.emit("emit_battery_processes", &processes).unwrap();
     }
 
-    pub fn emit_disk_processes<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_disk_processes<R: Runtime>(&self, window: &Window<R>) {
         let processes = self.0.lock().unwrap().metrics.get_disk_processes();
         window.emit("emit_disk_processes", &processes).unwrap();
     }
 
-    pub fn emit_memory_processes<R: Runtime>(&self, window: &Window<R>) {
+    pub async fn emit_memory_processes<R: Runtime>(&self, window: &Window<R>) {
         let processes = self.0.lock().unwrap().metrics.get_memory_processes();
         window.emit("emit_memory_processes", &processes).unwrap();
     }

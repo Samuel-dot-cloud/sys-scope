@@ -57,37 +57,37 @@ class DiskMonitor {
         }
 
         var newProcesses: [DiskProcess] = []
+        newProcesses.reserveCapacity(5)
         let lines = output.split(separator: "\n")
 
-        autoreleasepool {
-            for line in lines {
-                let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
-                if components.count == 2, let pid = Int32(components[0]) {
-                    let pathComponent = String(components[1])
-                    let name = URL(fileURLWithPath: pathComponent).lastPathComponent
-                    let icon = getProcessIconBase64(for: name) ?? ""
+        for line in lines {
+            if newProcesses.count >= 5 {
+                break
+            }
 
-                    if let ioStats = getProcessDiskIOStats(pid: pid) {
-                        newProcesses.append(
-                            DiskProcess(
-                                pid: Int(pid),
-                                name: SRString(name),
-                                bytesRead: SRString(ioStats.read),
-                                bytesWritten: SRString(ioStats.write),
-                                iconBase64: SRString(icon)
-                            )
+            let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+            if components.count == 2, let pid = Int32(components[0]) {
+                let pathComponent = String(components[1])
+                let name = URL(fileURLWithPath: pathComponent).lastPathComponent
+                let icon = getProcessIconBase64(for: name) ?? ""
+
+                if let ioStats = getProcessDiskIOStats(pid: pid) {
+                    let diskProcess = autoreleasepool { () -> DiskProcess in
+                        return DiskProcess(
+                            pid: Int(pid),
+                            name: SRString(name),
+                            bytesRead: SRString(ioStats.read),
+                            bytesWritten: SRString(ioStats.write),
+                            iconBase64: SRString(icon)
                         )
                     }
-                }
-
-                if newProcesses.count >= 5 {
-                    break
+                    newProcesses.append(diskProcess)
                 }
             }
         }
 
         let result = newProcesses
-        newProcesses.removeAll(keepingCapacity: false)
+        newProcesses.removeAll(keepingCapacity: true)
         return result
     }
 }
@@ -125,6 +125,7 @@ class DiskUtility {
     // TODO: Fix erroneous free and total disk space value
     func getDiskInfo() -> DiskInfo? {
         guard let session = DASessionCreate(kCFAllocatorDefault) else { return nil }
+
         let bsdName = findMainMacintoshHDBSDName(session: session) ?? ""
         guard let mountPoint = getMountPoint(forBSDName: bsdName, session: session),
               let totalSpace = getTotalDiskSpace(at: mountPoint),
@@ -180,7 +181,7 @@ class DiskUtility {
     }
 
     private func getDiskIOStats(bsdName: String) -> (read: Int64, write: Int64)? {
-        var disk = IOServiceGetMatchingService(kIOMasterPortDefault, IOBSDNameMatching(kIOMasterPortDefault, 0, bsdName))
+        let disk = IOServiceGetMatchingService(kIOMasterPortDefault, IOBSDNameMatching(kIOMasterPortDefault, 0, bsdName))
         guard disk != 0 else { return nil }
         defer { IOObjectRelease(disk) }
 

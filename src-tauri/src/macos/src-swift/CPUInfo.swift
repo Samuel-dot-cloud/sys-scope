@@ -83,27 +83,28 @@ func getTopCPUProcesses() -> SRObjectArray {
     }
 
     var processes: [CPUProcess] = []
+    processes.reserveCapacity(5)
 
     let lines = output.split(separator: "\n")
 
-    autoreleasepool {
-        for line in lines {
-            let components = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: true)
-            if components.count == 3, let pid = Int(components[0]), let cpu = Double(components[1]) {
-                let command = String(components[2])
-                let iconBase64 = getProcessIconBase64(for: command) ?? ""
-                let processInfo = CPUProcess(
+    for line in lines {
+        if processes.count >= 5 {
+            break
+        }
+
+        let components = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: true)
+        if components.count == 3, let pid = Int(components[0]), let cpu = Double(components[1]) {
+            let command = String(components[2])
+            let iconBase64 = getProcessIconBase64(for: command) ?? ""
+            let processInfo = autoreleasepool { () -> CPUProcess in
+                return CPUProcess(
                     pid: pid,
                     name: SRString(command),
                     cpu: cpu,
                     iconBase64: SRString(iconBase64)
                 )
-                processes.append(processInfo)
-
-                if processes.count == 5 {
-                    break
-                }
             }
+            processes.append(processInfo)
         }
     }
 
@@ -112,6 +113,6 @@ func getTopCPUProcesses() -> SRObjectArray {
     }
 
     let result = SRObjectArray(processes)
-    processes.removeAll(keepingCapacity: false)
+    processes.removeAll(keepingCapacity: true)
     return result
 }

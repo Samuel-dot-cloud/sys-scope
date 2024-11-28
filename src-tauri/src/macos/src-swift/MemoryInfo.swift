@@ -43,43 +43,45 @@ class MemoryProcess: NSObject {
 
 @_cdecl("get_memory_info")
 func getMemoryInfo() -> MemoryInfo? {
-    let logger = OSLogger(tag: "getMemoryInfo")
+    autoreleasepool {
+        let logger = OSLogger(tag: "getMemoryInfo")
 
-    var stats = vm_statistics64()
-    var size = HOST_VM_INFO64_COUNT
-    let hostPort: mach_port_t = mach_host_self()
+        var stats = vm_statistics64()
+        var size = HOST_VM_INFO64_COUNT
+        let hostPort: mach_port_t = mach_host_self()
 
-    let kern: kern_return_t = withUnsafeMutablePointer(to: &stats) {
-        $0.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
-            host_statistics64(hostPort, HOST_VM_INFO64, $0, &size)
+        let kern: kern_return_t = withUnsafeMutablePointer(to: &stats) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
+                host_statistics64(hostPort, HOST_VM_INFO64, $0, &size)
+            }
         }
+
+        guard kern == KERN_SUCCESS else {
+            logger.error("Error with host_statistics64(): \(kern)")
+            return nil
+        }
+
+        let pageSize = UInt64(vm_kernel_page_size)
+        let active = UInt64(stats.active_count) * pageSize
+        let inactive = UInt64(stats.inactive_count) * pageSize
+        let wired = UInt64(stats.wire_count) * pageSize
+        let compressed = UInt64(stats.compressor_page_count) * pageSize
+        let free = UInt64(stats.free_count) * pageSize
+        let total = (active + inactive + wired + compressed + free)
+        let used = total - free
+        let app = used - wired - compressed
+
+        return MemoryInfo(
+            active: Int(active),
+            inactive: Int(inactive),
+            wired: Int(wired),
+            compressed: Int(compressed),
+            free: Int(free),
+            total: Int(total),
+            used: Int(used),
+            app: Int(app)
+        )
     }
-
-    guard kern == KERN_SUCCESS else {
-        logger.error("Error with host_statistics64(): \(kern)")
-        return nil
-    }
-
-    let pageSize = UInt64(vm_kernel_page_size)
-    let active = UInt64(stats.active_count) * pageSize
-    let inactive = UInt64(stats.inactive_count) * pageSize
-    let wired = UInt64(stats.wire_count) * pageSize
-    let compressed = UInt64(stats.compressor_page_count) * pageSize
-    let free = UInt64(stats.free_count) * pageSize
-    let total = (active + inactive + wired + compressed + free)
-    let used = total - free
-    let app = used - wired - compressed
-
-    return MemoryInfo(
-        active: Int(active),
-        inactive: Int(inactive),
-        wired: Int(wired),
-        compressed: Int(compressed),
-        free: Int(free),
-        total: Int(total),
-        used: Int(used),
-        app: Int(app)
-    )
 }
 
 private func formatMemory(_ bytes: Int) -> String {
@@ -122,15 +124,17 @@ func getTopMemoryProcesses() -> SRObjectArray {
     }
 
     var processes = [MemoryProcess]()
+    processes.reserveCapacity(5)
+
     let lines = output.split(separator: "\n")
     var processLinesStarted = false
 
-    autoreleasepool {
-        for line in lines {
+    for line in lines {
+        autoreleasepool {
             let trimmedLine = line.trimmingCharacters(in: .whitespaces)
             if trimmedLine.starts(with: "PID") {
                 processLinesStarted = true
-                continue
+                return
             }
 
             if processLinesStarted {
@@ -142,15 +146,17 @@ func getTopMemoryProcesses() -> SRObjectArray {
                     let memoryInBytes = parseMemory(memoryString)
                     let formattedMemory = formatMemory(memoryInBytes)
                     let iconBase64 = getProcessIconBase64(for: command) ?? ""
-                    let processInfo = MemoryProcess(
-                        pid: pid,
-                        name: SRString(command),
-                        memory: SRString(formattedMemory),
-                        iconBase64: SRString(iconBase64)
-                    )
+                    let processInfo = autoreleasepool { () -> MemoryProcess in
+                        return MemoryProcess(
+                            pid: pid,
+                            name: SRString(command),
+                            memory: SRString(formattedMemory),
+                            iconBase64: SRString(iconBase64)
+                        )
+                    }
                     processes.append(processInfo)
                     if processes.count == 5 {
-                        break
+                        return
                     }
                 }
             }
