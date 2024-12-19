@@ -170,7 +170,6 @@ func getTopBatteryProcesses() -> SRObjectArray {
 
     var processInfo: [BatteryProcess] = []
     let lines = output.split(separator: "\n")
-    print("The lines: \(lines)")
 
     for line in lines {
         let nsLine = line as NSString
