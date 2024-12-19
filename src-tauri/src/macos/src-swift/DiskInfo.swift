@@ -4,6 +4,9 @@ import IOKit
 import IOKit.storage
 import SwiftRs
 
+private let cachedSession = DASessionCreate(kCFAllocatorDefault)!
+private let logger = OSLogger(tag: "DiskUtility")
+
 class DiskInfo: NSObject {
     let mountPoint: SRString
     let totalSpace: Int
@@ -56,11 +59,17 @@ class DiskMonitor {
             return []
         }
 
-        var newProcesses: [DiskProcess] = []
+        var processes: [DiskProcess] = []
+        processes.reserveCapacity(5)
+
         let lines = output.split(separator: "\n")
 
         autoreleasepool {
             for line in lines {
+                if processes.count >= 5 {
+                    break
+                }
+
                 let components = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
                 if components.count == 2, let pid = Int32(components[0]) {
                     let pathComponent = String(components[1])
@@ -68,27 +77,20 @@ class DiskMonitor {
                     let icon = getProcessIconBase64(for: name) ?? ""
 
                     if let ioStats = getProcessDiskIOStats(pid: pid) {
-                        newProcesses.append(
-                            DiskProcess(
-                                pid: Int(pid),
-                                name: SRString(name),
-                                bytesRead: SRString(ioStats.read),
-                                bytesWritten: SRString(ioStats.write),
-                                iconBase64: SRString(icon)
-                            )
+                        let diskProcess = DiskProcess(
+                            pid: Int(pid),
+                            name: SRString(name),
+                            bytesRead: SRString(ioStats.read),
+                            bytesWritten: SRString(ioStats.write),
+                            iconBase64: SRString(icon)
                         )
+                        processes.append(diskProcess)
                     }
-                }
-
-                if newProcesses.count >= 5 {
-                    break
                 }
             }
         }
 
-        let result = newProcesses
-        newProcesses.removeAll(keepingCapacity: false)
-        return result
+        return processes
     }
 }
 
@@ -111,31 +113,32 @@ private func getProcessDiskIOStats(pid: Int32) -> (read: String, write: String)?
 }
 
 private func formatBytes(_ bytes: Int) -> String {
-    if bytes > 1000 * 1024 * 1024 {
-        return String(format: "%.1f GB/s", Double(bytes) / (1024 * 1024 * 1024))
-    } else if bytes > 100 * 1024 {
-        return String(format: "%.1f MB/s", Double(bytes) / (1024 * 1024))
-    } else {
-        return String(format: "%.1f KB/s", Double(bytes) / 1024)
+    let unit = ["KB/s", "MB/s", "GB/s"]
+    var value = Double(bytes)
+    var index = 0
+
+    while value > 1024, index < unit.count - 1 {
+        value /= 1024
+        index += 1
     }
+
+    return String(format: "%.1f \(unit[index])", value)
 }
 
 class DiskUtility {
-    let logger = OSLogger(tag: "DiskUtility")
     // TODO: Fix erroneous free and total disk space value
     func getDiskInfo() -> DiskInfo? {
-        guard let session = DASessionCreate(kCFAllocatorDefault) else { return nil }
-        let bsdName = findMainMacintoshHDBSDName(session: session) ?? ""
-        guard let mountPoint = getMountPoint(forBSDName: bsdName, session: session),
+        let bsdName = findMainMacintoshHDBSDName(session: cachedSession) ?? ""
+        guard let mountPoint = getMountPoint(forBSDName: bsdName, session: cachedSession),
               let totalSpace = getTotalDiskSpace(at: mountPoint),
               let freeSpace = getFreeDiskSpace(at: mountPoint),
               let ioStats = getDiskIOStats(bsdName: bsdName),
-              let fileSystemType = getFileSystemType(forBSDName: bsdName, session: session)
+              let fileSystemType = getFileSystemType(forBSDName: bsdName, session: cachedSession)
         else {
             return nil
         }
 
-        let isRemovable = isDiskRemovable(forBSDName: bsdName, session: session)
+        let isRemovable = isDiskRemovable(forBSDName: bsdName, session: cachedSession)
 
         return DiskInfo(
             mountPoint: SRString(mountPoint),
@@ -180,7 +183,7 @@ class DiskUtility {
     }
 
     private func getDiskIOStats(bsdName: String) -> (read: Int64, write: Int64)? {
-        var disk = IOServiceGetMatchingService(kIOMasterPortDefault, IOBSDNameMatching(kIOMasterPortDefault, 0, bsdName))
+        let disk = IOServiceGetMatchingService(kIOMasterPortDefault, IOBSDNameMatching(kIOMasterPortDefault, 0, bsdName))
         guard disk != 0 else { return nil }
         defer { IOObjectRelease(disk) }
 

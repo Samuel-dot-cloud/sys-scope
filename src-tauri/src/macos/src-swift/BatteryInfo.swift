@@ -2,6 +2,11 @@ import Foundation
 import IOKit.ps
 import SwiftRs
 
+private let batteryProcessRegex = try! NSRegularExpression(
+    pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#,
+    options: []
+)
+
 public class BatteryInfo: NSObject {
     var powerSource: SRString
 
@@ -76,27 +81,29 @@ class BatteryInfoFetcher {
 
     // TODO: Find fix for wrong battery health value
     public func fetchBatteryInfo() -> BatteryInfo {
-        let batteryInfo = BatteryInfo()
+        autoreleasepool {
+            let batteryInfo = BatteryInfo()
 
-        guard service != 0 else {
-            logger.error("No service found for AppleSmartBattery. Exiting function.")
+            guard service != 0 else {
+                logger.error("No service found for AppleSmartBattery. Exiting function.")
+                return batteryInfo
+            }
+
+            fetchPowerSourceInfo(for: batteryInfo)
+            fetchBatteryProperties(for: batteryInfo)
+
+            let factor: CGFloat = batteryInfo.isCharging ? 1 : -1
+            let watts: CGFloat = (CGFloat(batteryInfo.amperage) * CGFloat(batteryInfo.voltage)) / 1000 * factor
+            batteryInfo.watts = Double(watts)
+
+            let health: Double = (Double(batteryInfo.maxCapacity) / Double(batteryInfo.designCapacity)) * 100.0
+            batteryInfo.health = health
+
+            let charge: Double = (Double(batteryInfo.currentCapacity) / Double(batteryInfo.maxCapacity)) * 100.0
+            batteryInfo.charge = charge
+
             return batteryInfo
         }
-
-        fetchPowerSourceInfo(for: batteryInfo)
-        fetchBatteryProperties(for: batteryInfo)
-
-        let factor: CGFloat = batteryInfo.isCharging ? 1 : -1
-        let watts: CGFloat = (CGFloat(batteryInfo.amperage) * CGFloat(batteryInfo.voltage)) / 1000 * factor
-        batteryInfo.watts = Double(watts)
-
-        let health: Double = (Double(batteryInfo.maxCapacity) / Double(batteryInfo.designCapacity)) * 100.0
-        batteryInfo.health = health
-
-        let charge: Double = (Double(batteryInfo.currentCapacity) / Double(batteryInfo.maxCapacity)) * 100.0
-        batteryInfo.charge = charge
-
-        return batteryInfo
     }
 
     private func fetchPowerSourceInfo(for batteryInfo: BatteryInfo) {
@@ -161,30 +168,34 @@ func getTopBatteryProcesses() -> SRObjectArray {
         return SRObjectArray([])
     }
 
-    let regex = try! NSRegularExpression(pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#, options: [])
     var processInfo: [BatteryProcess] = []
     let lines = output.split(separator: "\n")
 
-    autoreleasepool {
-        for line in lines {
-            let nsLine = line as NSString
-            if let match = regex.firstMatch(in: String(line), options: [], range: NSRange(location: 0, length: nsLine.length)) {
-                guard let pid = Int(nsLine.substring(with: match.range(at: 1))),
-                      let power = Double(nsLine.substring(with: match.range(at: 4)))
-                else {
-                    continue
-                }
-                let processName = nsLine.substring(with: match.range(at: 2))
+    for line in lines {
+        let nsLine = line as NSString
+        if let match = batteryProcessRegex.firstMatch(in: String(line), options: [], range: NSRange(location: 0, length: nsLine.length)) {
+            guard let pid = Int(nsLine.substring(with: match.range(at: 1))),
+                  let power = Double(nsLine.substring(with: match.range(at: 4)))
+            else {
+                break
+            }
+            let processName = nsLine.substring(with: match.range(at: 2))
 
-                if power > 0 {
-                    let iconBase64 = getProcessIconBase64(for: processName) ?? ""
-                    let topProcess = BatteryProcess(pid: pid, name: SRString(processName), power: power, iconBase64: SRString(iconBase64))
-                    processInfo.append(topProcess)
+            if power > 0 {
+                let iconBase64 = getProcessIconBase64(for: processName) ?? ""
+                let topProcess = autoreleasepool { () -> BatteryProcess in
+                    return BatteryProcess(
+                        pid: pid,
+                        name: SRString(processName),
+                        power: power,
+                        iconBase64: SRString(iconBase64)
+                    )
                 }
+                processInfo.append(topProcess)
+            }
 
-                if processInfo.count >= 5 {
-                    break
-                }
+            if processInfo.count >= 5 {
+                break
             }
         }
     }

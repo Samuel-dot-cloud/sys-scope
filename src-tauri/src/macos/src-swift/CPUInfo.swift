@@ -1,6 +1,10 @@
 import Foundation
 import SwiftRs
 
+private let cachedHostPort: mach_port_t = mach_host_self()
+private let command = "/bin/ps"
+private let arguments = ["-Aceo pid,pcpu,comm", "-r"]
+
 class CPUInfo: NSObject {
     var user: Double
     var system: Double
@@ -35,7 +39,7 @@ func getCPUInfo() -> CPUInfo? {
 
     let result1 = withUnsafeMutablePointer(to: &cpuInfo1) {
         $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
-            host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, $0, &count)
+            host_statistics(cachedHostPort, HOST_CPU_LOAD_INFO, $0, &count)
         }
     }
 
@@ -47,7 +51,7 @@ func getCPUInfo() -> CPUInfo? {
 
     let result2 = withUnsafeMutablePointer(to: &cpuInfo2) {
         $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
-            host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, $0, &count)
+            host_statistics(cachedHostPort, HOST_CPU_LOAD_INFO, $0, &count)
         }
     }
 
@@ -75,43 +79,35 @@ func getCPUInfo() -> CPUInfo? {
 
 @_cdecl("get_top_cpu_processes")
 func getTopCPUProcesses() -> SRObjectArray {
-    let command = "/bin/ps"
-    let arguments = ["-Aceo pid,pcpu,comm", "-r"]
-
     guard let output = runProcess(path: command, args: arguments) else {
         return SRObjectArray([])
     }
 
     var processes: [CPUProcess] = []
+    processes.reserveCapacity(5)
 
     let lines = output.split(separator: "\n")
 
-    autoreleasepool {
-        for line in lines {
-            let components = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: true)
-            if components.count == 3, let pid = Int(components[0]), let cpu = Double(components[1]) {
-                let command = String(components[2])
-                let iconBase64 = getProcessIconBase64(for: command) ?? ""
-                let processInfo = CPUProcess(
+    for line in lines {
+        let components = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: true)
+        if components.count == 3, let pid = Int(components[0]), let cpu = Double(components[1]) {
+            let command = String(components[2])
+            let iconBase64 = getProcessIconBase64(for: command) ?? ""
+            let processInfo = autoreleasepool { () -> CPUProcess in
+                return CPUProcess(
                     pid: pid,
                     name: SRString(command),
                     cpu: cpu,
                     iconBase64: SRString(iconBase64)
                 )
-                processes.append(processInfo)
+            }
+            processes.append(processInfo)
 
-                if processes.count == 5 {
-                    break
-                }
+            if processes.count >= 5 {
+                break
             }
         }
     }
 
-    if processes.count > 1 {
-        processes.sort { $0.cpu > $1.cpu }
-    }
-
-    let result = SRObjectArray(processes)
-    processes.removeAll(keepingCapacity: false)
-    return result
+    return SRObjectArray(processes)
 }

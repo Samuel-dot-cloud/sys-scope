@@ -33,6 +33,19 @@ body {
   margin: 10px 0;
 }
 
+.app-version,
+.tauri-version {
+  font-size: 13px;
+}
+
+.app-version {
+  margin-top: 10px;
+}
+
+.tauri-version {
+  margin-top: -10px;
+}
+
 .app-description {
   color: black;
   font-size: 14px;
@@ -40,7 +53,6 @@ body {
 
 .repo-link {
   display: inline-block;
-  margin-top: 8px;
   color: #0077cc;
   text-decoration: none;
   border: 1px solid #0077cc;

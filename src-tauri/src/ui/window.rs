@@ -53,7 +53,7 @@ pub fn setup_about_window<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Windo
     .title("")
     .resizable(false)
     .minimizable(false)
-    .inner_size(350., 265.)
+    .inner_size(350., 300.)
     .focused(true)
     .skip_taskbar(true);
 

@@ -14,8 +14,6 @@ import {
 
 const BatteryComponent = () => {
   const { battery, batteryProcesses } = useServerEventsContext();
-  console.log("Time to empty: ", battery?.secsUntilEmpty);
-  console.log("Time to full battery: ", battery?.secsUntilFull);
 
   const powerDetails: ListDetail[] = [
     { label: "Power source", value: battery?.powerSource ?? "" },

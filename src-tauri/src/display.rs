@@ -63,18 +63,18 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
 
             tauri::async_runtime::spawn(async move {
                 loop {
-                    state.emit_sysinfo(&win);
-                    state.emit_cpu(&win);
-                    state.emit_cpu_processes(&win);
-                    state.emit_memory(&win);
-                    state.emit_swap(&win);
+                    state.emit_sysinfo(&win).await;
+                    state.emit_cpu(&win).await;
+                    state.emit_cpu_processes(&win).await;
+                    state.emit_memory(&win).await;
+                    // state.emit_swap(&win).await;
                     // state.emit_networks(&win);
-                    state.emit_disks(&win);
-                    state.emit_processes(&win);
-                    state.emit_batteries(&win);
-                    state.emit_battery_processes(&win);
-                    state.emit_disk_processes(&win);
-                    state.emit_memory_processes(&win);
+                    state.emit_disks(&win).await;
+                    state.emit_processes(&win).await;
+                    state.emit_batteries(&win).await;
+                    state.emit_battery_processes(&win).await;
+                    state.emit_disk_processes(&win).await;
+                    state.emit_memory_processes(&win).await;
                     tokio::time::sleep(Duration::from_secs(5)).await;
                 }
             });
