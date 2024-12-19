@@ -9,14 +9,21 @@ public func runProcess(path: String, args: [String]) -> String? {
     let outputPipe = Pipe()
     task.standardOutput = outputPipe
 
-    do {
-        try task.run()
-    } catch {
+    return autoreleasepool {
+        do {
+            try task.run()
+        } catch {
+            return nil
+        }
+
+        let fileHandle = outputPipe.fileHandleForReading
+        defer { fileHandle.closeFile() }
+
+        if let outputData = try? fileHandle.readToEnd() {
+            return String(decoding: outputData, as: UTF8.self)
+        }
         return nil
     }
-
-    let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-    return String(decoding: outputData, as: UTF8.self)
 }
 
 public func getProcessIconBase64(for processName: String) -> String? {
@@ -31,24 +38,23 @@ public func getProcessIconBase64(for processName: String) -> String? {
 }
 
 private func convertImageToBase64(_ image: NSImage) -> String? {
-    guard let tiffData = image.tiffRepresentation else { return nil }
-    guard let bitmap = NSBitmapImageRep(data: tiffData) else { return nil }
-    guard let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
-    return pngData.base64EncodedString()
+    autoreleasepool {
+        guard let tiffData = image.tiffRepresentation else { return nil }
+        guard let bitmap = NSBitmapImageRep(data: tiffData) else { return nil }
+        guard let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
+        return pngData.base64EncodedString()
+    }
 }
 
 extension DiskUtility {
     func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int) -> io_registry_entry_t? {
         var parent: io_registry_entry_t = 0
 
-        if IORegistryEntryGetParentEntry(obj, kIOServicePlane, &parent) != KERN_SUCCESS {
-            IOObjectRelease(parent)
-            return nil
-        }
-
-        for _ in 1 ... level where IORegistryEntryGetParentEntry(parent, kIOServicePlane, &parent) != KERN_SUCCESS {
-            IOObjectRelease(parent)
-            return nil
+        for currentLevel in 1 ... level {
+            if IORegistryEntryGetParentEntry(obj, kIOServicePlane, &parent) != KERN_SUCCESS {
+                IOObjectRelease(parent)
+                return nil
+            }
         }
 
         return parent

@@ -5,6 +5,11 @@ import SwiftRs
 
 let HOST_VM_INFO64_COUNT: mach_msg_type_number_t = UInt32(MemoryLayout<vm_statistics64_data_t>.size / MemoryLayout<integer_t>.size)
 
+private let pageSize = UInt64(vm_kernel_page_size)
+private let command = "/usr/bin/top"
+private let arguments = ["-l", "1", "-o", "mem", "-n", "5", "-stats", "pid,command,mem"]
+private let logger = OSLogger(tag: "getMemoryInfo")
+
 class MemoryInfo: NSObject {
     var active: Int
     var inactive: Int
@@ -44,8 +49,6 @@ class MemoryProcess: NSObject {
 @_cdecl("get_memory_info")
 func getMemoryInfo() -> MemoryInfo? {
     autoreleasepool {
-        let logger = OSLogger(tag: "getMemoryInfo")
-
         var stats = vm_statistics64()
         var size = HOST_VM_INFO64_COUNT
         let hostPort: mach_port_t = mach_host_self()
@@ -61,7 +64,6 @@ func getMemoryInfo() -> MemoryInfo? {
             return nil
         }
 
-        let pageSize = UInt64(vm_kernel_page_size)
         let active = UInt64(stats.active_count) * pageSize
         let inactive = UInt64(stats.inactive_count) * pageSize
         let wired = UInt64(stats.wire_count) * pageSize
@@ -116,9 +118,6 @@ private func parseMemory(_ memory: String) -> Int {
 
 @_cdecl("get_top_memory_processes")
 func getTopMemoryProcesses() -> SRObjectArray {
-    let command = "/usr/bin/top"
-    let arguments = ["-l", "1", "-o", "mem", "-n", "5", "-stats", "pid,command,mem"]
-
     guard let output = runProcess(path: command, args: arguments) else {
         return SRObjectArray([])
     }

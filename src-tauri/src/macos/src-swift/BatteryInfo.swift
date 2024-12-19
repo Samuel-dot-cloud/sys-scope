@@ -2,6 +2,11 @@ import Foundation
 import IOKit.ps
 import SwiftRs
 
+private let batteryProcessRegex = try! NSRegularExpression(
+    pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#,
+    options: []
+)
+
 public class BatteryInfo: NSObject {
     var powerSource: SRString
 
@@ -163,13 +168,13 @@ func getTopBatteryProcesses() -> SRObjectArray {
         return SRObjectArray([])
     }
 
-    let regex = try! NSRegularExpression(pattern: #"^\s*(\d+)\s+(\S+.*\S+)\s+(\w+)\s+([\d.]+)\s*$"#, options: [])
     var processInfo: [BatteryProcess] = []
     let lines = output.split(separator: "\n")
+    print("The lines: \(lines)")
 
     for line in lines {
         let nsLine = line as NSString
-        if let match = regex.firstMatch(in: String(line), options: [], range: NSRange(location: 0, length: nsLine.length)) {
+        if let match = batteryProcessRegex.firstMatch(in: String(line), options: [], range: NSRange(location: 0, length: nsLine.length)) {
             guard let pid = Int(nsLine.substring(with: match.range(at: 1))),
                   let power = Double(nsLine.substring(with: match.range(at: 4)))
             else {
