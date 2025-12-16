@@ -5,7 +5,7 @@ interface StatItemProps {
   columns: 2 | 3;
 }
 
-export const GlabalStyles = createGlobalStyle`
+export const GlobalStyles = createGlobalStyle`
     :root {
         font-family: 'Rubik Variable', sans-serif;
         line-height: 1.5;

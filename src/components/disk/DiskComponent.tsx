@@ -40,7 +40,6 @@ const DiskComponent = () => {
       label: "Bytes written",
       value: convertBytes(disk?.bytesWritten ?? 0, Unit.GB).toFixed(2) + " GB",
     },
-    // { label: "Removable", value: disk?.isRemovable ? "✅" : "❌" },
   ];
 
   return (

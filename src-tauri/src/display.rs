@@ -61,6 +61,7 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
                 }
             }
 
+            // TODO: Spawn threads in a non-blocking manner
             tauri::async_runtime::spawn(async move {
                 loop {
                     state.emit_sysinfo(&win).await;

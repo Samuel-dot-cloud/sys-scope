@@ -21,13 +21,7 @@ const BatteryComponent = () => {
       label: "Percentage",
       value: `${battery?.chargePercent.toFixed(0) ?? 0}%`,
     },
-    // {label: 'State', value: battery?.state},
     { label: "Cycle Count", value: battery?.cycleCount },
-    // {label: 'Technology', value: battery?.technology},
-    // {
-    //   label: "Health",
-    //   value: `${battery?.healthPercent.toFixed(0)}%`,
-    // },
     {
       label: "Time to full battery",
       value: formatTime(battery?.secsUntilFull ?? 0 * 60),
@@ -40,7 +34,6 @@ const BatteryComponent = () => {
       label: "Temperature",
       value: `${battery?.temperature.toFixed(1) ?? 30} °C`,
     },
-    // {label: 'Charge', value: `${battery?.energy.toFixed(3)} MJ / ${batteries.at(-1)?.energyFull.toFixed(3)} MJ`},
     { label: "Voltage", value: `${battery?.voltage.toFixed(1) ?? 0} V` },
     {
       label: "Energy rate",
@@ -66,7 +59,7 @@ const BatteryComponent = () => {
           <Value>Energy Impact</Value>
         </HeaderItem>
         <StatList>
-          {[...batteryProcesses].slice(0, 5).map((process, index) => (
+          {[...batteryProcesses].slice(0, 7).map((process, index) => (
             <StatItem key={index} columns={2}>
               <Label>
                 {index + 1}.{" "}

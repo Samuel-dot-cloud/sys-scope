@@ -213,7 +213,7 @@ class DiskUtility {
                 }
             }
         }
-        return "Unknown"
+        return "unknown"
     }
 
     private func isDiskRemovable(forBSDName bsdName: String, session: DASession) -> Bool {

@@ -144,7 +144,6 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     if (isPopoverVisible) {
       startRecordingHotkey();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPopoverVisible]);
 
   return (

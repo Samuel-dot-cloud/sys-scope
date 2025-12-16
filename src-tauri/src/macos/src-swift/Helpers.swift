@@ -50,7 +50,7 @@ extension DiskUtility {
     func getDeviceIOParent(_ obj: io_registry_entry_t, level: Int) -> io_registry_entry_t? {
         var parent: io_registry_entry_t = 0
 
-        for currentLevel in 1 ... level {
+        for _ in 1 ... level {
             if IORegistryEntryGetParentEntry(obj, kIOServicePlane, &parent) != KERN_SUCCESS {
                 IOObjectRelease(parent)
                 return nil

@@ -30,9 +30,9 @@ impl SystemInformationTrait for Metrics {
     fn get_system_information(&mut self) -> SysInfo {
         self.sys.refresh_all();
 
-        let kernel_version = System::kernel_version().unwrap_or("Unknown".to_string());
-        let os_version = System::long_os_version().unwrap_or("Unknown".to_string());
-        let hostname = System::host_name().unwrap_or("Unknown".to_string());
+        let kernel_version = System::kernel_version().unwrap_or("unknown".to_string());
+        let os_version = System::long_os_version().unwrap_or("unknown".to_string());
+        let hostname = System::host_name().unwrap_or("unknown".to_string());
         let core_count = self.sys.physical_core_count().unwrap_or(0).to_string();
         let uptime = System::uptime();
         let load_average = System::load_average();
@@ -119,7 +119,7 @@ impl DiskTrait for Metrics {
                 mount_point: mount_point.clone(),
                 file_system,
                 is_removable,
-                disk_type: String::from(""),
+                disk_type: "".to_string(),
                 bytes_read,
                 bytes_written,
             }
@@ -224,7 +224,7 @@ impl ProcessTrait for Metrics {
                     sysinfo::ProcessStatus::Stop => "Stopped".to_owned(),
                     sysinfo::ProcessStatus::Idle => "Idle".to_owned(),
                     sysinfo::ProcessStatus::Zombie => "Zombie".to_owned(),
-                    _ => "Unknown".to_string(),
+                    _ => "unknown".to_string(),
                 };
 
                 Process {
@@ -273,8 +273,11 @@ impl BatteryTrait for Metrics {
                 secs_until_full: swift_battery_info.time_to_full as i64,
                 secs_until_empty: swift_battery_info.time_to_empty as i64,
                 power_consumption_rate_watts: swift_battery_info.watts,
-                health_percent: swift_battery_info.health,
-                power_source: swift_battery_info.power_source.parse().unwrap(),
+                health_percent: swift_battery_info.health, // TODO: Retrieve accurate value
+                power_source: swift_battery_info
+                    .power_source
+                    .parse()
+                    .unwrap_or("unknown".to_string()),
                 cycle_count: swift_battery_info.cycle_count as u32,
                 temperature: swift_battery_info.temperature,
                 energy: swift_battery_info.amperage as f64,

@@ -73,10 +73,10 @@ SysScope is released under the [MIT license](./LICENSE).
 
 ## Changelog
 
-### v1.0.0 - Initial Release (2024-02-24)
+### v2.0.1 - Minor release (2024-12-19)
 
-- Real-time monitoring of battery, CPU, memory and disk info.
-- User friendly interface.
+- Display both app and Tauri version in UI.
+- Significantly reduce app memory leaks.
 
 ### v2.0.0 - Major Update (2024-08-06)
 
@@ -84,7 +84,7 @@ SysScope is released under the [MIT license](./LICENSE).
 - Fixed issue with hotkey not triggering hidden app to show and focus.
 - Fixed bugs when retrieving system stats.
 
-### v2.0.1 - Minor release (2024-12-19)
+### v1.0.0 - Initial Release (2024-02-24)
 
-- Display both app and Tauri version in UI.
-- Significantly reduce app memory leaks.
+- Real-time monitoring of battery, CPU, memory and disk info.
+- User friendly interface.
