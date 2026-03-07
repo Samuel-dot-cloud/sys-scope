@@ -4,7 +4,6 @@ import { Apple } from "@styled-icons/boxicons-logos/Apple";
 import { PowerOff } from "@styled-icons/boxicons-regular/PowerOff";
 import { Update } from "@styled-icons/material/Update";
 import { Info } from "@styled-icons/bootstrap/Info";
-import { Menu } from "antd";
 
 interface AppIconProps {
   size: string;
@@ -65,16 +64,6 @@ export const PowerIcon = styled(PowerOff)`
   color: crimson;
   width: 1.5em;
   height: 1.5em;
-`;
-
-export const TranslucentMenu = styled(Menu)`
-  background-color: rgba(255, 255, 255, 0.2);
-
-  &.ant-dropdown-menu,
-  &.ant-menu-submenu,
-  &.ant-menu-item {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
 `;
 
 export const MenuItemContent = styled.div`

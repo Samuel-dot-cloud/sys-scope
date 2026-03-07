@@ -27,19 +27,23 @@ const NetworkComponent = () => {
         {[...networks]
           .sort((a, b) => b.data[0].transmitted - a.data[0].transmitted)
           .slice(0, 5)
-          .map((network, index) => (
-            <StatItem key={index}>
-              <Label>
-                {index + 1}. {network.data.at(-1)?.name}
-              </Label>
-              <Value>
-                <Icon>↓</Icon>
-                {network.data.at(-1)?.received}
-                <Icon>↑</Icon>
-                {network.data.at(-1)?.transmitted}
-              </Value>
-            </StatItem>
-          ))}
+          .map((network, index) => {
+            const latest = network.data[network.data.length - 1];
+
+            return (
+              <StatItem key={index}>
+                <Label>
+                  {index + 1}. {latest?.name}
+                </Label>
+                <Value>
+                  <Icon>↓</Icon>
+                  {latest?.received}
+                  <Icon>↑</Icon>
+                  {latest?.transmitted}
+                </Value>
+              </StatItem>
+            );
+          })}
       </StatList>
     </Container>
   );

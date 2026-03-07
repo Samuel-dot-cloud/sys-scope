@@ -15,7 +15,7 @@ import {
 
 const CpuComponent = () => {
   const { cpu, sysInfo, cpuProcesses } = useServerEventsContext();
-  const cpuInfo = cpu.at(-1);
+  const cpuInfo = cpu[cpu.length - 1];
 
   const cpuDetails: ListDetail[] = [
     {

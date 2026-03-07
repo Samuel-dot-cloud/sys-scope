@@ -11,13 +11,13 @@ import {
   PowerIcon,
   QuitText,
   SettingsIcon,
-  TranslucentMenu,
   UpdateIcon,
   VersionName,
 } from "./styles.ts";
 import useServerEventsContext from "../../hooks/useServerEventsContext.tsx";
 import appIconImage from "../../assets/app-icon.png";
-import { Dropdown, Menu } from "antd";
+import { Dropdown } from "antd";
+import type { MenuProps } from "antd";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
@@ -95,41 +95,62 @@ const FooterComponent: React.FC<FooterComponentProps> = ({ openSettings }) => {
     }
   };
 
-  const settingsMenu = (
-    <TranslucentMenu
-      onClick={({ key }: { key: string }) => handleMenuClick(key)}
-    >
-      <Menu.Item key="1">
+  const settingsMenuItems: MenuProps["items"] = [
+    {
+      key: "1",
+      label: (
         <MenuItemContent>
           <InfoIcon />
           <MenuItemText>About SysScope</MenuItemText>
         </MenuItemContent>
-      </Menu.Item>
-      <Menu.Item key="2">
+      ),
+    },
+    {
+      key: "2",
+      label: (
         <MenuItemContent>
           <SettingsIcon />
           <MenuItemText>Settings</MenuItemText>
         </MenuItemContent>
-      </Menu.Item>
-      <Menu.Item key="3">
+      ),
+    },
+    {
+      key: "3",
+      label: (
         <MenuItemContent>
           <UpdateIcon />
           <MenuItemText>Check for updates</MenuItemText>
         </MenuItemContent>
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="4">
+      ),
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "4",
+      label: (
         <MenuItemContent>
           <PowerIcon />
           <QuitText>Quit SysScope</QuitText>
         </MenuItemContent>
-      </Menu.Item>
-    </TranslucentMenu>
-  );
+      ),
+    },
+  ];
 
   return (
     <FooterContainer>
-      <Dropdown overlay={settingsMenu} trigger={["click"]} placement="topRight">
+      <Dropdown
+        menu={{
+          items: settingsMenuItems,
+          onClick: ({ key }) => handleMenuClick(String(key)),
+          style: {
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            backdropFilter: "blur(20px)",
+          },
+        }}
+        trigger={["click"]}
+        placement="topRight"
+      >
         <AppNameContainer>
           <AppIcon src={appIconImage} size="1.1em" alt="App Icon" />
           <AppName>SysScope</AppName>

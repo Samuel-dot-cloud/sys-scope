@@ -27,12 +27,13 @@ export const GlobalStyles = createGlobalStyle`
     }
 
     .custom-popover .ant-popover-inner {
-      background-color: rgba(255, 255, 255, 0.15);
+      background-color: ${({ theme }) => `rgba(${theme.modalRgba})`};
       backdrop-filter: blur(10px);
       border-radius: 8px;
       padding: 16px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      border: 1px solid ${({ theme }) => `rgba(${theme.borderRgba})`};
+      color: ${({ theme }) => theme.text};
     }
 
     .custom-popover .ant-popover-arrow {
@@ -40,12 +41,12 @@ export const GlobalStyles = createGlobalStyle`
     }
 
     .custom-popover .ant-popover-arrow::before {
-      background-color: rgba(255, 255, 255, 0.15);
+      background-color: ${({ theme }) => `rgba(${theme.modalRgba})`};
       backdrop-filter: blur(10px);
     }
 
     .custom-popover .ant-popover-arrow::after {
-      background-color: rgba(255, 255, 255, 0.15);
+      background-color: ${({ theme }) => `rgba(${theme.modalRgba})`};
     }
 
 `;

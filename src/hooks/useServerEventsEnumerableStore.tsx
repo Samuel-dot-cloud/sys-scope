@@ -19,7 +19,9 @@ const useServerEventsEnumerableStore = <T extends { name: string }>(
   const [uniqueItems, setUniqueItems] = useState<Enumerable<T>[]>([]);
 
   useEffect(() => {
-    items.at(-1)?.filter((item) => {
+    const latestItems = items[items.length - 1];
+
+    latestItems?.filter((item) => {
       // If the item name is not in the uniqueItems array, add it
       if (!uniqueItems.find((unique) => unique.id === item.name)) {
         const newUniqueItem: Enumerable<T> = {
