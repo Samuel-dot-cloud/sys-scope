@@ -14,6 +14,11 @@ import {
 
 const BatteryComponent = () => {
   const { battery, batteryProcesses } = useServerEventsContext();
+  const cycleCount = battery.cycleCount ?? "Unavailable";
+  const maxCapacity =
+    battery.maxCapacityPercent == null
+      ? "Unavailable"
+      : `${battery.maxCapacityPercent.toFixed(0)}%`;
 
   const powerDetails: ListDetail[] = [
     { label: "Power source", value: battery?.powerSource ?? "" },
@@ -21,7 +26,8 @@ const BatteryComponent = () => {
       label: "Percentage",
       value: `${battery?.chargePercent.toFixed(0) ?? 0}%`,
     },
-    { label: "Cycle Count", value: battery?.cycleCount },
+    { label: "Maximum Capacity", value: maxCapacity },
+    { label: "Cycle Count", value: cycleCount },
     {
       label: "Time to full battery",
       value: formatTime(battery?.secsUntilFull ?? 0 * 60),

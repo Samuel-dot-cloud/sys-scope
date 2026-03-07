@@ -11,9 +11,30 @@ impl AppState {
     }
 }
 
-#[derive(Default)]
 pub struct App {
     pub metrics: Metrics,
+    pub battery_static: Option<BatteryStaticInfo>,
+}
+
+impl Default for App {
+    fn default() -> Self {
+        Self {
+            metrics: Metrics::default(),
+            battery_static: None,
+        }
+    }
+}
+
+impl App {
+    fn get_or_init_battery_static(&mut self) -> BatteryStaticInfo {
+        if let Some(battery_static) = &self.battery_static {
+            return battery_static.clone();
+        }
+
+        let battery_static = self.metrics.get_battery_static_info();
+        self.battery_static = Some(battery_static.clone());
+        battery_static
+    }
 }
 
 impl AppState {
@@ -58,7 +79,11 @@ impl AppState {
     }
 
     pub async fn emit_batteries<R: Runtime>(&self, window: &Window<R>) {
-        let battery = self.0.lock().unwrap().metrics.get_battery();
+        let mut app = self.0.lock().unwrap();
+        let battery_static = app.get_or_init_battery_static();
+        let mut battery = app.metrics.get_battery();
+        battery.cycle_count = battery_static.cycle_count;
+        battery.max_capacity_percent = battery_static.max_capacity_percent;
         window.emit("emit_battery", &battery).unwrap();
     }
 

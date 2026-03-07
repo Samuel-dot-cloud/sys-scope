@@ -163,10 +163,18 @@ pub struct DeviceBattery {
     pub power_consumption_rate_watts: f64,
     pub health_percent: f64,
     pub power_source: String,
-    pub cycle_count: u32,
+    pub cycle_count: Option<u32>,
+    pub max_capacity_percent: Option<f64>,
     pub temperature: f64,
     pub energy: f64,
     pub voltage: f64,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BatteryStaticInfo {
+    pub cycle_count: Option<u32>,
+    pub max_capacity_percent: Option<f64>,
 }
 
 pub trait BatteryTrait {

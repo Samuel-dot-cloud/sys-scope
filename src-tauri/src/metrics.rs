@@ -4,9 +4,9 @@ use crate::macos::{
     get_top_battery_processes, get_top_cpu_processes, get_top_memory_processes,
 };
 use crate::models::{
-    BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, LoadAverage, Memory,
-    MemoryProcess, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap, SwapTrait,
-    SysInfo, SystemInformationTrait, TopProcess,
+    BatteryStaticInfo, BatteryTrait, Cpu, CpuTrait, DeviceBattery, Disk, DiskTrait, LoadAverage,
+    Memory, MemoryProcess, MemoryTrait, Network, NetworkTrait, Process, ProcessTrait, Swap,
+    SwapTrait, SysInfo, SystemInformationTrait, TopProcess,
 };
 use crate::utils::{current_time, get_percentage, round};
 use swift_rs::autoreleasepool;
@@ -15,6 +15,26 @@ use sysinfo::{Networks, System};
 pub struct Metrics {
     sys: System,
     networks: Networks,
+}
+
+impl Metrics {
+    pub fn get_battery_static_info(&mut self) -> BatteryStaticInfo {
+        autoreleasepool!({
+            let swift_battery_info = unsafe { fetch_battery_info() };
+            let cycle_count = (swift_battery_info.cycle_count >= 0)
+                .then_some(swift_battery_info.cycle_count as u32);
+            let max_capacity_percent = (swift_battery_info.design_capacity > 0).then_some(
+                (swift_battery_info.max_capacity as f64
+                    / swift_battery_info.design_capacity as f64)
+                    * 100.0,
+            );
+
+            BatteryStaticInfo {
+                cycle_count,
+                max_capacity_percent,
+            }
+        })
+    }
 }
 
 impl Default for Metrics {
@@ -265,7 +285,7 @@ impl NetworkTrait for Metrics {
 
 impl BatteryTrait for Metrics {
     fn get_battery(&mut self) -> DeviceBattery {
-        let device_battery = autoreleasepool!({
+        autoreleasepool!({
             let swift_battery_info = unsafe { fetch_battery_info() };
 
             DeviceBattery {
@@ -273,19 +293,18 @@ impl BatteryTrait for Metrics {
                 secs_until_full: swift_battery_info.time_to_full as i64,
                 secs_until_empty: swift_battery_info.time_to_empty as i64,
                 power_consumption_rate_watts: swift_battery_info.watts,
-                health_percent: swift_battery_info.health, // TODO: Retrieve accurate value
+                health_percent: swift_battery_info.health,
                 power_source: swift_battery_info
                     .power_source
                     .parse()
                     .unwrap_or("unknown".to_string()),
-                cycle_count: swift_battery_info.cycle_count as u32,
+                cycle_count: None,
+                max_capacity_percent: None,
                 temperature: swift_battery_info.temperature,
                 energy: swift_battery_info.amperage as f64,
                 voltage: swift_battery_info.voltage,
             }
-        });
-
-        device_battery
+        })
     }
 
     fn get_battery_processes(&mut self) -> Vec<TopProcess> {

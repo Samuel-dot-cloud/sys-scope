@@ -1,19 +1,19 @@
 import React, { createContext } from "react";
 import {
+  BatteryProcess,
   Cpu,
+  CpuProcess,
   DeviceBattery,
   Disk,
-  CpuProcess,
+  DiskProcess,
   LoadAverage,
   Memory,
+  MemoryProcess,
   Network,
   Process,
   ServerEvent,
   Swap,
   SysInfo,
-  BatteryProcess,
-  DiskProcess,
-  MemoryProcess,
 } from "../lib/types.ts";
 import useServerEventsEnumerableStore, {
   Enumerable,
@@ -79,25 +79,22 @@ const memory: Memory = {
   app: 0,
 };
 
-const battery: DeviceBattery = {
+const defaultBattery: DeviceBattery = {
   chargePercent: 0,
   secsUntilFull: 0,
   secsUntilEmpty: 0,
   powerConsumptionRateWatts: 0,
   healthPercent: 0,
   powerSource: "",
-  technology: "",
-  cycleCount: 0,
-  model: "",
-  state: "",
+  cycleCount: null,
+  maxCapacityPercent: null,
   temperature: 0,
   energy: 0,
-  energyFull: 0,
   voltage: 0,
 };
 
 export const ServerEventsContext = createContext<ServerEventsContext>({
-  battery: battery,
+  battery: defaultBattery,
   batteryProcesses: [],
   cpu: [],
   disk: disk,
@@ -137,7 +134,7 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({
   );
   const [disk] = useServerEventsStore<Disk>(ServerEvent.Disk, { maxSize });
   const [battery] = useServerEventsStore<DeviceBattery>(ServerEvent.Battery, {
-    maxSize,
+    maxSize: 1,
   });
   const [batteryProcesses] = useServerEventsStore<BatteryProcess[]>(
     ServerEvent.BatteryProcesses,
@@ -163,7 +160,7 @@ const ServerEventsProvider: React.FC<ServerEventsProviderProps> = ({
         networks,
         cpuProcesses: cpuProcesses[cpuProcesses.length - 1] ?? [],
         disk: disk[disk.length - 1],
-        battery: battery[battery.length - 1],
+        battery: battery[battery.length - 1] ?? defaultBattery,
         batteryProcesses: batteryProcesses[batteryProcesses.length - 1] ?? [],
         diskProcesses: diskProcesses[diskProcesses.length - 1] ?? [],
         memoryProcesses: memoryProcesses[memoryProcesses.length - 1] ?? [],

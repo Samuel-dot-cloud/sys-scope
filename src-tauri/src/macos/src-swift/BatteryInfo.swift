@@ -38,8 +38,8 @@ public class BatteryInfo: NSObject {
         currentCapacity = 0
         maxCapacity = 0
         designCapacity = 0
-        cycleCount = 0
-        designCycleCount = 0
+        cycleCount = -1
+        designCycleCount = -1
         acPowered = false
         isCharging = false
         isCharged = false
@@ -96,11 +96,15 @@ class BatteryInfoFetcher {
             let watts: CGFloat = (CGFloat(batteryInfo.amperage) * CGFloat(batteryInfo.voltage)) / 1000 * factor
             batteryInfo.watts = Double(watts)
 
-            let health: Double = (Double(batteryInfo.maxCapacity) / Double(batteryInfo.designCapacity)) * 100.0
-            batteryInfo.health = health
+            if batteryInfo.maxCapacity > 0, batteryInfo.designCapacity > 0 {
+                let health: Double = (Double(batteryInfo.maxCapacity) / Double(batteryInfo.designCapacity)) * 100.0
+                batteryInfo.health = health
+            }
 
-            let charge: Double = (Double(batteryInfo.currentCapacity) / Double(batteryInfo.maxCapacity)) * 100.0
-            batteryInfo.charge = charge
+            if batteryInfo.charge == 0.0, batteryInfo.currentCapacity > 0, batteryInfo.maxCapacity > 0 {
+                let charge: Double = (Double(batteryInfo.currentCapacity) / Double(batteryInfo.maxCapacity)) * 100.0
+                batteryInfo.charge = charge
+            }
 
             return batteryInfo
         }
@@ -115,17 +119,32 @@ class BatteryInfoFetcher {
                 batteryInfo.powerSource = SRString(info[kIOPSPowerSourceStateKey] as? String ?? "AC Power")
                 batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int ?? 0
                 batteryInfo.timeToFull = info[kIOPSTimeToFullChargeKey] as? Int ?? 0
+
+                if let currentCapacity = info[kIOPSCurrentCapacityKey] as? Int,
+                   let maxCapacity = info[kIOPSMaxCapacityKey] as? Int,
+                   maxCapacity > 0
+                {
+                    batteryInfo.charge = (Double(currentCapacity) / Double(maxCapacity)) * 100.0
+                }
             }
         }
     }
 
     private func fetchBatteryProperties(for batteryInfo: BatteryInfo) {
-        batteryInfo.currentCapacity = getIntValue("CurrentCapacity" as CFString)
-        batteryInfo.maxCapacity = getIntValue("MaxCapacity" as CFString)
+        batteryInfo.currentCapacity = getOptionalIntValue("AppleRawCurrentCapacity" as CFString)
+            ?? getIntValue("CurrentCapacity" as CFString)
+        batteryInfo.maxCapacity = getOptionalIntValue("NominalChargeCapacity" as CFString)
+            ?? getOptionalIntValue("AppleRawMaxCapacity" as CFString)
+            ?? getIntValue("MaxCapacity" as CFString)
         batteryInfo.designCapacity = getIntValue("DesignCapacity" as CFString)
 
-        batteryInfo.cycleCount = getIntValue("CycleCount" as CFString)
-        batteryInfo.designCycleCount = getIntValue("DesignCycleCount9C" as CFString)
+        if let cycleCount = getOptionalIntValue("CycleCount" as CFString) {
+            batteryInfo.cycleCount = cycleCount
+        }
+
+        if let designCycleCount = getOptionalIntValue("DesignCycleCount9C" as CFString) {
+            batteryInfo.designCycleCount = designCycleCount
+        }
 
         batteryInfo.acPowered = getBoolValue("ExternalConnected" as CFString)
         batteryInfo.isCharging = getBoolValue("IsCharging" as CFString)
@@ -138,6 +157,14 @@ class BatteryInfoFetcher {
 
     private func getIntValue(_ property: CFString) -> Int {
         IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Int ?? 0
+    }
+
+    private func getOptionalIntValue(_ property: CFString) -> Int? {
+        guard let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0) else {
+            return nil
+        }
+
+        return value.takeRetainedValue() as? Int
     }
 
     private func getStringValue(_ property: CFString) -> String {

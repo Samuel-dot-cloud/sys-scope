@@ -115,13 +115,10 @@ export interface DeviceBattery {
   powerConsumptionRateWatts: number;
   healthPercent: number;
   powerSource: string;
-  technology: string;
-  cycleCount: number;
-  model: string;
-  state: string;
+  cycleCount: number | null;
+  maxCapacityPercent: number | null;
   temperature: number;
   energy: number;
-  energyFull: number;
   voltage: number;
 }
 
