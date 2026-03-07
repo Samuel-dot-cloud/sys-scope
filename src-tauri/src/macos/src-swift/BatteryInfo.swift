@@ -89,8 +89,8 @@ class BatteryInfoFetcher {
                 return batteryInfo
             }
 
-            fetchPowerSourceInfo(for: batteryInfo)
             fetchBatteryProperties(for: batteryInfo)
+            fetchPowerSourceInfo(for: batteryInfo)
 
             let factor: CGFloat = batteryInfo.isCharging ? 1 : -1
             let watts: CGFloat = (CGFloat(batteryInfo.amperage) * CGFloat(batteryInfo.voltage)) / 1000 * factor
@@ -116,7 +116,6 @@ class BatteryInfoFetcher {
 
         for ps in sources {
             if let info = IOPSGetPowerSourceDescription(snapshot, ps).takeUnretainedValue() as? [String: Any] {
-                batteryInfo.powerSource = SRString(info[kIOPSPowerSourceStateKey] as? String ?? "AC Power")
                 batteryInfo.timeToEmpty = info[kIOPSTimeToEmptyKey] as? Int ?? 0
                 batteryInfo.timeToFull = info[kIOPSTimeToFullChargeKey] as? Int ?? 0
 
@@ -126,6 +125,11 @@ class BatteryInfoFetcher {
                 {
                     batteryInfo.charge = (Double(currentCapacity) / Double(maxCapacity)) * 100.0
                 }
+
+                let powerSourceState = info[kIOPSPowerSourceStateKey] as? String
+                batteryInfo.powerSource = SRString(
+                    resolvePowerSourceLabel(powerSourceState: powerSourceState, batteryInfo: batteryInfo)
+                )
             }
         }
     }
@@ -177,6 +181,75 @@ class BatteryInfoFetcher {
 
     private func getDoubleValue(_ property: CFString) -> Double {
         IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0).takeRetainedValue() as? Double ?? 0.0
+    }
+
+    private func getDictionaryValue(_ property: CFString) -> [String: Any]? {
+        guard let value = IORegistryEntryCreateCFProperty(service, property, kCFAllocatorDefault, 0) else {
+            return nil
+        }
+
+        return value.takeRetainedValue() as? [String: Any]
+    }
+
+    private func resolvePowerSourceLabel(powerSourceState: String?, batteryInfo: BatteryInfo) -> String {
+        let isBatteryPower = powerSourceState == kIOPSBatteryPowerValue || !batteryInfo.acPowered
+        if isBatteryPower {
+            return "Battery"
+        }
+
+        let adapterDetails = getDictionaryValue("AdapterDetails" as CFString)
+            ?? getDictionaryValue("AppleRawAdapterDetails" as CFString)
+        let baseLabel = buildExternalPowerLabel(from: adapterDetails)
+
+        if batteryInfo.isCharging {
+            return "\(baseLabel) (Charging)"
+        }
+
+        return baseLabel
+    }
+
+    private func buildExternalPowerLabel(from adapterDetails: [String: Any]?) -> String {
+        guard let adapterDetails else {
+            return "External Power"
+        }
+
+        let description = normalizeAdapterDescription(adapterDetails["Description"] as? String)
+        let watts = adapterDetails["Watts"] as? Int
+
+        if let description, let watts, watts > 0 {
+            return "\(description) (\(watts)W)"
+        }
+
+        if let description {
+            return description
+        }
+
+        if let watts, watts > 0 {
+            return "External Power (\(watts)W)"
+        }
+
+        return "External Power"
+    }
+
+    private func normalizeAdapterDescription(_ description: String?) -> String? {
+        guard let description else {
+            return nil
+        }
+
+        let normalized = description.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized.isEmpty {
+            return nil
+        }
+
+        switch normalized {
+        case "pd charger":
+            return "USB-C PD Charger"
+        default:
+            return normalized
+                .split(separator: " ")
+                .map { $0.prefix(1).uppercased() + $0.dropFirst() }
+                .joined(separator: " ")
+        }
     }
 }
 
