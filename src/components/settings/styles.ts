@@ -5,10 +5,9 @@ import { Moon } from "@styled-icons/bootstrap/Moon";
 import { DarkTheme } from "@styled-icons/fluentui-system-regular/DarkTheme";
 
 export const TranslucentModal = styled(Modal)`
-  .ant-modal-content {
+  .ant-modal-container {
     background-color: ${(props) => `rgba(${props.theme.modalRgba})`};
   }
-
   .ant-modal-header {
     background-color: transparent;
     color: ${(props) => props.theme.text};

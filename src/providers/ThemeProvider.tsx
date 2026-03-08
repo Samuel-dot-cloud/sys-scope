@@ -1,24 +1,16 @@
 import { DefaultTheme } from "styled-components";
-import React, { createContext, ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { ThemeProvider as StyledThemeProvider } from "styled-components";
 import { invoke } from "@tauri-apps/api/tauri";
 import { dark, light } from "../styles/themes.ts";
 import { AppTheme } from "../utils/FrontendUtils.ts";
 import useEffectAsync from "../hooks/useEffectAsync.tsx";
+import { ThemeContext } from "./ThemeContext.ts";
 import { prefersDarkMode, setTheme, Theme } from "../utils/theme.ts";
-
-interface ThemeContextProps {
-  darkMode: AppTheme;
-  setDarkMode: React.Dispatch<React.SetStateAction<AppTheme>>;
-}
 
 interface ThemeProviderProps {
   children: ReactNode;
 }
-
-export const ThemeContext = createContext<ThemeContextProps | undefined>(
-  undefined,
-);
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [darkMode, setDarkMode] = useState<AppTheme>("auto");
