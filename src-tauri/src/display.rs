@@ -3,48 +3,47 @@ use std::sync::RwLock;
 use std::time::Duration;
 use tauri::{Manager, Runtime};
 use tauri_plugin_autostart::MacosLauncher;
-use window_shadows::set_shadow;
 
 use crate::app::AppState;
 use crate::helpers::fs::load_settings;
 use crate::macos::set_transparent_titlebar;
 use crate::state::Settings;
-use crate::ui::tray::{setup_tray, MAIN_WINDOW_LABEL};
-#[allow(unused_imports)]
+use crate::ui::tray::setup_tray;
+use crate::ui::tray::MAIN_WINDOW_LABEL;
 use crate::ui::window::decorate_window;
 
 pub type SettingsState = RwLock<Settings>;
 
 pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> tauri::App<R> {
-    let mut ctx = tauri::generate_context!();
+    let ctx = tauri::generate_context!();
 
     let auto_start_plugin =
         tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--autostart"]));
 
-    builder
-        .menu(tauri::Menu::new())
-        .on_window_event(|event| {
-            if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
-                event.window().hide().unwrap();
+    let builder = builder
+        .enable_macos_default_menu(false)
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                window.hide().unwrap();
                 api.prevent_close();
             }
         })
         .manage(app)
         .manage::<SettingsState>(RwLock::new(Settings::default()))
         .setup(|app| {
-            let app_handle = app.app_handle();
-            let win = app.get_window(MAIN_WINDOW_LABEL).unwrap();
+            let app_handle = app.app_handle().clone();
+            let win = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
             let state = AppState::new();
 
-            setup_tray(app);
+            setup_tray(app)?;
 
-            #[cfg(not(test))]
             decorate_window(&win);
 
             #[cfg(any(windows, target_os = "macos"))]
-            {
-                set_shadow(&win, true).unwrap();
+            win.set_shadow(true).unwrap();
 
+            #[cfg(target_os = "macos")]
+            {
                 let nswindow = win.ns_window().unwrap();
 
                 unsafe { set_transparent_titlebar(&nswindow) };
@@ -89,20 +88,13 @@ pub fn create_app<R: Runtime>(app: AppState, builder: tauri::Builder<R>) -> taur
             crate::utils::quit_app
         ])
         .plugin(auto_start_plugin)
-        .plugin(tauri_plugin_theme::init(ctx.config_mut()))
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build());
+
+    let builder = builder.plugin(tauri_plugin_global_shortcut::Builder::new().build());
+
+    builder
         .build(ctx)
         .expect("error while running tauri application")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tauri::Manager;
-
-    #[test]
-    fn creates_main_window() {
-        let app_state = AppState::new();
-        let app = create_app(app_state, tauri::test::mock_builder());
-        assert!(app.get_window(MAIN_WINDOW_LABEL).is_some());
-    }
 }

@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/Samuel-dot-cloud/sys-scope"
 default-run = "app"
 edition = "2021"
-rust-version = "1.69.0"
+rust-version = "1.77.2"
 
 # [profile.release]
 # debug = true
@@ -15,7 +15,7 @@ rust-version = "1.69.0"
 # split-debuginfo = "unpacked"
 
 [build-dependencies]
-tauri-build = { version = "1.5.5", features = [] }
+tauri-build = { version = "2.6.2", features = [] }
 swift-rs = { version = "1.0.7", features = ["build"] }
 
 [dev-dependencies]
@@ -24,17 +24,18 @@ serial_test = "3.0.0"
 [dependencies]
 serde_json = "1.0.149"
 serde = { version = "1.0.228", features = ["derive"] }
-tauri = { version = "1.8.1", features = [ "global-shortcut", "shell-open", "dialog-message", "macos-private-api", "system-tray", "updater", "test"] }
+tauri = { version = "2.11.2", features = [ "macos-private-api", "test", "tray-icon" ] }
+tauri-plugin-autostart = "2.5.1"
+tauri-plugin-dialog = "2.7.1"
+tauri-plugin-global-shortcut = "2.3.2"
+tauri-plugin-process = "2.3.1"
+tauri-plugin-updater = "2.10.1"
 sysinfo = "0.30.13"
 log = "0.4.29"
 pretty_env_logger = "0.5.0"
 tokio = { version = "1.50.0", features = ["full"] }
-window-vibrancy = "0.4.3"
-window-shadows = "0.2.2"
-tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 swift-rs = "1.0.7"
 anyhow = "1.0.79"
-tauri-plugin-theme = "1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

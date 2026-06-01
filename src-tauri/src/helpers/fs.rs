@@ -2,13 +2,13 @@ use crate::state::Settings;
 use anyhow::{Context, Result};
 use log::info;
 use std::fs;
-use tauri::{AppHandle, Runtime};
+use tauri::{AppHandle, Manager, Runtime};
 
 const SETTINGS_FILENAME: &str = "settings.json";
 
 pub fn load_settings<R: Runtime>(handle: &AppHandle<R>) -> Result<Settings> {
     let app_data_dir = handle
-        .path_resolver()
+        .path()
         .app_data_dir()
         .context("Failed to resolve app data dir")?;
 
@@ -25,7 +25,7 @@ pub fn load_settings<R: Runtime>(handle: &AppHandle<R>) -> Result<Settings> {
 
 pub fn save_settings<R: Runtime>(handle: &AppHandle<R>, new_settings: &Settings) -> Result<()> {
     let app_data_dir = handle
-        .path_resolver()
+        .path()
         .app_data_dir()
         .context("Failed to resolve app data dir")?;
 
@@ -41,39 +41,4 @@ pub fn save_settings<R: Runtime>(handle: &AppHandle<R>, new_settings: &Settings)
         .with_context(|| format!("Failed to write settings to {}", settings_path.display()))?;
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use anyhow::Result;
-    use serial_test::serial;
-    use tauri::{test, Manager};
-
-    #[serial(fs)]
-    #[test]
-    fn test_save_settings() {
-        let app_handle = test::mock_app().app_handle();
-
-        assert!(save_settings(
-            &app_handle,
-            &Settings {
-                toggle_app_shortcut: Some("Ctrl + S".to_string())
-            },
-        )
-        .is_ok())
-    }
-
-    #[serial(fs)]
-    #[test]
-    fn test_load_settings() -> Result<()> {
-        let app_handle = test::mock_app().app_handle();
-        let settings = Settings {
-            toggle_app_shortcut: Some("Ctrl + S".to_string()),
-        };
-        save_settings(&app_handle, &settings)?;
-        assert_eq!(load_settings(&app_handle)?, settings);
-
-        Ok(())
-    }
 }

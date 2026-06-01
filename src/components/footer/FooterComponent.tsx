@@ -20,9 +20,9 @@ import { Dropdown } from "antd";
 import type { MenuProps } from "antd";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
-import { ask, message } from "@tauri-apps/api/dialog";
-import { relaunch } from "@tauri-apps/api/process";
+import { check } from "@tauri-apps/plugin-updater";
+import { ask, message } from "@tauri-apps/plugin-dialog";
+import { relaunch } from "@tauri-apps/plugin-process";
 import { showAboutWindow, shutDown } from "../../utils/TauriUtils.ts";
 import { getVersion } from "@tauri-apps/api/app";
 
@@ -57,26 +57,26 @@ const FooterComponent: React.FC<FooterComponentProps> = ({ openSettings }) => {
         break;
       case "3": {
         toast.loading("Checking for updates", { duration: 1000 });
-        const updateStatus = checkUpdate();
+        const updateStatus = check();
         updateStatus
           .then(async (result) => {
             console.log("The result: ", result);
-            if (!result.shouldUpdate) {
+            if (!result) {
               await message("There are currently no updates available.", {
                 title: "The app is up-to-date",
-                type: "info",
+                kind: "info",
               });
             } else {
               const confirm = await ask(
                 "An update is available. Install now?",
                 {
                   title: "Install update",
-                  type: "info",
+                  kind: "info",
                 },
               );
 
               if (confirm) {
-                await installUpdate();
+                await result.downloadAndInstall();
 
                 await relaunch();
               }

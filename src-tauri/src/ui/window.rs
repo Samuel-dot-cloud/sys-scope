@@ -1,34 +1,43 @@
-#[allow(unused_imports)]
-use crate::macos::set_transparent_titlebar;
 use anyhow::Result;
-#[allow(unused_imports)]
-use tauri::{AppHandle, Runtime, Theme, TitleBarStyle, Window, WindowBuilder, WindowUrl};
-#[cfg(target_os = "macos")]
-use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+use tauri::{
+    window::{Effect, EffectState, EffectsBuilder},
+    AppHandle, Listener, Runtime, TitleBarStyle, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
+};
 
-pub fn decorate_window<R: Runtime>(window: &Window<R>) {
+pub fn decorate_window<R: Runtime>(window: &WebviewWindow<R>) {
     #[cfg(target_os = "macos")]
-    apply_vibrancy(
-        window,
-        NSVisualEffectMaterial::HudWindow,
-        Some(window_vibrancy::NSVisualEffectState::FollowsWindowActiveState),
-        Some(8.0),
-    )
-    .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+    window
+        .set_effects(
+            EffectsBuilder::new()
+                .effect(Effect::HudWindow)
+                .state(EffectState::FollowsWindowActiveState)
+                .radius(8.0)
+                .build(),
+        )
+        .expect("HudWindow effect is only supported on macOS");
 
     #[cfg(target_os = "windows")]
     {
-        use tauri::{Theme, WindowEvent};
-        use window_vibrancy::apply_acrylic;
+        use tauri::{
+            window::{Color, Effect, EffectsBuilder},
+            Theme, WindowEvent,
+        };
 
-        fn apply_window_theme<R: Runtime>(theme: &Theme, window: &Window<R>) {
-            match theme {
-                Theme::Light => apply_acrylic(window, Some((255, 255, 255, 125)))
-                    .expect("Unsupported platform! 'apply_acrylic' is only supported on Windows"),
-                Theme::Dark => apply_acrylic(window, Some((0, 0, 0, 50)))
-                    .expect("Unsupported platform! 'apply_acrylic' is only supported on Windows"),
-                _ => {}
-            }
+        fn apply_window_theme<R: Runtime>(theme: &Theme, window: &WebviewWindow<R>) {
+            let color = match theme {
+                Theme::Light => Color(255, 255, 255, 125),
+                Theme::Dark => Color(0, 0, 0, 50),
+                _ => return,
+            };
+
+            window
+                .set_effects(
+                    EffectsBuilder::new()
+                        .effect(Effect::Acrylic)
+                        .color(color)
+                        .build(),
+                )
+                .expect("Acrylic effect is only supported on Windows");
         }
 
         apply_window_theme(&window.theme().unwrap(), window);
@@ -44,11 +53,11 @@ pub fn decorate_window<R: Runtime>(window: &Window<R>) {
     }
 }
 
-pub fn setup_about_window<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Window<R>> {
-    let about_window = WindowBuilder::new(
+pub fn setup_about_window<R: Runtime>(app_handle: &AppHandle<R>) -> Result<WebviewWindow<R>> {
+    let about_window = WebviewWindowBuilder::new(
         app_handle,
         crate::ui::tray::ABOUT_WINDOW_LABEL,
-        WindowUrl::App("src/pages/about/about.html".into()),
+        WebviewUrl::App("src/pages/about/about.html".into()),
     )
     .title("")
     .resizable(false)
@@ -62,7 +71,7 @@ pub fn setup_about_window<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Windo
 
     let about_window = about_window.build().unwrap();
 
-    // Wait for DOM to load to avoid showing empty screen
+    // Wait for DOM to load to avoid showing an empty screen.
     about_window.once("window_loaded", {
         let about_window = about_window.clone();
         move |_| {

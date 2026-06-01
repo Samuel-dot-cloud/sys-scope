@@ -1,5 +1,5 @@
 import styled, { createGlobalStyle } from "styled-components";
-import "@fontsource-variable/rubik";
+import "@fontsource-variable/rubik/wght.css";
 
 interface StatItemProps {
   columns: 2 | 3;

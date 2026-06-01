@@ -1,4 +1,4 @@
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { disableContextMenu } from "../../utils/dom.ts";
 import * as theme from "../../utils/theme.ts";
 import { getVersion, getTauriVersion } from "@tauri-apps/api/app";
@@ -28,7 +28,7 @@ const displayAppAndTauriVersion = async () => {
   }
 };
 
-appWindow.emit("window_loaded");
+getCurrentWindow().emit("window_loaded");
 
 theme.followSystemTheme();
 disableContextMenu();

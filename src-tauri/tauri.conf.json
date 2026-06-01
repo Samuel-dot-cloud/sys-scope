@@ -1,76 +1,23 @@
 {
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SysScope",
+  "version": "2.0.1",
+  "identifier": "com.samwahome.sysscope",
   "build": {
     "beforeBuildCommand": "yarn build",
     "beforeDevCommand": "yarn dev",
-    "devPath": "http://localhost:5173",
-    "distDir": "../dist"
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "SysScope",
-    "version": "2.0.1"
-  },
-  "tauri": {
-    "systemTray": {
+  "app": {
+    "trayIcon": {
       "iconPath": "icons/tray-icon.png",
       "iconAsTemplate": false
     },
-    "allowlist": {
-      "all": false,
-      "dialog": {
-        "all": false,
-        "message": true
-      },
-      "shell": {
-        "all": false,
-        "open": "^https://github.com/Samuel-dot-cloud/sys-scope$"
-      }
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.samwahome.sysscope",
-      "longDescription": "A feature-packed system monitor to view resources as disk, battery, CPU and memory usage",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null,
-        "minimumSystemVersion": "11"
-      },
-      "resources": [],
-      "shortDescription": "SysScope",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
+    "macOSPrivateApi": true,
     "security": {
       "csp": null
     },
-    "updater": {
-      "active": true,
-      "endpoints": [
-        "https://github.com/Samuel-dot-cloud/sys-scope/releases/latest/download/latest.json"
-      ],
-      "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE0QUIwQjgyREJBRkJGMDgKUldRSXY2L2JnZ3VycEg2MXBlMU9odTJwbzJ3NjEwQUpoT1hiOGpjaWZsNUtnWHVlbjJJbTdJYy8K"
-    },
-    "macOSPrivateApi": true,
     "windows": [
       {
         "fullscreen": false,
@@ -85,5 +32,42 @@
         "width": 800
       }
     ]
+  },
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "createUpdaterArtifacts": "v1Compatible",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "longDescription": "A feature-packed system monitor to view resources as disk, battery, CPU and memory usage",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "minimumSystemVersion": "11",
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [],
+    "shortDescription": "SysScope",
+    "targets": "all",
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/Samuel-dot-cloud/sys-scope/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE0QUIwQjgyREJBRkJGMDgKUldRSXY2L2JnZ3VycEg2MXBlMU9odTJwbzJ3NjEwQUpoT1hiOGpjaWZsNUtnWHVlbjJJbTdJYy8K"
+    }
   }
 }

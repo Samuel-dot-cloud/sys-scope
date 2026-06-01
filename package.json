@@ -13,18 +13,21 @@
   },
   "dependencies": {
     "@fontsource-variable/rubik": "^5.2.8",
-    "@tauri-apps/api": "^1.5.3",
+    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/plugin-autostart": "^2.5.1",
+    "@tauri-apps/plugin-dialog": "^2.7.1",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-updater": "^2.10.1",
     "antd": "^6.4.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.16.0",
     "styled-components": "^6.4.2",
-    "styled-icons": "^10.47.1",
-    "tauri-plugin-autostart-api": "https://github.com/tauri-apps/tauri-plugin-autostart#v1"
+    "styled-icons": "^10.47.1"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.6.3",
+    "@tauri-apps/cli": "^2.11.2",
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",

@@ -1,12 +1,18 @@
 import { DefaultTheme } from "styled-components";
 import React, { ReactNode, useEffect, useState } from "react";
 import { ThemeProvider as StyledThemeProvider } from "styled-components";
-import { invoke } from "@tauri-apps/api/tauri";
+import { setTheme as setAppTheme } from "@tauri-apps/api/app";
 import { dark, light } from "../styles/themes.ts";
 import { AppTheme } from "../utils/FrontendUtils.ts";
 import useEffectAsync from "../hooks/useEffectAsync.tsx";
 import { ThemeContext } from "./ThemeContext.ts";
-import { prefersDarkMode, setTheme, Theme } from "../utils/theme.ts";
+import {
+  prefersDarkMode,
+  setTheme as setDocumentTheme,
+  Theme,
+} from "../utils/theme.ts";
+
+const THEME_STORAGE_KEY = "theme";
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -17,14 +23,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [styledTheme, setStyledTheme] = useState<DefaultTheme>(light);
 
   useEffect(() => {
-    invoke<AppTheme>("plugin:theme|get_theme").then((theme) => {
-      setDarkMode(theme || "auto");
-      setTheme(theme === "dark" ? Theme.Dark : Theme.Light);
-    });
+    const theme =
+      (localStorage.getItem(THEME_STORAGE_KEY) as AppTheme) || "auto";
+    setDarkMode(theme);
+    setDocumentTheme(theme === "dark" ? Theme.Dark : Theme.Light);
   }, []);
 
   useEffectAsync(async () => {
-    invoke("plugin:theme|set_theme", { theme: darkMode });
+    localStorage.setItem(THEME_STORAGE_KEY, darkMode);
+    await setAppTheme(darkMode === "auto" ? null : darkMode);
   }, [darkMode]);
 
   useEffect(() => {
@@ -39,7 +46,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       }
 
       document.documentElement.classList.toggle("dark", isDark);
-      setTheme(isDark ? Theme.Dark : Theme.Light);
+      setDocumentTheme(isDark ? Theme.Dark : Theme.Light);
       setStyledTheme(isDark ? dark : light);
     };
 
